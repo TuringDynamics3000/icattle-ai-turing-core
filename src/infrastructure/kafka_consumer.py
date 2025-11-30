@@ -5,7 +5,7 @@ import sys
 # --- Configuration ---
 KAFKA_CONFIG = {
     "bootstrap.servers": "localhost:9093",
-    "group.id": "agritech-ml-processor-group", # Unique consumer group ID
+    "group.id": "agritech-ml-processor-group-20251201085051", # Unique consumer group ID
     "auto.offset.reset": "earliest"
 }
 

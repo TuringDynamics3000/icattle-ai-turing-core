@@ -5,8 +5,8 @@ import json
 import time
 
 # Import core logic and dispatcher
-from icattle_ai.src.infrastructure.core_logic import process_image_command
-from icattle_ai.src.infrastructure.command_dispatcher import dispatch_command # NEW IMPORT
+from ..infrastructure.core_logic import process_image_command
+from ..infrastructure.command_dispatcher import dispatch_command # NEW IMPORT
 
 # --- Domain Models (Simplified) ---
 
