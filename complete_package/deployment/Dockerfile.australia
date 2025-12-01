@@ -1,0 +1,43 @@
+# Dockerfile for Australian Production Deployment
+# iCattle.ai - MSA Grading System with Turing Protocol
+
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy Australian-specific application code
+COPY domain/livestock_management_australia.py domain/livestock_management_australia.py
+COPY infrastructure/market_pricing_australia.py infrastructure/market_pricing_australia.py
+COPY domain/services.py domain/services.py
+COPY api/ api/
+
+# Create necessary directories
+RUN mkdir -p /app/logs /app/data
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV MARKET=AU
+ENV TZ=Australia/Sydney
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:8000/health || exit 1
+
+# Run application
+CMD ["uvicorn", "api.livestock_endpoints:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
