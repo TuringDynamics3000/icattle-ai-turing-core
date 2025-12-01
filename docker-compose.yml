@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.0.1
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.0.1
+    hostname: kafka
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+  kafka-topics-creator:
+    image: confluentinc/cp-kafka:7.0.1
+    hostname: kafka-topics-creator
+    container_name: kafka-topics-creator
+    depends_on:
+      - kafka
+    command: >
+      bash -c "
+      echo 'Waiting for Kafka to be ready...' &&
+      cub kafka-ready -b kafka:9092 -t 120 1 1 &&
+      echo 'Creating agritech.animal.events topic...' &&
+      kafka-topics --create --if-not-exists \
+                   --topic agritech.animal.events \
+                   --partitions 12 \
+                   --replication-factor 1 \
+                   --bootstrap-server kafka:9092
+      "
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-topics-creator:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+  postgres:
+    image: postgres:14-alpine
+    hostname: postgres
+    container_name: postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: turing_user
+      POSTGRES_PASSWORD: turing_password
+      POSTGRES_DB: icattle_db
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

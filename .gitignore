@@ -40,3 +40,13 @@ wheels/
 # OS
 .DS_Store
 Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
