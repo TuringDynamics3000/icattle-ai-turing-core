@@ -1,0 +1,126 @@
+# Docker Compose for Australian Local Development/Testing
+# iCattle.ai - MSA Grading System
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:14-alpine
+    container_name: icattle-au-db
+    environment:
+      POSTGRES_DB: icattle_au
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme123}
+      TZ: Australia/Sydney
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../infrastructure/database_schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d icattle_au"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - icattle-network
+
+  # Kafka (Event Streaming)
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: icattle-au-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      TZ: Australia/Sydney
+    networks:
+      - icattle-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: icattle-au-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9094:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      TZ: Australia/Sydney
+    networks:
+      - icattle-network
+
+  # iCattle.ai Australian API
+  api:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile.australia
+    container_name: icattle-au-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    ports:
+      - "8001:8000"
+    environment:
+      # Database
+      DATABASE_URL: postgresql://admin:${DB_PASSWORD:-changeme123}@postgres:5432/icattle_au
+      
+      # Market
+      MARKET: AU
+      
+      # API Keys (set in .env file)
+      MLA_API_KEY: ${MLA_API_KEY:-demo-key}
+      NLRS_API_KEY: ${NLRS_API_KEY:-demo-key}
+      EYCI_API_KEY: ${EYCI_API_KEY:-demo-key}
+      
+      # Kafka
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      
+      # Turing Protocol
+      TURING_PROTOCOL_ENFORCE: "true"
+      
+      # Timezone
+      TZ: Australia/Sydney
+    volumes:
+      - ../domain:/app/domain
+      - ../infrastructure:/app/infrastructure
+      - ../api:/app/api
+      - api_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - icattle-network
+
+  # Redis (Caching - Optional )
+  redis:
+    image: redis:7-alpine
+    container_name: icattle-au-redis
+    ports:
+      - "6380:6379"
+    environment:
+      TZ: Australia/Sydney
+    volumes:
+      - redis_data:/data
+    networks:
+      - icattle-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  api_logs:
+
+networks:
+  icattle-network:
+    driver: bridge
+
