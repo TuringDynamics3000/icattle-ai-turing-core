@@ -1,0 +1,18 @@
+﻿{
+  "type": "record",
+  "name": "AnimalImageCaptured",
+  "namespace": "com.icattle.events.v1",
+  "doc": "Event emitted when an animal's muzzle print image is captured",
+  "fields": [
+    {"name": "event_id", "type": "string", "doc": "Unique event identifier"},
+    {"name": "event_type", "type": "string", "default": "AnimalImageCaptured"},
+    {"name": "aggregate_id", "type": "string", "doc": "Muzzle hash - immutable biometric identifier"},
+    {"name": "aggregate_type", "type": "string", "default": "Animal"},
+    {"name": "version", "type": "int", "doc": "Event version number"},
+    {"name": "timestamp", "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "muzzle_hash", "type": "string", "doc": "SHA-256 hash of muzzle image"},
+    {"name": "image_s3_key", "type": "string", "doc": "S3 location of image"},
+    {"name": "image_version_id", "type": "string", "doc": "Unique version for this capture"},
+    {"name": "metadata", "type": ["null", {"type": "map", "values": "string"}], "default": null}
+  ]
+}
