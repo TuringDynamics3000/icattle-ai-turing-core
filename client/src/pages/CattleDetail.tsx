@@ -9,6 +9,8 @@ import {
   CheckCircle2, AlertCircle, TrendingUp, Syringe, Scale, FileText
 } from "lucide-react";
 import { AuditTrailViewer } from "@/components/AuditTrailViewer";
+import { EventReplayViewer } from "@/components/EventReplayViewer";
+import { FraudDetectionViewer } from "@/components/FraudDetectionViewer";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 export function CattleDetail() {
@@ -320,6 +322,8 @@ export function CattleDetail() {
           <TabsTrigger value="health">Health Records</TabsTrigger>
           <TabsTrigger value="valuation">Valuation History</TabsTrigger>
           <TabsTrigger value="audit">Audit Trail</TabsTrigger>
+          <TabsTrigger value="replay">Event Replay</TabsTrigger>
+          <TabsTrigger value="fraud">Fraud Detection</TabsTrigger>
           <TabsTrigger value="details">Details</TabsTrigger>
         </TabsList>
 
@@ -620,6 +624,16 @@ export function CattleDetail() {
         {/* Audit Trail Tab */}
         <TabsContent value="audit" className="space-y-4">
           <AuditTrailViewer cattleId={cattleId!} />
+        </TabsContent>
+
+        {/* Event Replay Tab */}
+        <TabsContent value="replay" className="space-y-4">
+          <EventReplayViewer cattleId={cattleId!} />
+        </TabsContent>
+
+        {/* Fraud Detection Tab */}
+        <TabsContent value="fraud" className="space-y-4">
+          <FraudDetectionViewer cattleId={cattleId!} />
         </TabsContent>
       </Tabs>
     </div>

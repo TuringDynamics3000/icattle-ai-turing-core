@@ -9,6 +9,9 @@ import { marketLiveRouter } from "./routers/market-live";
 import { BreedPremiums } from './_core/breedPremiums';
 import { KafkaProducer } from './_core/kafkaProducer';
 import { KafkaConsumer } from './_core/kafkaConsumer';
+import { reconstructStateFromEvents, compareStates, verifyEventChainIntegrity, calculateReconstructionConfidence } from './_core/eventReplay';
+import { analyzeForFraud, getHighRiskCattle } from './_core/fraudDetection';
+import { enforceOnChain, generateComplianceReport } from './_core/protocolEnforcement';
 
 export const appRouter = router({
   system: systemRouter,
@@ -319,6 +322,110 @@ export const appRouter = router({
           cattleWithMarketData,
           totalCattle: filteredCattle.length,
         };
+      }),
+  }),
+  
+  // ============================================================================
+  // EVENT REPLAY & STATE RECONSTRUCTION
+  // ============================================================================
+  
+  eventReplay: router({    
+    reconstructState: publicProcedure
+      .input(z.object({ cattleId: z.number() }))
+      .query(async ({ input }) => {
+        // Get events from Golden Record
+        const events = await KafkaConsumer.getCattleAuditTrail(input.cattleId);
+        
+        if (events.length === 0) {
+          throw new Error('No events found for this cattle');
+        }
+        
+        // Enforce Turing Protocol
+        const protocolResult = enforceOnChain(events);
+        if (!protocolResult.is_valid) {
+          throw new Error(`Protocol violation: ${JSON.stringify(protocolResult.violations)}`);
+        }
+        
+        // Reconstruct state
+        const reconstructedState = reconstructStateFromEvents(events);
+        
+        // Get current state from database
+        const currentState = await db.getCattleById(input.cattleId);
+        
+        // Compare states
+        const comparison = compareStates(currentState, reconstructedState);
+        
+        // Calculate confidence
+        const confidence = calculateReconstructionConfidence(events, reconstructedState);
+        
+        return {
+          reconstructed_state: reconstructedState,
+          current_state: currentState,
+          comparison,
+          confidence,
+          chain_integrity: verifyEventChainIntegrity(events),
+        };
+      }),
+    
+    verifyIntegrity: publicProcedure
+      .input(z.object({ cattleId: z.number() }))
+      .query(async ({ input }) => {
+        const events = await KafkaConsumer.getCattleAuditTrail(input.cattleId);
+        return verifyEventChainIntegrity(events);
+      }),
+  }),
+  
+  // ============================================================================
+  // FRAUD DETECTION
+  // ============================================================================
+  
+  fraud: router({
+    analyze: publicProcedure
+      .input(z.object({ cattleId: z.number() }))
+      .query(async ({ input }) => {
+        // Get events from Golden Record
+        const events = await KafkaConsumer.getCattleAuditTrail(input.cattleId);
+        
+        if (events.length === 0) {
+          return {
+            cattle_id: input.cattleId,
+            alerts: [],
+            risk_score: 0,
+            protocol_compliant: true,
+            protocol_violations: [],
+            analyzed_events: 0,
+            analysis_timestamp: new Date().toISOString(),
+          };
+        }
+        
+        // Analyze for fraud (includes protocol enforcement)
+        return await analyzeForFraud(input.cattleId, events);
+      }),
+    
+    getHighRisk: publicProcedure
+      .query(async () => {
+        // Get all cattle
+        const cattle = await db.getAllCattle();
+        
+        // Analyze each cattle for fraud
+        const results = new Map();
+        for (const animal of cattle) {
+            const events = await KafkaConsumer.getCattleAuditTrail(animal.id);
+          if (events.length > 0) {
+            const result = await analyzeForFraud(animal.id, events);
+            results.set(animal.id, result);
+          }
+        }
+        
+        // Return high-risk cattle
+        return getHighRiskCattle(results);
+      }),
+    
+    getProtocolCompliance: publicProcedure
+      .input(z.object({ cattleId: z.number() }))
+      .query(async ({ input }) => {
+        const events = await KafkaConsumer.getCattleAuditTrail(input.cattleId);
+        return generateComplianceReport(input.cattleId, events);
       }),
   }),
   
