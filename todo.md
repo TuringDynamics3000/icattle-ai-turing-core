@@ -145,3 +145,20 @@
 - [x] Add map to Farmer's Herd View
 - [ ] Add clustering for dense areas (future enhancement)
 - [ ] Add paddock boundary overlays (future enhancement)
+
+
+## 🏦 Bank/Investor View
+- [x] Create BankView page component
+- [x] Add portfolio risk metrics (concentration risk, health risk, market risk)
+- [x] Calculate and display loan-to-value (LTV) ratios
+- [x] Add compliance status indicators (APRA, Basel III, blockchain verification)
+- [x] Create valuation trend charts (6-month)
+- [x] Add portfolio diversification metrics
+- [x] Show unrealized gains/losses
+- [x] Display collateral quality ratings
+- [x] Add route to App.tsx
+- [x] Add link from Home page
+- [x] Add client portfolio breakdown with value distribution
+- [x] Add risk rating badge (Low/Medium/High)
+- [ ] Add stress testing scenarios (future enhancement)
+- [ ] Add 12-month valuation trends (future enhancement)

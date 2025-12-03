@@ -239,6 +239,15 @@ export function Home() {
             </CardHeader>
           </Card>
         </Link>
+
+        <Link href="/bank">
+          <Card className="hover:bg-accent cursor-pointer transition-colors">
+            <CardHeader>
+              <CardTitle>Bank & Investor View</CardTitle>
+              <CardDescription>Risk metrics & compliance</CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
       </div>
     </div>
   );
