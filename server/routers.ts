@@ -4,11 +4,11 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
-import { marketRouter } from "./routers/market";
+import { marketLiveRouter } from "./routers/market-live";
 
 export const appRouter = router({
   system: systemRouter,
-  market: marketRouter,
+  market: marketLiveRouter,
   
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
@@ -166,17 +166,14 @@ export const appRouter = router({
           ? cattle.filter(c => c.clientId === input.clientId && c.status === 'active')
           : cattle.filter(c => c.status === 'active');
         
-        // Get market prices from cache
-        const fs = await import('fs/promises');
-        const path = await import('path');
-        const cacheFile = path.join(process.cwd(), 'scripts', 'auctionsplus_cache.json');
+        // Get market prices from live MLA API
+        const { getAllCattleMarketData } = await import('./_core/mlaApi');
         
-        let marketData: any = null;
+        let marketPrices: any[] = [];
         try {
-          const cacheContent = await fs.readFile(cacheFile, 'utf-8');
-          marketData = JSON.parse(cacheContent);
+          marketPrices = await getAllCattleMarketData();
         } catch (error) {
-          // Cache file doesn't exist or is invalid
+          console.error('Failed to fetch market data:', error);
           return {
             totalBookValue: filteredCattle.reduce((sum, c) => sum + (c.currentValuation || 0), 0),
             totalMarketValue: null,
@@ -193,13 +190,27 @@ export const appRouter = router({
         for (const animal of filteredCattle) {
           if (!animal.breed || !animal.sex || !animal.currentWeight) continue;
           
-          const priceData = marketData.price_discovery?.find((p: any) => 
-            p.breed.toLowerCase() === animal.breed.toLowerCase() &&
-            p.category.toLowerCase() === animal.sex.toLowerCase()
-          );
+          // Map cattle sex/type to MLA indicator category
+          const category = animal.sex.toLowerCase();
+          
+          // Find matching price data from MLA API
+          let priceData = marketPrices.find((p: any) => {
+            const desc = p.indicator_desc.toLowerCase();
+            if (category.includes('steer') && desc.includes('steer')) return true;
+            if (category.includes('heifer') && desc.includes('heifer')) return true;
+            if (category.includes('cow') && desc.includes('cow')) return true;
+            return false;
+          });
+          
+          // Fall back to Young Cattle indicator if no specific match
+          if (!priceData) {
+            priceData = marketPrices.find((p: any) => 
+              p.indicator_desc.toLowerCase().includes('young cattle')
+            );
+          }
           
           if (priceData) {
-            totalMarketValue += priceData.price_per_kg * animal.currentWeight;
+            totalMarketValue += priceData.avg_price_per_kg * animal.currentWeight;
             cattleWithMarketData++;
           }
         }

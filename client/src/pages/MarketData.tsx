@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ArrowLeft, TrendingUp, RefreshCw, DollarSign, Info } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useState } from "react";
 
 export function MarketData() {
@@ -65,7 +65,7 @@ export function MarketData() {
             <h1 className="text-3xl font-bold">Market Data</h1>
           </div>
           <p className="text-muted-foreground">
-            Real-time cattle pricing from AuctionsPlus Price Discovery
+            Real cattle pricing from MLA National Livestock Reporting Service
           </p>
         </div>
         <Button 
@@ -95,6 +95,60 @@ export function MarketData() {
                   Cache refreshes automatically every 24 hours. Click "Refresh Data" to force an update.
                 </p>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Historical Price Trends */}
+      {marketData?.historical_trends && marketData.historical_trends.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Historical Price Trends (6 Years)
+            </CardTitle>
+            <CardDescription>
+              Quarterly average prices from 2020-2025
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={marketData.historical_trends}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="quarter" 
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis 
+                    label={{ value: 'Price per kg (AUD)', angle: -90, position: 'insideLeft' }}
+                  />
+                  <Tooltip 
+                    formatter={(value: number) => formatCurrency(value)}
+                    labelStyle={{ color: '#000' }}
+                  />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="steer_avg" 
+                    stroke="#3b82f6" 
+                    strokeWidth={2}
+                    name="Steer Average"
+                    dot={{ r: 3 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="heifer_avg" 
+                    stroke="#ec4899" 
+                    strokeWidth={2}
+                    name="Heifer Average"
+                    dot={{ r: 3 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
@@ -140,7 +194,7 @@ export function MarketData() {
       <div>
         <h2 className="text-2xl font-bold mb-4">Price Discovery by Breed & Category</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {marketData?.price_discovery.map((item, index) => (
+          {marketData?.price_discovery.map((item: any, index: number) => (
             <Card key={index} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -207,12 +261,10 @@ export function MarketData() {
           <div className="space-y-2">
             <h3 className="font-semibold text-amber-900">About This Data</h3>
             <p className="text-sm text-amber-800">
-              Market pricing data is sourced from AuctionsPlus, Australia's leading online livestock 
-              trading platform. Prices reflect recent auction results and are updated daily.
+              Market pricing data is sourced live from MLA's Statistics API, providing daily updates from the National Livestock Reporting Service (NLRS). Prices represent weighted averages of actual auction sales across multiple indicators including Restocker, Feeder, and Young Cattle categories.
             </p>
             <p className="text-sm text-amber-800">
-              <strong>Note:</strong> This is simulated data based on December 2025 market research. 
-              Live data integration requires AuctionsPlus authentication and API access.
+              Data source: Meat & Livestock Australia (MLA) • Sample sizes indicate number of head sold
             </p>
             <div className="flex items-center gap-2 mt-3">
               <DollarSign className="h-4 w-4 text-amber-700" />

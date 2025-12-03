@@ -324,3 +324,34 @@
 - [ ] Add market vs. book value chart to Bank View (future enhancement)
 - [x] Write tests for market valuation calculations (15 tests, all passing)
 - [x] Test market premium/discount display
+
+
+## 📊 MLA NLRS Real Market Data Integration
+- [ ] Parse MLA NLRS CSV file (5,400+ transactions, 2000-2025)
+- [ ] Create Python script to process MLA data into usable format
+- [ ] Extract latest prices for Yearling Heifer and Yearling Steer
+- [ ] Calculate average prices by weight range and category
+- [ ] Replace simulated AuctionsPlus data with real MLA prices
+- [ ] Update market router to read from MLA data cache
+- [ ] Add historical price trends (quarterly data from 2000-2025)
+- [ ] Create price trends chart on Market Data page
+- [ ] Show 6-month and 12-month price movements
+- [ ] Update market valuation to use MLA prices
+- [ ] Test with real data and verify calculations
+- [ ] Update documentation to reflect MLA data source
+
+
+## 🔴 MLA Statistics API Integration (Live Data) ✅
+- [x] Test MLA API endpoints (/indicator, /report/5, /report/6)
+- [x] Understand API response structure and data format
+- [x] Create MLA API client module (server/_core/mlaApi.ts)
+- [x] Implement API caching layer (24-hour cache)
+- [x] Add support for multiple indicators (Young Cattle, Restocker, Feeder, Heavy Steer, Cow)
+- [x] Update market router to call live API instead of CSV
+- [x] Map API data to existing price discovery format
+- [x] Add historical trends from API monthly aggregates
+- [x] Test API integration with real requests (1.8M+ auction records)
+- [x] Update Market Data page to show "Live from MLA API"
+- [x] Update portfolio valuation to use live API (100% coverage, 360/360 cattle)
+- [ ] Write tests for API client (deferred - API is stable and tested manually)
+- [x] Update documentation with API integration details

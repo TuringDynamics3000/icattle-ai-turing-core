@@ -7,8 +7,8 @@ import path from "path";
 
 const execAsync = promisify(exec);
 
-const CACHE_FILE = path.join(process.cwd(), "scripts", "auctionsplus_cache.json");
-const SCRAPER_SCRIPT = path.join(process.cwd(), "scripts", "scrape-auctionsplus.py");
+const CACHE_FILE = path.join(process.cwd(), "scripts", "mla_cache.json");
+const SCRAPER_SCRIPT = path.join(process.cwd(), "scripts", "process_mla_data.py");
 
 // Cache duration: 24 hours
 const CACHE_DURATION_MS = 24 * 60 * 60 * 1000;
@@ -30,6 +30,11 @@ interface MarketDataCache {
   scraped_at: string;
   price_discovery: PriceDiscoveryData[];
   recent_auctions: any[];
+  historical_trends?: Array<{
+    quarter: string;
+    heifer_avg?: number;
+    steer_avg?: number;
+  }>;
 }
 
 async function loadCachedData(): Promise<MarketDataCache | null> {
@@ -131,6 +136,7 @@ export const marketRouter = router({
       return {
         price_discovery: data.price_discovery,
         recent_auctions: data.recent_auctions,
+        historical_trends: data.historical_trends || [],
         cached_at: data.scraped_at,
         cache_age_hours: Math.round(
           (Date.now() - new Date(data.scraped_at).getTime()) / (1000 * 60 * 60)
@@ -158,11 +164,21 @@ export const marketRouter = router({
       }
       
       // Find matching price data
-      const match = data.price_discovery.find(
+      // First try exact breed match, then fall back to "Generic"
+      let match = data.price_discovery.find(
         (item) =>
           item.breed.toLowerCase() === input.breed.toLowerCase() &&
           item.category.toLowerCase() === input.category.toLowerCase()
       );
+      
+      // If no exact breed match, try Generic (for MLA data)
+      if (!match) {
+        match = data.price_discovery.find(
+          (item) =>
+            item.breed.toLowerCase() === "generic" &&
+            item.category.toLowerCase() === input.category.toLowerCase()
+        );
+      }
       
       if (match) {
         // Calculate estimated value

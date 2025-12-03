@@ -1,0 +1,240 @@
+{
+  "scraped_at": "2025-12-03T15:31:55.522908",
+  "data_source": "MLA NLRS - National Livestock Reporting Service",
+  "data_period": "2000-2025",
+  "price_discovery": [
+    {
+      "breed": "Generic",
+      "category": "Heifer",
+      "weight_range": "200-280",
+      "price_per_kg": 3.34,
+      "price_range_min": 1.5,
+      "price_range_max": 3.9,
+      "sample_size": 1488,
+      "last_updated": "2025-12-31T00:00:00",
+      "source": "MLA NLRS - National Livestock Reporting Service"
+    },
+    {
+      "breed": "Generic",
+      "category": "Heifer",
+      "weight_range": "280-330",
+      "price_per_kg": 3.43,
+      "price_range_min": 2.39,
+      "price_range_max": 4.45,
+      "sample_size": 966,
+      "last_updated": "2025-12-31T00:00:00",
+      "source": "MLA NLRS - National Livestock Reporting Service"
+    },
+    {
+      "breed": "Generic",
+      "category": "Heifer",
+      "weight_range": "330-400",
+      "price_per_kg": 3.71,
+      "price_range_min": 2.55,
+      "price_range_max": 4.38,
+      "sample_size": 1539,
+      "last_updated": "2025-12-31T00:00:00",
+      "source": "MLA NLRS - National Livestock Reporting Service"
+    },
+    {
+      "breed": "Generic",
+      "category": "Heifer",
+      "weight_range": "400+",
+      "price_per_kg": 3.79,
+      "price_range_min": 2.65,
+      "price_range_max": 4.6,
+      "sample_size": 1075,
+      "last_updated": "2025-12-31T00:00:00",
+      "source": "MLA NLRS - National Livestock Reporting Service"
+    },
+    {
+      "breed": "Generic",
+      "category": "Heifer",
+      "weight_range": "0-200",
+      "price_per_kg": 2.75,
+      "price_range_min": 0.85,
+      "price_range_max": 7.68,
+      "sample_size": 382,
+      "last_updated": "2025-12-31T00:00:00",
+      "source": "MLA NLRS - National Livestock Reporting Service"
+    },
+    {
+      "breed": "Generic",
+      "category": "Steer",
+      "weight_range": "200-280",
+      "price_per_kg": 4.08,
+      "price_range_min": 2.55,
+      "price_range_max": 4.94,
+      "sample_size": 1659,
+      "last_updated": "2025-12-31T00:00:00",
+      "source": "MLA NLRS - National Livestock Reporting Service"
+    },
+    {
+      "breed": "Generic",
+      "category": "Steer",
+      "weight_range": "280-330",
+      "price_per_kg": 3.86,
+      "price_range_min": 2.7,
+      "price_range_max": 5.52,
+      "sample_size": 1145,
+      "last_updated": "2025-12-31T00:00:00",
+      "source": "MLA NLRS - National Livestock Reporting Service"
+    },
+    {
+      "breed": "Generic",
+      "category": "Steer",
+      "weight_range": "330-400",
+      "price_per_kg": 4.16,
+      "price_range_min": 2.8,
+      "price_range_max": 5.18,
+      "sample_size": 3263,
+      "last_updated": "2025-12-31T00:00:00",
+      "source": "MLA NLRS - National Livestock Reporting Service"
+    },
+    {
+      "breed": "Generic",
+      "category": "Steer",
+      "weight_range": "400+",
+      "price_per_kg": 4.17,
+      "price_range_min": 3.0,
+      "price_range_max": 5.39,
+      "sample_size": 1537,
+      "last_updated": "2025-12-31T00:00:00",
+      "source": "MLA NLRS - National Livestock Reporting Service"
+    },
+    {
+      "breed": "Generic",
+      "category": "Steer",
+      "weight_range": "0-200",
+      "price_per_kg": 4.67,
+      "price_range_min": 1.06,
+      "price_range_max": 10.0,
+      "sample_size": 231,
+      "last_updated": "2024-12-31T00:00:00",
+      "source": "MLA NLRS - National Livestock Reporting Service"
+    }
+  ],
+  "historical_trends": [
+    {
+      "quarter": "2020-Q1",
+      "heifer_avg": 3.26,
+      "steer_avg": 3.63
+    },
+    {
+      "quarter": "2020-Q2",
+      "heifer_avg": 3.54,
+      "steer_avg": 3.96
+    },
+    {
+      "quarter": "2020-Q3",
+      "heifer_avg": 3.96,
+      "steer_avg": 4.32
+    },
+    {
+      "quarter": "2020-Q4",
+      "heifer_avg": 4.27,
+      "steer_avg": 4.37
+    },
+    {
+      "quarter": "2021-Q1",
+      "heifer_avg": 4.22,
+      "steer_avg": 4.48
+    },
+    {
+      "quarter": "2021-Q2",
+      "heifer_avg": 4.05,
+      "steer_avg": 4.4
+    },
+    {
+      "quarter": "2021-Q3",
+      "heifer_avg": 5.38,
+      "steer_avg": 6.22
+    },
+    {
+      "quarter": "2021-Q4",
+      "heifer_avg": 5.54,
+      "steer_avg": 6.31
+    },
+    {
+      "quarter": "2022-Q1",
+      "heifer_avg": 5.43,
+      "steer_avg": 5.81
+    },
+    {
+      "quarter": "2022-Q2",
+      "heifer_avg": 4.81,
+      "steer_avg": 5.26
+    },
+    {
+      "quarter": "2022-Q3",
+      "heifer_avg": 4.95,
+      "steer_avg": 5.35
+    },
+    {
+      "quarter": "2022-Q4",
+      "heifer_avg": 5.32,
+      "steer_avg": 5.66
+    },
+    {
+      "quarter": "2023-Q1",
+      "heifer_avg": 3.38,
+      "steer_avg": 3.94
+    },
+    {
+      "quarter": "2023-Q2",
+      "heifer_avg": 2.62,
+      "steer_avg": 3.18
+    },
+    {
+      "quarter": "2023-Q3",
+      "heifer_avg": 2.04,
+      "steer_avg": 2.56
+    },
+    {
+      "quarter": "2023-Q4",
+      "heifer_avg": 2.12,
+      "steer_avg": 2.76
+    },
+    {
+      "quarter": "2024-Q1",
+      "heifer_avg": 3.07,
+      "steer_avg": 3.62
+    },
+    {
+      "quarter": "2024-Q2",
+      "heifer_avg": 2.72,
+      "steer_avg": 3.38
+    },
+    {
+      "quarter": "2024-Q3",
+      "heifer_avg": 3.23,
+      "steer_avg": 3.83
+    },
+    {
+      "quarter": "2024-Q4",
+      "heifer_avg": 2.99,
+      "steer_avg": 3.65
+    },
+    {
+      "quarter": "2025-Q1",
+      "heifer_avg": 3.2,
+      "steer_avg": 3.69
+    },
+    {
+      "quarter": "2025-Q2",
+      "heifer_avg": 3.26,
+      "steer_avg": 3.95
+    },
+    {
+      "quarter": "2025-Q3",
+      "heifer_avg": 3.9,
+      "steer_avg": 4.85
+    },
+    {
+      "quarter": "2025-Q4",
+      "heifer_avg": 4.02,
+      "steer_avg": 4.59
+    }
+  ],
+  "recent_auctions": []
+}
