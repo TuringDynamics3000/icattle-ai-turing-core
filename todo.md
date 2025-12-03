@@ -372,18 +372,20 @@
 - [x] Write comprehensive ML/RL documentation
 
 
-## 🔒 Turing Protocol Implementation (Golden Record)
-- [ ] Design cattle_events table schema (event sourcing backbone)
-- [ ] Add cryptographic hash fields for tamper detection
-- [ ] Create event types (CATTLE_CREATED, OWNERSHIP_TRANSFER, TAG_CHANGED, VALUATION_UPDATE, LOCATION_MOVED, HEALTH_RECORD)
-- [ ] Implement event sourcing layer in server/_core/turingProtocol.ts
-- [ ] Add hash generation and verification functions
-- [ ] Create provenance_scores table for confidence scoring
-- [ ] Build multi-source validation (NLIS + photos + GPS + biometrics)
-- [ ] Implement fraud detection rules (tag-swap detection, price anomalies, rapid movement)
-- [ ] Add suspicious_transactions table and flagging system
-- [ ] Create Turing Protocol compliance dashboard page
-- [ ] Add audit trail viewer with event replay
-- [ ] Build provenance report generator
-- [ ] Write tests for event sourcing and integrity verification
-- [ ] Document Turing Protocol implementation for iCattle
+## 🔒 Turing Protocol Implementation (Kafka-First Golden Record)
+- [x] Design cattle_events table schema (PostgreSQL event store)
+- [ ] Study TuringCore-v3 Kafka event streaming patterns
+- [ ] Set up Kafka infrastructure (topics, partitions, replication)
+- [ ] Create Kafka topics: cattle.events, cattle.provenance, cattle.fraud
+- [ ] Implement Kafka event producer in server/_core/kafkaProducer.ts
+- [ ] Implement Kafka event consumer in server/_core/kafkaConsumer.ts
+- [ ] Add event types (CATTLE_CREATED, OWNERSHIP_TRANSFER, TAG_CHANGED, etc.)
+- [ ] Implement cryptographic hash generation (SHA-256)
+- [ ] Build event validation and schema enforcement
+- [ ] Create PostgreSQL event store (consume from Kafka)
+- [ ] Implement provenance scoring system
+- [ ] Build fraud detection rules (tag-swap, price anomalies)
+- [ ] Add suspicious transactions flagging
+- [ ] Create Turing Protocol compliance dashboard
+- [ ] Write tests for Kafka → PostgreSQL flow
+- [ ] Document Kafka-first architecture
