@@ -63,6 +63,37 @@ export const appRouter = router({
       .query(async ({ input }) => {
         return await db.getCattleByClient(input.clientId);
       }),
+    
+    // Batch operations
+    batchHealthCheck: protectedProcedure
+      .input(z.object({ 
+        cattleIds: z.array(z.number()),
+        healthStatus: z.enum(["healthy", "sick", "quarantine"]),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.batchHealthCheck(input.cattleIds, input.healthStatus, input.notes);
+      }),
+    
+    batchMovement: protectedProcedure
+      .input(z.object({ 
+        cattleIds: z.array(z.number()),
+        toLocation: z.string(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.batchMovement(input.cattleIds, input.toLocation, input.notes);
+      }),
+    
+    batchValuation: protectedProcedure
+      .input(z.object({ 
+        cattleIds: z.array(z.number()),
+        valuationMethod: z.string(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.batchValuation(input.cattleIds, input.valuationMethod, input.notes);
+      }),
   }),
 
   // ============================================================================
@@ -141,6 +172,27 @@ export const appRouter = router({
       .input(z.object({ clientId: z.number().optional() }))
       .query(async ({ input }) => {
         return await db.getCattleTypeDistribution(input.clientId);
+      }),
+  }),
+  
+  // ============================================================================
+  // NOTIFICATIONS
+  // ============================================================================
+  
+  notifications: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return await db.getUserNotifications(ctx.user.id);
+    }),
+    
+    markAsRead: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        return await db.markNotificationAsRead(input.id, ctx.user.id);
+      }),
+    
+    markAllAsRead: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        return await db.markAllNotificationsAsRead(ctx.user.id);
       }),
   }),
 });

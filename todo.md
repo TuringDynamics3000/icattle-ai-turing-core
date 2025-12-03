@@ -190,3 +190,42 @@
 - [ ] Add location history with map (future enhancement)
 - [ ] Add ownership history section (future enhancement)
 - [ ] Update Farmer View with clickable cattle cards (future enhancement)
+
+
+## 👥 Client Detail Pages
+- [x] Create ClientDetail page component with route parameter
+- [x] Add client overview section (name, contact, ABN, AgriWebb status)
+- [x] Display portfolio analytics (total value, cattle count, avg value)
+- [x] Add cattle list filtered by client with search/filter
+- [x] Show performance metrics (unrealized gains, growth rate)
+- [x] Create portfolio composition charts (breed, type, health)
+- [x] Add route to App.tsx (/clients/:id)
+- [x] Update Clients list page with clickable links
+- [ ] Add transaction history timeline (future enhancement)
+
+## 🔔 Real-time Notification System
+- [x] Set up notification infrastructure (database schema, tRPC procedures)
+- [x] Create notification UI component (bell icon, dropdown)
+- [x] Create NotificationBell component with unread badge
+- [x] Add notification bell to Home page header
+- [x] Implement mark as read functionality
+- [x] Add database functions for notifications
+- [x] Add tRPC procedures for notification management
+- [ ] Add notification triggers for health status changes (future enhancement)
+- [ ] Add notification triggers for valuation updates (future enhancement)
+- [ ] Add notification triggers for compliance issues (future enhancement)
+- [ ] Create notification preferences/settings (future enhancement)
+
+## ⚡ Batch Operations for Cattle Management
+- [x] Add multi-select checkbox UI to cattle registry
+- [x] Create batch action toolbar (appears when items selected)
+- [x] Implement "Select All" / "Deselect All" functionality
+- [x] Add bulk health check recording
+- [x] Add bulk movement/location update
+- [x] Add bulk valuation update
+- [x] Add confirmation dialogs for batch operations
+- [x] Add tRPC procedures for batch operations
+- [x] Add database functions for batch operations
+- [x] Add visual feedback (selected cattle highlighted with blue ring)
+- [ ] Show progress indicators for batch processing (future enhancement)
+- [ ] Add bulk status change (active/sold/deceased) (future enhancement)

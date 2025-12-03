@@ -2,8 +2,8 @@ import { eq, desc, and, sql, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users, clients, cattle, lifecycleEvents, 
-  valuations, marketData, financialReports,
-  Client, Cattle, LifecycleEvent, Valuation, MarketData
+  valuations, marketData, financialReports, notifications,
+  Client, Cattle, LifecycleEvent, Valuation, MarketData, Notification
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -301,4 +301,169 @@ export async function getCattleTypeDistribution(clientId?: number) {
   }).from(cattle)
     .where(conditions)
     .groupBy(cattle.cattleType);
+}
+
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+export async function getUserNotifications(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db
+    .select()
+    .from(notifications)
+    .where(eq(notifications.userId, userId))
+    .orderBy(desc(notifications.createdAt))
+    .limit(50);
+}
+
+export async function markNotificationAsRead(notificationId: number, userId: number) {
+  const db = await getDb();
+  if (!db) return { success: false };
+  
+  await db
+    .update(notifications)
+    .set({ 
+      isRead: true,
+      readAt: new Date(),
+    })
+    .where(
+      and(
+        eq(notifications.id, notificationId),
+        eq(notifications.userId, userId)
+      )
+    );
+  
+  return { success: true };
+}
+
+export async function markAllNotificationsAsRead(userId: number) {
+  const db = await getDb();
+  if (!db) return { success: false };
+  
+  await db
+    .update(notifications)
+    .set({ 
+      isRead: true,
+      readAt: new Date(),
+    })
+    .where(eq(notifications.userId, userId));
+  
+  return { success: true };
+}
+
+export async function createNotification(data: {
+  userId: number;
+  type: "health_alert" | "valuation_update" | "compliance_warning" | "system";
+  title: string;
+  message: string;
+  cattleId?: number;
+  clientId?: number;
+}) {
+  const db = await getDb();
+  if (!db) return { success: false };
+  
+  await db.insert(notifications).values(data);
+  return { success: true };
+}
+
+
+// ============================================================================
+// BATCH OPERATIONS
+// ============================================================================
+
+export async function batchHealthCheck(
+  cattleIds: number[],
+  healthStatus: "healthy" | "sick" | "quarantine",
+  notes?: string
+) {
+  const db = await getDb();
+  if (!db) return { success: false };
+  
+  // Update health status for all cattle
+  await db
+    .update(cattle)
+    .set({ healthStatus })
+    .where(sql`${cattle.id} IN (${sql.join(cattleIds.map(id => sql`${id}`), sql`, `)})`);
+  
+  // Create lifecycle events for each
+  const events = cattleIds.map(cattleId => ({
+    cattleId,
+    eventType: "health_check" as const,
+    eventDate: new Date(),
+    details: `Health status: ${healthStatus}`,
+    notes: notes || `Batch health check - Status: ${healthStatus}`,
+  }));
+  
+  await db.insert(lifecycleEvents).values(events);
+  
+  return { success: true, count: cattleIds.length };
+}
+
+export async function batchMovement(
+  cattleIds: number[],
+  toLocation: string,
+  notes?: string
+) {
+  const db = await getDb();
+  if (!db) return { success: false };
+  
+  // Get current locations
+  const cattleData = await db
+    .select()
+    .from(cattle)
+    .where(sql`${cattle.id} IN (${sql.join(cattleIds.map(id => sql`${id}`), sql`, `)})`);
+  
+  // Update locations
+  await db
+    .update(cattle)
+    .set({ currentLocation: toLocation })
+    .where(sql`${cattle.id} IN (${sql.join(cattleIds.map(id => sql`${id}`), sql`, `)})`);
+  
+  // Create movement events
+  const events = cattleData.map(c => ({
+    cattleId: c.id,
+    eventType: "movement" as const,
+    eventDate: new Date(),
+    details: `Moved from ${c.currentLocation || 'unknown'} to ${toLocation}`,
+    fromLocation: c.currentLocation,
+    toLocation,
+    notes: notes || `Batch movement to ${toLocation}`,
+  }));
+  
+  await db.insert(lifecycleEvents).values(events);
+  
+  return { success: true, count: cattleIds.length };
+}
+
+export async function batchValuation(
+  cattleIds: number[],
+  valuationMethod: string,
+  notes?: string
+) {
+  const db = await getDb();
+  if (!db) return { success: false };
+  
+  // Get current cattle data
+  const cattleData = await db
+    .select()
+    .from(cattle)
+    .where(sql`${cattle.id} IN (${sql.join(cattleIds.map(id => sql`${id}`), sql`, `)})`);
+  
+  // Create valuations (simplified - in production would use actual valuation logic)
+  const valuationRecords = cattleData.map(c => ({
+    cattleId: c.id,
+    valuationDate: new Date(),
+    valuationAmount: c.currentValuation || 0, // Keep current value for now
+    method: "market" as const,
+    calculatedBy: "batch_system",
+    notes: notes || `Batch valuation using ${valuationMethod}`,
+  }));
+  
+  await db.insert(valuations).values(valuationRecords);
+  
+  return { success: true, count: cattleIds.length };
 }

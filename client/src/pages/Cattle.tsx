@@ -5,6 +5,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+
 import { Link } from "wouter";
 import { ArrowLeft, Search, Filter } from "lucide-react";
 
@@ -16,6 +19,49 @@ export function Cattle() {
   const [filterBreed, setFilterBreed] = useState<string>("all");
   const [filterClient, setFilterClient] = useState<string>("all");
   const [filterHealth, setFilterHealth] = useState<string>("all");
+  const [selectedCattle, setSelectedCattle] = useState<Set<number>>(new Set());
+  const utils = trpc.useUtils();
+  const batchHealthCheck = trpc.cattle.batchHealthCheck.useMutation({
+    onSuccess: () => {
+      console.log("Health checks recorded successfully");
+      setSelectedCattle(new Set());
+      utils.cattle.active.invalidate();
+    },
+  });
+  
+  const batchMovement = trpc.cattle.batchMovement.useMutation({
+    onSuccess: () => {
+      console.log("Movements recorded successfully");
+      setSelectedCattle(new Set());
+      utils.cattle.active.invalidate();
+    },
+  });
+  
+  const batchValuation = trpc.cattle.batchValuation.useMutation({
+    onSuccess: () => {
+      console.log("Valuations updated successfully");
+      setSelectedCattle(new Set());
+      utils.cattle.active.invalidate();
+    },
+  });
+  
+  const handleSelectAll = () => {
+    if (selectedCattle.size === filteredCattle.length) {
+      setSelectedCattle(new Set());
+    } else {
+      setSelectedCattle(new Set(filteredCattle.map(c => c.id)));
+    }
+  };
+  
+  const handleToggleSelect = (id: number) => {
+    const newSelected = new Set(selectedCattle);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedCattle(newSelected);
+  };
 
   // Get unique breeds for filter
   const breeds = useMemo(() => {
@@ -167,23 +213,112 @@ export function Cattle() {
         </CardContent>
       </Card>
 
+      {/* Batch Operations Toolbar */}
+      {selectedCattle.size > 0 && (
+        <Card className="bg-blue-50 border-blue-200">
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="font-semibold">
+                  {selectedCattle.size} cattle selected
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedCattle(new Set())}
+                >
+                  Clear Selection
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    if (confirm(`Mark ${selectedCattle.size} cattle as healthy?`)) {
+                      batchHealthCheck.mutate({
+                        cattleIds: Array.from(selectedCattle),
+                        healthStatus: "healthy",
+                      });
+                    }
+                  }}
+                  disabled={batchHealthCheck.isPending}
+                >
+                  Mark Healthy
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const location = prompt("Enter new location:");
+                    if (location) {
+                      batchMovement.mutate({
+                        cattleIds: Array.from(selectedCattle),
+                        toLocation: location,
+                      });
+                    }
+                  }}
+                  disabled={batchMovement.isPending}
+                >
+                  Move Cattle
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    if (confirm(`Update valuations for ${selectedCattle.size} cattle?`)) {
+                      batchValuation.mutate({
+                        cattleIds: Array.from(selectedCattle),
+                        valuationMethod: "market",
+                      });
+                    }
+                  }}
+                  disabled={batchValuation.isPending}
+                >
+                  Update Valuations
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Select All */}
+      <div className="flex items-center gap-2">
+        <Checkbox
+          checked={selectedCattle.size === filteredCattle.length && filteredCattle.length > 0}
+          onCheckedChange={handleSelectAll}
+        />
+        <span className="text-sm text-muted-foreground">
+          Select All ({filteredCattle.length} cattle)
+        </span>
+      </div>
+
       {/* Cattle Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filteredCattle.map((animal) => (
-          <Link key={animal.id} href={`/cattle/${animal.id}`}>
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader>
-                <div className="flex items-start justify-between">
+          <Card key={animal.id} className={`hover:shadow-lg transition-shadow ${
+            selectedCattle.has(animal.id) ? 'ring-2 ring-blue-500' : ''
+          }`}>
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <Checkbox
+                  checked={selectedCattle.has(animal.id)}
+                  onCheckedChange={() => handleToggleSelect(animal.id)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="mt-1"
+                />
                   <div>
                     <CardTitle className="text-xl">{animal.visualId}</CardTitle>
                     <CardDescription className="mt-1">
                       {animal.breed} • {animal.sex}
                     </CardDescription>
                   </div>
-                  {getHealthBadge(animal.healthStatus)}
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
+                {getHealthBadge(animal.healthStatus)}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Link href={`/cattle/${animal.id}`}>
+                <div className="cursor-pointer">
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
                     <div className="text-muted-foreground">NLIS ID</div>
@@ -225,9 +360,10 @@ export function Cattle() {
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </Link>
+                </div>
+              </Link>
+            </CardContent>
+          </Card>
         ))}
       </div>
 

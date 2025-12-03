@@ -86,7 +86,8 @@ export function Clients() {
           const stats = getClientStats(client.id);
           
           return (
-            <Card key={client.id} className="hover:shadow-lg transition-shadow">
+            <Link key={client.id} href={`/clients/${client.id}`}>
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
@@ -166,6 +167,7 @@ export function Clients() {
                 </div>
               </CardContent>
             </Card>
+            </Link>
           );
         })}
       </div>

@@ -319,3 +319,36 @@ export const agriwebbSyncStatus = mysqlTable("agriwebbSyncStatus", {
 
 export type AgriwebbSyncStatus = typeof agriwebbSyncStatus.$inferSelect;
 export type InsertAgriwebbSyncStatus = typeof agriwebbSyncStatus.$inferInsert;
+
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+export const notifications = mysqlTable("notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  userId: int("userId").notNull().references(() => users.id),
+  
+  // Notification Details
+  type: mysqlEnum("type", ["health_alert", "valuation_update", "compliance_warning", "system"]).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  
+  // Related Entity
+  cattleId: int("cattleId").references(() => cattle.id),
+  clientId: int("clientId").references(() => clients.id),
+  
+  // Status
+  isRead: boolean("isRead").default(false).notNull(),
+  readAt: timestamp("readAt"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index("user_idx").on(table.userId),
+  typeIdx: index("type_idx").on(table.type),
+  isReadIdx: index("is_read_idx").on(table.isRead),
+}));
+
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;

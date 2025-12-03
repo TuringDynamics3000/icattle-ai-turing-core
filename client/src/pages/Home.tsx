@@ -2,6 +2,7 @@ import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingUp, TrendingDown, DollarSign, Activity, Users, AlertCircle } from "lucide-react";
+import { NotificationBell } from "@/components/NotificationBell";
 import { Link } from "wouter";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
@@ -47,11 +48,14 @@ export function Home() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-4xl font-bold tracking-tight">iCattle Dashboard</h1>
-        <p className="text-muted-foreground mt-2">
-          Real-time livestock asset management and valuation platform
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight">iCattle Dashboard</h1>
+          <p className="text-muted-foreground mt-2">
+            Real-time livestock asset management and valuation platform
+          </p>
+        </div>
+        <NotificationBell />
       </div>
 
       {/* Key Metrics */}
