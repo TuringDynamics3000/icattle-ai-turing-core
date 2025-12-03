@@ -62,3 +62,86 @@
 - [ ] Mobile optimization and PWA features
 - [ ] Multi-tenant authentication
 - [ ] Role-based access control
+
+
+## 📄 PDF Export Feature (In Progress)
+- [ ] Install PDF generation dependencies (jsPDF, html2canvas)
+- [ ] Create server-side PDF generation functions for Balance Sheet
+- [ ] Create server-side PDF generation functions for P&L Statement
+- [ ] Add tRPC procedures for PDF export
+- [ ] Add export buttons to Reports page UI
+- [ ] Test PDF export functionality
+- [ ] Verify PDF formatting and bank-grade quality
+
+
+## 🌾 Multi-View Architecture & AgriWebb Integration (In Progress)
+
+### Database Schema Updates
+- [ ] Add `agriwebbId` field to cattle table
+- [ ] Add `agriwebbFarmId` field to clients table  
+- [ ] Create `agriwebb_sync_status` table
+- [ ] Add `role` field to users table (farmer, bank, investor, admin)
+- [ ] Add `viewPreference` field to users table
+
+### AgriWebb OAuth Integration
+- [ ] Register with AgriWebb as Third-Party Partner
+- [ ] Implement OAuth 2.0 authorization flow
+- [ ] Create `/agriwebb/install` endpoint
+- [ ] Create `/agriwebb/callback` endpoint
+- [ ] Implement secure token storage (encrypted)
+- [ ] Implement token refresh logic
+
+### Data Sync Service
+- [ ] Create GraphQL client for AgriWebb API
+- [ ] Implement `syncAnimalsFromAgriWebb()` function
+- [ ] Map AgriWebb data to iCattle schema
+- [ ] Handle incremental updates (delta sync every 15 min)
+- [ ] Implement conflict resolution (AgriWebb = source of truth for operational data)
+- [ ] Add sync status indicators
+
+### Farmer's Herd View
+- [ ] Create farmer dashboard layout
+- [ ] Display "Connect to AgriWebb" button
+- [ ] Show AgriWebb sync status and last sync time
+- [ ] Display cattle with AgriWebb sync badges
+- [ ] Add operational focus (location, health, weights)
+- [ ] Add manual sync trigger button
+- [ ] Show paddock/field map view
+- [ ] Add quick actions (record weight, health check, move cattle)
+
+### Bank/Investor View
+- [ ] Create bank/investor dashboard layout
+- [ ] Focus on financial metrics and valuations
+- [ ] Display portfolio performance charts
+- [ ] Show compliance status (APRA, blockchain verification)
+- [ ] Add risk assessment indicators
+- [ ] Show loan-to-value ratios
+- [ ] Add export to PDF functionality
+
+### Role-Based Access Control
+- [ ] Implement role-based routing
+- [ ] Create role detection middleware
+- [ ] Add view switching for admin users
+- [ ] Implement data filtering by role
+- [ ] Add permission checks for sensitive operations
+
+### Testing
+- [ ] Test OAuth flow end-to-end
+- [ ] Test data sync with mock AgriWebb API
+- [ ] Test role-based access control
+- [ ] Test view switching
+- [ ] Test conflict resolution scenarios
+
+
+## 🗺️ Geotracking Map Feature
+- [x] Add GPS coordinates fields to cattle table (latitude, longitude)
+- [x] Add GPS coordinates to lifecycle events
+- [x] Integrate Google Maps with cattle location markers
+- [x] Add real-time cattle location tracking
+- [x] Color-code markers by health status
+- [x] Add click-to-view cattle details on map
+- [x] Generate realistic GPS coordinates for demo data
+- [x] Create CattleMap component with interactive markers
+- [x] Add map to Farmer's Herd View
+- [ ] Add clustering for dense areas (future enhancement)
+- [ ] Add paddock boundary overlays (future enhancement)

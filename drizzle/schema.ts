@@ -23,7 +23,8 @@ export const users = mysqlTable("users", {
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  role: mysqlEnum("role", ["user", "admin", "farmer", "bank", "investor"]).default("user").notNull(),
+  viewPreference: varchar("viewPreference", { length: 50 }), // farmer, bank, investor, admin
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -48,7 +49,10 @@ export const clients = mysqlTable("clients", {
   postcode: varchar("postcode", { length: 4 }),
   propertySize: int("propertySize"), // hectares
   clientType: mysqlEnum("clientType", ["producer", "feedlot", "breeder", "dairy"]).notNull(),
-  status: mysqlEnum("status", ["active", "inactive"]).default("active").notNull(),
+  status: mysqlEnum("status", ["active", "inactive", "suspended"]).default("active").notNull(),
+  agriwebbFarmId: varchar("agriwebbFarmId", { length: 255 }), // AgriWebb farm ID
+  agriwebbConnected: boolean("agriwebbConnected").default(false), // Is AgriWebb connected?
+  agriwebbLastSync: timestamp("agriwebbLastSync"), // Last sync timestamp
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -67,6 +71,7 @@ export const cattle = mysqlTable("cattle", {
   nlisId: varchar("nlisId", { length: 16 }).unique(), // NLIS tag number
   visualId: varchar("visualId", { length: 50 }), // Farm tag/name
   biometricId: varchar("biometricId", { length: 64 }).unique(), // AI-generated unique ID
+  agriwebbId: varchar("agriwebbId", { length: 255 }), // AgriWebb animal ID
   
   // Basic Info
   breed: varchar("breed", { length: 100 }).notNull(), // Angus, Hereford, Wagyu, etc.
@@ -76,6 +81,11 @@ export const cattle = mysqlTable("cattle", {
   // Ownership
   clientId: int("clientId").notNull().references(() => clients.id),
   currentLocation: varchar("currentLocation", { length: 255 }),
+  
+  // GPS Tracking
+  latitude: varchar("latitude", { length: 20 }), // Decimal degrees
+  longitude: varchar("longitude", { length: 20 }), // Decimal degrees
+  lastGpsUpdate: timestamp("lastGpsUpdate"), // Last GPS update timestamp
   
   // Physical Attributes
   currentWeight: int("currentWeight"), // kg
@@ -275,3 +285,37 @@ export const financialReports = mysqlTable("financialReports", {
 
 export type FinancialReport = typeof financialReports.$inferSelect;
 export type InsertFinancialReport = typeof financialReports.$inferInsert;
+
+// ============================================================================
+// AGRIWEBB SYNC STATUS
+// ============================================================================
+
+export const agriwebbSyncStatus = mysqlTable("agriwebbSyncStatus", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  clientId: int("clientId").notNull().references(() => clients.id),
+  
+  // Sync Status
+  syncStatus: mysqlEnum("syncStatus", ["pending", "in_progress", "completed", "failed"]).default("pending").notNull(),
+  lastSyncAttempt: timestamp("lastSyncAttempt"),
+  lastSuccessfulSync: timestamp("lastSuccessfulSync"),
+  
+  // Sync Stats
+  animalsCreated: int("animalsCreated").default(0),
+  animalsUpdated: int("animalsUpdated").default(0),
+  animalsSkipped: int("animalsSkipped").default(0),
+  errorCount: int("errorCount").default(0),
+  
+  // Error Details
+  errorMessage: text("errorMessage"),
+  errorDetails: text("errorDetails"), // JSON with detailed errors
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  clientIdx: index("client_idx").on(table.clientId),
+  statusIdx: index("status_idx").on(table.syncStatus),
+}));
+
+export type AgriwebbSyncStatus = typeof agriwebbSyncStatus.$inferSelect;
+export type InsertAgriwebbSyncStatus = typeof agriwebbSyncStatus.$inferInsert;

@@ -32,6 +32,37 @@ const LOCATIONS = [
   "Home Paddock", "Back Paddock", "Creek Paddock", "Top Paddock"
 ];
 
+// GPS coordinates for paddocks (Riverina region, NSW)
+const PADDOCK_GPS: Record<string, { lat: number; lng: number; radius: number }> = {
+  "North Paddock": { lat: -35.1082, lng: 147.3598, radius: 0.01 },
+  "South Paddock": { lat: -35.1282, lng: 147.3598, radius: 0.01 },
+  "River Flat": { lat: -35.1182, lng: 147.3798, radius: 0.008 },
+  "Hill Country": { lat: -35.0982, lng: 147.3498, radius: 0.012 },
+  "Home Paddock": { lat: -35.1182, lng: 147.3598, radius: 0.005 },
+  "Back Paddock": { lat: -35.1382, lng: 147.3698, radius: 0.01 },
+  "Creek Paddock": { lat: -35.1082, lng: 147.3898, radius: 0.009 },
+  "Top Paddock": { lat: -35.0882, lng: 147.3598, radius: 0.011 },
+};
+
+// Generate random GPS within paddock
+function generateGPS(location: string): { lat: string; lng: string } {
+  const paddock = PADDOCK_GPS[location];
+  if (!paddock) {
+    return { lat: "-35.1182", lng: "147.3598" }; // Default center
+  }
+  
+  // Random offset within radius
+  const angle = Math.random() * 2 * Math.PI;
+  const distance = Math.random() * paddock.radius;
+  const lat = paddock.lat + distance * Math.cos(angle);
+  const lng = paddock.lng + distance * Math.sin(angle);
+  
+  return {
+    lat: lat.toFixed(6),
+    lng: lng.toFixed(6),
+  };
+}
+
 const STATES = ["NSW", "VIC", "QLD", "SA", "WA"];
 
 // Generate random date within range
@@ -154,6 +185,9 @@ async function generateCattle(clientsList: typeof clients.$inferSelect[]) {
       const acquisitionDate = randomDate(dateOfBirth, now);
       const acquisitionCost = Math.floor(valuation * (0.7 + Math.random() * 0.3));
       
+      const location = randomElement(LOCATIONS);
+      const gps = generateGPS(location);
+      
       cattleData.push({
         nlisId: generateNLIS(),
         visualId: `${client.name.split(' ')[0]}-${i + 1}`,
@@ -162,7 +196,10 @@ async function generateCattle(clientsList: typeof clients.$inferSelect[]) {
         sex,
         dateOfBirth,
         clientId: client.id,
-        currentLocation: randomElement(LOCATIONS),
+        currentLocation: location,
+        latitude: gps.lat,
+        longitude: gps.lng,
+        lastGpsUpdate: randomDate(new Date(now.getTime() - 24 * 60 * 60 * 1000), now),
         currentWeight: weight,
         lastWeighDate: randomDate(new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000), now),
         color: randomElement(COLORS),
