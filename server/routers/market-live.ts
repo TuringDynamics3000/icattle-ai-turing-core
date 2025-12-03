@@ -60,6 +60,31 @@ function mapIndicatorToCategory(indicatorDesc: string): {
 }
 
 export const marketLiveRouter = router({
+  // ML Price Predictions
+  predictPrices: publicProcedure
+    .input(z.object({ days: z.number().min(1).max(30).default(7) }))
+    .query(async ({ input }) => {
+      const { predictPrices } = await import('../_core/mlPredictor');
+      return await predictPrices(input.days);
+    }),
+  
+  predictIndicatorPrice: publicProcedure
+    .input(z.object({ 
+      indicatorId: z.number(),
+      days: z.number().min(1).max(30).default(7)
+    }))
+    .query(async ({ input }) => {
+      const { predictIndicatorPrice } = await import('../_core/mlPredictor');
+      return await predictIndicatorPrice(input.indicatorId, input.days);
+    }),
+  
+  // RL Portfolio Recommendations
+  getPortfolioRecommendations: publicProcedure
+    .query(async () => {
+      const { getPortfolioRecommendations } = await import('../_core/rlOptimizer');
+      return await getPortfolioRecommendations();
+    }),
+  
   /**
    * Get price discovery data from live MLA API
    */

@@ -1,7 +1,7 @@
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp, TrendingDown, DollarSign, Activity, Users, AlertCircle } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, DollarSign, AlertCircle, Activity, Brain } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Link } from "wouter";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -279,7 +279,31 @@ export function Home() {
           <Card className="hover:bg-accent cursor-pointer transition-colors">
             <CardHeader>
               <CardTitle>Market Data</CardTitle>
-              <CardDescription>AuctionsPlus price discovery</CardDescription>
+              <CardDescription>Live MLA NLRS pricing</CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+
+        <Link href="/forecast">
+          <Card className="hover:bg-accent cursor-pointer transition-colors border-blue-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-blue-600" />
+                Price Forecast
+              </CardTitle>
+              <CardDescription>ML 7-day predictions</CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+
+        <Link href="/recommendations">
+          <Card className="hover:bg-accent cursor-pointer transition-colors border-purple-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="h-4 w-4 text-purple-600" />
+                AI Recommendations
+              </CardTitle>
+              <CardDescription>Portfolio optimization</CardDescription>
             </CardHeader>
           </Card>
         </Link>
