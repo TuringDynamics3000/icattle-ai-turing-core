@@ -10,6 +10,7 @@ import { Clients } from "@/pages/Clients";
 import { Reports } from "@/pages/Reports";
 import { FarmerView } from "@/pages/FarmerView";
 import { BankView } from "@/pages/BankView";
+import { CattleDetail } from "@/pages/CattleDetail";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/reports" component={Reports} />
       <Route path="/farmer" component={FarmerView} />
       <Route path="/bank" component={BankView} />
+      <Route path="/cattle/:id" component={CattleDetail} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

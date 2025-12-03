@@ -162,3 +162,31 @@
 - [x] Add risk rating badge (Low/Medium/High)
 - [ ] Add stress testing scenarios (future enhancement)
 - [ ] Add 12-month valuation trends (future enhancement)
+
+
+## 📄 PDF Export for Bank View
+- [x] Install jsPDF library
+- [x] Create PDF generation function for risk assessment report
+- [x] Include all key metrics (portfolio value, LTV, unrealized gains)
+- [x] Include risk assessment section (health, concentration, LTV coverage)
+- [x] Include compliance status (NLIS, blockchain, APRA)
+- [x] Add risk rating methodology explanation
+- [x] Add report header with date and footer disclaimers
+- [x] Add "Export PDF" button to Bank View
+- [x] Test PDF download functionality
+
+
+## 🐄 Individual Cattle Detail Pages
+- [x] Create CattleDetail page component with route parameter
+- [x] Add overview section (NLIS, biometric ID, current stats)
+- [x] Create lifecycle timeline visualization (birth to present)
+- [x] Add health records section (vaccinations, treatments, checkups)
+- [x] Add blockchain verification status panel
+- [x] Add valuation history chart
+- [x] Add weight progression chart
+- [x] Add route to App.tsx (/cattle/:id)
+- [x] Update Cattle list page with clickable links
+- [x] Add tabbed interface (Timeline, Health, Valuation, Details)
+- [ ] Add location history with map (future enhancement)
+- [ ] Add ownership history section (future enhancement)
+- [ ] Update Farmer View with clickable cattle cards (future enhancement)

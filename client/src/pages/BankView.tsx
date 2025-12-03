@@ -5,8 +5,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import { 
   ArrowLeft, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2,
-  Shield, DollarSign, PieChart, BarChart3, Activity
+  Shield, DollarSign, PieChart, BarChart3, Activity, FileDown
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { exportBankReportToPDF } from "@/lib/exportBankReport";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 export function BankView() {
@@ -133,10 +135,46 @@ export function BankView() {
             Financial risk assessment and portfolio analytics for lending institutions
           </p>
         </div>
-        <Badge variant={riskRating.variant} className="text-lg px-4 py-2">
-          <Shield className="h-5 w-5 mr-2" />
-          {riskRating.rating}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => {
+              const reportData = {
+                portfolioValue: totalValue,
+                unrealizedGain: unrealizedGain,
+                unrealizedGainPercent: unrealizedGainPercent,
+                ltvRatio: currentLTV,
+                assumedLoan: assumedLoanAmount,
+                healthyCount: totalCattle - sickCattle,
+                totalCount: totalCattle,
+                healthRiskPercent: healthRiskPercent,
+                concentrationRiskPercent: concentrationRisk,
+                topClientName: largestClient.client?.name || 'Unknown',
+                topClientCount: largestClient.count,
+                nlisCompliance: 100,
+                blockchainCompliance: 100,
+                apraCompliant: true,
+                riskRating: riskRating.rating,
+                generatedDate: new Date().toLocaleDateString('en-AU', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                }),
+              };
+              exportBankReportToPDF(reportData);
+            }}
+            variant="outline"
+            className="gap-2"
+          >
+            <FileDown className="h-4 w-4" />
+            Export PDF Report
+          </Button>
+          <Badge variant={riskRating.variant} className="text-lg px-4 py-2">
+            <Shield className="h-5 w-5 mr-2" />
+            {riskRating.rating}
+          </Badge>
+        </div>
       </div>
 
       {/* Key Financial Metrics */}
