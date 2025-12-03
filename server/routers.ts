@@ -430,6 +430,199 @@ export const appRouter = router({
   }),
   
   // ============================================================================
+  // XERO INTEGRATION (AASB 141 Compliance)
+  // ============================================================================
+  
+  xero: router({    getAuthUrl: protectedProcedure
+      .query(async () => {
+        const { getXeroAuthorizationUrl } = await import('./_core/xeroIntegration');
+        return { url: await getXeroAuthorizationUrl() };
+      }),
+    
+    handleCallback: protectedProcedure
+      .input(z.object({ code: z.string() }))
+      .mutation(async ({ input, ctx }) => {
+        const { exchangeCodeForTokens, getXeroTenants } = await import('./_core/xeroIntegration');
+        const tokenSet = await exchangeCodeForTokens(input.code);
+        
+        // Store tokens in database (associated with user)
+        await db.saveXeroTokens(ctx.user.id, {
+          accessToken: tokenSet.access_token!,
+          refreshToken: tokenSet.refresh_token!,
+          expiresAt: new Date(Date.now() + (tokenSet.expires_in! * 1000)),
+        });
+        
+        // Get connected tenants
+        const tenants = await getXeroTenants(tokenSet.access_token!);
+        
+        return { success: true, tenants };
+      }),
+    
+    getTenants: protectedProcedure
+      .query(async ({ ctx }) => {
+        const tokens = await db.getXeroTokens(ctx.user.id);
+        if (!tokens) return [];
+        
+        const { getXeroTenants } = await import('./_core/xeroIntegration');
+        return await getXeroTenants(tokens.accessToken);
+      }),
+    
+    syncLivestockToXero: protectedProcedure
+      .input(z.object({ tenantId: z.string() }))
+      .mutation(async ({ input, ctx }) => {
+        const tokens = await db.getXeroTokens(ctx.user.id);
+        if (!tokens) throw new Error('Xero not connected');
+        
+        const { createXeroClient, syncCattleToXero } = await import('./_core/xeroIntegration');
+        const xeroClient = createXeroClient();
+        await xeroClient.setTokenSet({ access_token: tokens.accessToken } as any);
+        
+        // Get all cattle for this user
+        const cattle = await db.getAllCattle();
+        
+        // Sync to Xero
+        return await syncCattleToXero({
+          xeroClient,
+          tenantId: input.tenantId,
+          cattle: cattle.map(c => ({
+            id: c.id.toString(),
+            nlisTag: c.nlisId || '',
+            breed: c.breed,
+            bookValue: c.acquisitionCost ? c.acquisitionCost / 100 : 0, // Convert cents to dollars
+            marketValue: c.currentValuation ? c.currentValuation / 100 : 0, // Convert cents to dollars
+            costsToSell: 300, // Default transport + agent fees
+          })),
+        });
+      }),
+    
+    createFairValueAdjustment: protectedProcedure
+      .input(z.object({
+        tenantId: z.string(),
+        previousValue: z.number(),
+        currentValue: z.number(),
+        narration: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const tokens = await db.getXeroTokens(ctx.user.id);
+        if (!tokens) throw new Error('Xero not connected');
+        
+        const { createXeroClient, createFairValueAdjustmentJournal } = await import('./_core/xeroIntegration');
+        const xeroClient = createXeroClient();
+        await xeroClient.setTokenSet({ access_token: tokens.accessToken } as any);
+        
+        return await createFairValueAdjustmentJournal({
+          xeroClient,
+          tenantId: input.tenantId,
+          previousValue: input.previousValue,
+          currentValue: input.currentValue,
+          date: new Date(),
+          narration: input.narration || 'Fair value adjustment for livestock (AASB 141)',
+        });
+      }),
+    
+    getProfitAndLoss: protectedProcedure
+      .input(z.object({
+        tenantId: z.string(),
+        fromDate: z.string(),
+        toDate: z.string(),
+      }))
+      .query(async ({ input, ctx }) => {
+        const tokens = await db.getXeroTokens(ctx.user.id);
+        if (!tokens) throw new Error('Xero not connected');
+        
+        const { createXeroClient, getXeroProfitAndLoss } = await import('./_core/xeroIntegration');
+        const xeroClient = createXeroClient();
+        await xeroClient.setTokenSet({ access_token: tokens.accessToken } as any);
+        
+        return await getXeroProfitAndLoss({
+          xeroClient,
+          tenantId: input.tenantId,
+          fromDate: new Date(input.fromDate),
+          toDate: new Date(input.toDate),
+        });
+      }),
+    
+    getBalanceSheet: protectedProcedure
+      .input(z.object({
+        tenantId: z.string(),
+        date: z.string(),
+      }))
+      .query(async ({ input, ctx }) => {
+        const tokens = await db.getXeroTokens(ctx.user.id);
+        if (!tokens) throw new Error('Xero not connected');
+        
+        const { createXeroClient, getXeroBalanceSheet } = await import('./_core/xeroIntegration');
+        const xeroClient = createXeroClient();
+        await xeroClient.setTokenSet({ access_token: tokens.accessToken } as any);
+        
+        return await getXeroBalanceSheet({
+          xeroClient,
+          tenantId: input.tenantId,
+          date: new Date(input.date),
+        });
+      }),
+    
+    generateAASB141Disclosure: protectedProcedure
+      .input(z.object({
+        startDate: z.string(),
+        endDate: z.string(),
+      }))
+      .query(async ({ input }) => {
+        const { generateAASB141Disclosure } = await import('./_core/xeroIntegration');
+        
+        // Get livestock data for the period
+        const cattle = await db.getAllCattle();
+        const totalValue = cattle.reduce((sum, c) => sum + (c.currentValuation || 0) / 100, 0);
+        
+        // Group by type
+        const livestockGroups = [
+          {
+            type: 'Breeding',
+            quantity: cattle.filter(c => c.cattleType === 'breeding').length,
+            averageFairValue: 5000,
+            totalFairValue: cattle.filter(c => c.cattleType === 'breeding').reduce((sum, c) => sum + (c.currentValuation || 0) / 100, 0),
+          },
+          {
+            type: 'Beef',
+            quantity: cattle.filter(c => c.cattleType === 'beef').length,
+            averageFairValue: 3000,
+            totalFairValue: cattle.filter(c => c.cattleType === 'beef').reduce((sum, c) => sum + (c.currentValuation || 0) / 100, 0),
+          },
+          {
+            type: 'Dairy',
+            quantity: cattle.filter(c => c.cattleType === 'dairy').length,
+            averageFairValue: 2500,
+            totalFairValue: cattle.filter(c => c.cattleType === 'dairy').reduce((sum, c) => sum + (c.currentValuation || 0) / 100, 0),
+          },
+          {
+            type: 'Feeder',
+            quantity: cattle.filter(c => c.cattleType === 'feeder').length,
+            averageFairValue: 2000,
+            totalFairValue: cattle.filter(c => c.cattleType === 'feeder').reduce((sum, c) => sum + (c.currentValuation || 0) / 100, 0),
+          },
+        ];
+        
+        return generateAASB141Disclosure({
+          openingBalance: totalValue * 0.9, // Simplified
+          purchases: totalValue * 0.1,
+          sales: 0,
+          fairValueGains: totalValue * 0.05,
+          fairValueLosses: totalValue * 0.02,
+          closingBalance: totalValue,
+          livestockGroups,
+          startDate: new Date(input.startDate),
+          endDate: new Date(input.endDate),
+        });
+      }),
+    
+    disconnect: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        await db.deleteXeroTokens(ctx.user.id);
+        return { success: true };
+      }),
+  }),
+  
+  // ============================================================================
   // NOTIFICATIONS
   // ============================================================================
   

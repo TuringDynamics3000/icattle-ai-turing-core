@@ -25,6 +25,12 @@ export const users = mysqlTable("users", {
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin", "farmer", "bank", "investor"]).default("user").notNull(),
   viewPreference: varchar("viewPreference", { length: 50 }), // farmer, bank, investor, admin
+  
+  // Xero Integration
+  xeroAccessToken: text("xeroAccessToken"),
+  xeroRefreshToken: text("xeroRefreshToken"),
+  xeroTokenExpiresAt: timestamp("xeroTokenExpiresAt"),
+  
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),

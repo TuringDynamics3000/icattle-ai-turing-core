@@ -467,3 +467,67 @@ export async function batchValuation(
   
   return { success: true, count: cattleIds.length };
 }
+
+
+// ============================================================================
+// XERO INTEGRATION
+// ============================================================================
+
+export async function saveXeroTokens(
+  userId: number,
+  tokens: {
+    accessToken: string;
+    refreshToken: string;
+    expiresAt: Date;
+  }
+) {
+  const db = await getDb();
+  if (!db) return;
+  
+  // Store in user table (simplified - in production use separate xero_connections table)
+  await db
+    .update(users)
+    .set({
+      xeroAccessToken: tokens.accessToken,
+      xeroRefreshToken: tokens.refreshToken,
+      xeroTokenExpiresAt: tokens.expiresAt,
+    })
+    .where(eq(users.id, userId));
+}
+
+export async function getXeroTokens(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const [user] = await db
+    .select({
+      accessToken: users.xeroAccessToken,
+      refreshToken: users.xeroRefreshToken,
+      expiresAt: users.xeroTokenExpiresAt,
+    })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  
+  if (!user?.accessToken) return null;
+  
+  return {
+    accessToken: user.accessToken,
+    refreshToken: user.refreshToken,
+    expiresAt: user.expiresAt,
+  };
+}
+
+export async function deleteXeroTokens(userId: number) {
+  const db = await getDb();
+  if (!db) return;
+  
+  await db
+    .update(users)
+    .set({
+      xeroAccessToken: null,
+      xeroRefreshToken: null,
+      xeroTokenExpiresAt: null,
+    })
+    .where(eq(users.id, userId));
+}

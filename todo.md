@@ -533,3 +533,62 @@
 - [x] Add tamper detection alerts
 - [x] Create protocol compliance reporting
 - [x] Write tests for protocol enforcement
+
+
+## 💼 Livestock Asset Management - Financial Integration
+
+### Xero Integration (Primary)
+- [x] Set up Xero OAuth 2.0 flow (authorization, token management, refresh)
+- [x] Create Xero API client with connection management
+- [x] Implement AASB 141 compliance (fair value less costs to sell)
+- [x] Create biological assets account structure
+- [x] Build fair value adjustment journal entry system
+- [ ] Sync chart of accounts from Xero
+- [ ] Pull P&L statements and balance sheets
+- [ ] Sync livestock as fixed assets in Xero
+- [ ] Push cattle valuations to Xero as asset updates
+- [ ] Create Xero connection UI (connect/disconnect, status)
+- [ ] Add Xero financial data to unified dashboard
+- [ ] Write tests for Xero integration
+- [ ] Handle Xero API rate limits and errors
+
+### MYOB Integration (Secondary)
+- [ ] Set up MYOB OAuth 2.0 flow
+- [ ] Create MYOB API client
+- [ ] Sync chart of accounts from MYOB
+- [ ] Pull P&L and balance sheet data
+- [ ] Sync livestock assets to MYOB
+- [ ] Push cattle valuations to MYOB
+- [ ] Create MYOB connection UI
+- [ ] Add MYOB financial data to dashboard
+- [ ] Write tests for MYOB integration
+
+### Ag-Specialist Integrations
+- [ ] Research Phoenix API capabilities and authentication
+- [ ] Research AgriMaster API capabilities
+- [ ] Research Figured API capabilities
+- [ ] Implement Phoenix integration (paddock data, feed costs)
+- [ ] Implement AgriMaster integration (breeding records, genetics)
+- [ ] Implement Figured integration (farm budgets, forecasts)
+- [ ] Create unified ag-data model
+- [ ] Add ag-specialist data to dashboard
+
+### Unified Financial Dashboard
+- [ ] Design financial overview layout (livestock + farm financials)
+- [ ] Create P&L summary component
+- [ ] Create balance sheet summary component
+- [ ] Create cash flow analysis component
+- [ ] Add livestock-to-revenue ratio metrics
+- [ ] Add debt-to-asset ratio with livestock values
+- [ ] Create lending decision scorecard
+- [ ] Add financial health indicators
+- [ ] Build export functionality (PDF reports for banks)
+
+### Automated Valuation Sync
+- [ ] Create background job for valuation sync
+- [ ] Implement bi-directional sync (iCattle ↔ Xero/MYOB)
+- [ ] Add conflict resolution (which system is source of truth)
+- [ ] Create sync history and audit trail
+- [ ] Add manual sync trigger button
+- [ ] Implement sync notifications (success/failure)
+- [ ] Write tests for valuation sync logic

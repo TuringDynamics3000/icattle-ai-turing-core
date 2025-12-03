@@ -16,6 +16,7 @@ import { MarketData } from "./pages/MarketData";
 import PriceForecast from "./pages/PriceForecast";
 import PortfolioRecommendations from "./pages/PortfolioRecommendations";
 import Provenance from "./pages/Provenance";
+import FinancialDashboard from "./pages/FinancialDashboard";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -33,6 +34,7 @@ function Router() {
       <Route path="/forecast" component={PriceForecast} />
       <Route path="/recommendations" component={PortfolioRecommendations} />
       <Route path="/provenance" component={Provenance} />
+      <Route path="/financial" component={FinancialDashboard} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
