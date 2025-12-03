@@ -35,8 +35,8 @@ export function Navigation() {
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link href="/">
-          <div className="flex items-center gap-2 cursor-pointer">
-            <Beef className="h-6 w-6 text-primary" />
+          <div className="flex items-center gap-3 cursor-pointer">
+            <img src="/icattle-logo.png" alt="iCattle" className="h-10 w-10" />
             <span className="text-xl font-bold">iCattle</span>
           </div>
         </Link>
