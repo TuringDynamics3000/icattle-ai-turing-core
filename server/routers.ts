@@ -4,9 +4,11 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
+import { marketRouter } from "./routers/market";
 
 export const appRouter = router({
   system: systemRouter,
+  market: marketRouter,
   
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
@@ -129,25 +131,6 @@ export const appRouter = router({
       .input(z.object({ cattleId: z.number() }))
       .query(async ({ input }) => {
         return await db.getLatestValuation(input.cattleId);
-      }),
-  }),
-
-  // ============================================================================
-  // MARKET DATA
-  // ============================================================================
-  
-  market: router({
-    latest: publicProcedure.query(async () => {
-      return await db.getLatestMarketData();
-    }),
-    
-    byCategory: publicProcedure
-      .input(z.object({ 
-        category: z.string(),
-        days: z.number().optional()
-      }))
-      .query(async ({ input }) => {
-        return await db.getMarketDataByCategory(input.category, input.days);
       }),
   }),
 

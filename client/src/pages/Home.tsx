@@ -207,7 +207,7 @@ export function Home() {
       </Card>
 
       {/* Quick Links */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Link href="/cattle">
           <Card className="hover:bg-accent cursor-pointer transition-colors">
             <CardHeader>
@@ -249,6 +249,15 @@ export function Home() {
             <CardHeader>
               <CardTitle>Bank & Investor View</CardTitle>
               <CardDescription>Risk metrics & compliance</CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+
+        <Link href="/market">
+          <Card className="hover:bg-accent cursor-pointer transition-colors">
+            <CardHeader>
+              <CardTitle>Market Data</CardTitle>
+              <CardDescription>AuctionsPlus price discovery</CardDescription>
             </CardHeader>
           </Card>
         </Link>

@@ -14,7 +14,6 @@ export function Reports() {
   const { data: summary } = trpc.portfolio.summary.useQuery({});
   const { data: cattle } = trpc.cattle.active.useQuery();
   const { data: clients } = trpc.clients.active.useQuery();
-  const { data: marketData } = trpc.market.latest.useQuery();
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat('en-AU', {
