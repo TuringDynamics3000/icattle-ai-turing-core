@@ -47,16 +47,13 @@ export function Home() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="container py-8 space-y-8">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight">iCattle Dashboard</h1>
-          <p className="text-muted-foreground mt-2">
-            Real-time livestock asset management and valuation platform
-          </p>
-        </div>
-        <NotificationBell />
+      <div>
+        <h1 className="text-4xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground mt-2">
+          Real-time livestock asset management and valuation platform
+        </p>
       </div>
 
       {/* Key Metrics */}
@@ -318,6 +315,18 @@ export function Home() {
                 AI Recommendations
               </CardTitle>
               <CardDescription>Portfolio optimization</CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+        
+        <Link href="/financial">
+          <Card className="hover:bg-accent cursor-pointer transition-colors border-green-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-green-600" />
+                Financial Dashboard
+              </CardTitle>
+              <CardDescription>Xero integration & AASB 141</CardDescription>
             </CardHeader>
           </Card>
         </Link>

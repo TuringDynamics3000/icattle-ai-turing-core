@@ -17,6 +17,7 @@ import PriceForecast from "./pages/PriceForecast";
 import PortfolioRecommendations from "./pages/PortfolioRecommendations";
 import Provenance from "./pages/Provenance";
 import FinancialDashboard from "./pages/FinancialDashboard";
+import { Navigation } from "./components/Navigation";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -56,7 +57,10 @@ function App() {
       >
         <TooltipProvider>
           <Toaster />
-          <Router />
+          <Navigation />
+          <main className="min-h-screen">
+            <Router />
+          </main>
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
