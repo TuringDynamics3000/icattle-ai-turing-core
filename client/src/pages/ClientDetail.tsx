@@ -1,4 +1,4 @@
-import { useParams, Link } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -315,8 +315,11 @@ export function ClientDetail() {
               ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {filteredCattle.map((animal) => (
-                    <Link key={animal.id} href={`/cattle/${animal.id}`}>
-                      <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <Card 
+                      key={animal.id} 
+                      className="hover:shadow-lg transition-shadow cursor-pointer"
+                      onClick={() => window.location.href = `/cattle/${animal.id}`}
+                    >
                         <CardHeader>
                           <div className="flex items-start justify-between">
                             <div>
@@ -351,7 +354,6 @@ export function ClientDetail() {
                           </div>
                         </CardContent>
                       </Card>
-                    </Link>
                   ))}
                 </div>
               )}

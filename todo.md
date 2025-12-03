@@ -266,3 +266,7 @@
 - [ ] Implement CSV export for lifecycle events (future enhancement)
 - [ ] Implement scheduled daily/weekly report generation (future enhancement)
 - [ ] Add email delivery for scheduled reports (future enhancement)
+
+
+## 🐛 Bug Fixes
+- [x] Fix nested anchor tag error on client detail page
