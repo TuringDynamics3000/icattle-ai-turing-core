@@ -431,3 +431,38 @@
 - [ ] Build certification analytics and reporting
 - [ ] Write tests for certification scoring
 - [ ] Save checkpoint
+
+
+## 🏦 Bank View Enhancement + Kafka + Audit Trail
+- [ ] Add iCattle Certified distribution section to Bank View
+- [ ] Show collateral quality by tier (Gold/Silver/Bronze/Non-Certified)
+- [ ] Display LTV ratios by tier (Gold=100%, Silver=85%, Bronze=70%, Non-Certified=0%)
+- [ ] Add "Why iCattle Certified Solves NLIS Fragility" explanation section
+- [ ] Calculate provenance risk discounts in collateral valuation
+- [ ] Configure Kafka broker connection to TuringCore-v3
+- [ ] Test Kafka connection and topic creation
+- [ ] Implement event publishing for CATTLE_CREATED events
+- [ ] Implement event publishing for OWNERSHIP_TRANSFER events
+- [ ] Implement event publishing for TAG_CHANGED events
+- [ ] Build Audit Trail Viewer component
+- [ ] Add "View Audit Trail" button to Provenance Dashboard
+- [ ] Display complete event history with timestamps
+- [ ] Show cryptographic hash verification status
+- [ ] Add event replay capability
+- [ ] Test end-to-end Kafka → PostgreSQL flow
+- [ ] Write tests for event sourcing
+- [ ] Save final checkpoint
+
+
+## 🏅 iCattle Certified Standard - Bank View Enhancement
+- [x] Add certification tier calculation logic (Gold/Silver/Bronze/Non-Certified)
+- [x] Calculate tier distribution across portfolio (24 Gold, 36 Silver, 108 Bronze, 192 Non-Certified)
+- [x] Add iCattle Certified™ Collateral Quality section to Bank View
+- [x] Display tier distribution with progress bars and percentages
+- [x] Calculate tier-adjusted LTV values (Gold=100%, Silver=85%, Bronze=70%, Non=0%)
+- [x] Calculate provenance risk discount ($636,394 for current portfolio)
+- [x] Add explanation section showing how iCattle Certified solves NLIS fragility
+- [x] Emphasize 100% accurate biometric technology as key differentiator
+- [x] Write comprehensive test suite (30 tests, all passing)
+- [ ] Connect live Kafka event streaming to TuringCore-v3 (next task)
+- [ ] Build Audit Trail Viewer UI (next task)

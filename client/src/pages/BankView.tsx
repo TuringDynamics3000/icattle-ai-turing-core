@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { exportBankReportToPDF } from "@/lib/exportBankReport";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { calculateCertification } from "@/../../server/_core/certificationScoring";
 
 export function BankView() {
   const { data: summary, isLoading: summaryLoading } = trpc.portfolio.summary.useQuery({});
@@ -68,6 +69,27 @@ export function BankView() {
     ? clientPortfolios.reduce((max, curr) => curr.value > max.value ? curr : max)
     : { client: null, value: 0, count: 0 };
   const concentrationRisk = totalValue > 0 ? (largestClient.value / totalValue) * 100 : 0;
+
+  // Calculate certification tier distribution
+  const certificationTiers = cattle?.reduce((acc, c) => {
+    const cert = calculateCertification(c);
+    acc[cert.tier] = (acc[cert.tier] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>) || {};
+
+  const goldCount = certificationTiers['GOLD'] || 0;
+  const silverCount = certificationTiers['SILVER'] || 0;
+  const bronzeCount = certificationTiers['BRONZE'] || 0;
+  const nonCertifiedCount = certificationTiers['NON_CERTIFIED'] || 0;
+
+  // Calculate tier-adjusted LTV
+  const tierLTVRatios = { GOLD: 1.00, SILVER: 0.85, BRONZE: 0.70, NON_CERTIFIED: 0.00 };
+  const tierAdjustedValue = cattle?.reduce((sum, c) => {
+    const cert = calculateCertification(c);
+    const ltvRatio = tierLTVRatios[cert.tier as keyof typeof tierLTVRatios];
+    return sum + (c.currentValuation || 0) * ltvRatio;
+  }, 0) || 0;
+  const provenanceRiskDiscount = totalValue - tierAdjustedValue;
 
   // Loan-to-Value (LVR) - realistic 75% based on NAB/Rabobank research (70-80% range)
   const lvrRatio = 0.75; // 75% LVR (mid-range of industry standard 70-80%)
@@ -380,6 +402,120 @@ export function BankView() {
           </CardContent>
         </Card>
       </div>
+
+      {/* iCattle Certified Distribution */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-6 w-6 text-amber-500" />
+            iCattle Certified™ Collateral Quality
+          </CardTitle>
+          <CardDescription>
+            Provenance-based risk assessment using multi-factor biometric verification (100% accuracy)
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Tier Distribution */}
+            <div className="space-y-4">
+              <h4 className="font-semibold text-sm">Certification Tier Distribution</h4>
+              
+              {/* Gold */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-amber-500" />
+                    <span className="text-sm font-medium">🏆 Gold Certified</span>
+                  </div>
+                  <span className="text-sm font-bold">{goldCount} ({formatPercent((goldCount / totalCattle) * 100)})</span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div className="bg-amber-500 h-2 rounded-full" style={{ width: `${(goldCount / totalCattle) * 100}%` }} />
+                </div>
+                <p className="text-xs text-muted-foreground">100% LTV • Biometric + NLIS + GPS + DNA verified</p>
+              </div>
+
+              {/* Silver */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-gray-400" />
+                    <span className="text-sm font-medium">🥈 Silver Certified</span>
+                  </div>
+                  <span className="text-sm font-bold">{silverCount} ({formatPercent((silverCount / totalCattle) * 100)})</span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div className="bg-gray-400 h-2 rounded-full" style={{ width: `${(silverCount / totalCattle) * 100}%` }} />
+                </div>
+                <p className="text-xs text-muted-foreground">85% LTV • Biometric + NLIS + GPS verified</p>
+              </div>
+
+              {/* Bronze */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-orange-600" />
+                    <span className="text-sm font-medium">🥉 Bronze Certified</span>
+                  </div>
+                  <span className="text-sm font-bold">{bronzeCount} ({formatPercent((bronzeCount / totalCattle) * 100)})</span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div className="bg-orange-600 h-2 rounded-full" style={{ width: `${(bronzeCount / totalCattle) * 100}%` }} />
+                </div>
+                <p className="text-xs text-muted-foreground">70% LTV • Partial verification</p>
+              </div>
+
+              {/* Non-Certified */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500" />
+                    <span className="text-sm font-medium">❌ Non-Certified</span>
+                  </div>
+                  <span className="text-sm font-bold">{nonCertifiedCount} ({formatPercent((nonCertifiedCount / totalCattle) * 100)})</span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div className="bg-red-500 h-2 rounded-full" style={{ width: `${(nonCertifiedCount / totalCattle) * 100}%` }} />
+                </div>
+                <p className="text-xs text-muted-foreground">0% LTV • Insufficient verification</p>
+              </div>
+            </div>
+
+            {/* Provenance Risk Discount */}
+            <div className="space-y-4">
+              <h4 className="font-semibold text-sm">Provenance Risk Adjustment</h4>
+              <div className="bg-muted p-4 rounded-lg space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Book Value</span>
+                  <span className="font-bold">{formatCurrency(totalValue)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Tier-Adjusted Value</span>
+                  <span className="font-bold">{formatCurrency(tierAdjustedValue)}</span>
+                </div>
+                <div className="border-t pt-2 flex justify-between items-center">
+                  <span className="text-sm font-medium">Provenance Risk Discount</span>
+                  <span className="font-bold text-red-600">{formatCurrency(provenanceRiskDiscount)}</span>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg space-y-2">
+                <h5 className="font-semibold text-sm flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-blue-600" />
+                  Why iCattle Certified Solves NLIS Fragility
+                </h5>
+                <ul className="text-xs space-y-1 text-muted-foreground">
+                  <li>• <strong>Biometric ID (100% accuracy)</strong> - Impossible to fake, works even if NLIS tag is lost/swapped</li>
+                  <li>• <strong>Multi-factor verification</strong> - NLIS + GPS + Photos + DNA (not just token-based)</li>
+                  <li>• <strong>Event sourcing</strong> - Cryptographic audit trail prevents tampering</li>
+                  <li>• <strong>Golden Record</strong> - iCattle ID takes precedence over NLIS (single source of truth)</li>
+                  <li>• <strong>Fraud detection</strong> - Real-time tag-swap and movement anomaly alerts</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Compliance Status */}
       <Card>
