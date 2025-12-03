@@ -3,7 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
-import { ArrowLeft, Building2, MapPin, Phone, Mail, TrendingUp } from "lucide-react";
+import { ArrowLeft, Building2, MapPin, Phone, Mail, TrendingUp, FileDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { exportClientsToCSV, type ClientExportData } from "@/lib/exportCSV";
 
 export function Clients() {
   const { data: clients, isLoading } = trpc.clients.active.useQuery();
@@ -74,10 +76,31 @@ export function Clients() {
             Producer and feedlot portfolio management
           </p>
         </div>
-        <div className="text-right">
-          <div className="text-3xl font-bold">{clients?.length || 0}</div>
-          <div className="text-sm text-muted-foreground">Active clients</div>
-        </div>
+        <Button
+          onClick={() => {
+            if (clients && allCattle) {
+              const exportData: ClientExportData[] = clients.map(client => {
+                const stats = getClientStats(client.id);
+                return {
+                  id: client.id,
+                  name: client.name,
+                  contactEmail: client.contactEmail || '',
+                  contactPhone: client.contactPhone || '',
+                  abn: client.abn || '',
+                  address: client.address || '',
+                  cattleCount: stats.count,
+                  totalValue: stats.totalValue,
+                };
+              });
+              exportClientsToCSV(exportData);
+            }
+          }}
+          variant="outline"
+          className="gap-2"
+        >
+          <FileDown className="h-4 w-4" />
+          Export CSV
+        </Button>
       </div>
 
       {/* Client Cards */}

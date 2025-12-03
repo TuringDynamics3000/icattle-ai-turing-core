@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 
 import { Link } from "wouter";
-import { ArrowLeft, Search, Filter } from "lucide-react";
+import { ArrowLeft, Search, Filter, FileDown } from "lucide-react";
+import { exportCattleToCSV, type CattleExportData } from "@/lib/exportCSV";
 
 export function Cattle() {
   const { data: cattle, isLoading } = trpc.cattle.active.useQuery();
@@ -146,10 +147,35 @@ export function Cattle() {
             Digital twin registry with biometric verification
           </p>
         </div>
-        <div className="text-right">
-          <div className="text-3xl font-bold">{filteredCattle.length}</div>
-          <div className="text-sm text-muted-foreground">Active cattle</div>
-        </div>
+        <Button
+          onClick={() => {
+            if (cattle) {
+              const exportData: CattleExportData[] = cattle.map(c => ({
+                id: c.id,
+                nlisId: c.nlisId || '',
+                biometricId: c.biometricId,
+                breed: c.breed,
+                color: c.color || '',
+                cattleType: c.cattleType,
+                birthDate: c.dateOfBirth ? c.dateOfBirth.toISOString().split('T')[0] : '',
+                currentWeight: c.currentWeight || 0,
+                currentLocation: c.currentLocation || '',
+                healthStatus: c.healthStatus,
+                currentValuation: c.currentValuation || 0,
+                acquisitionCost: c.acquisitionCost || 0,
+                clientId: c.clientId,
+                gpsLatitude: c.latitude,
+                gpsLongitude: c.longitude,
+              }));
+              exportCattleToCSV(exportData);
+            }
+          }}
+          variant="outline"
+          className="gap-2"
+        >
+          <FileDown className="h-4 w-4" />
+          Export CSV
+        </Button>
       </div>
 
       {/* Filters */}

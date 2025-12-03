@@ -4,7 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "wouter";
-import { ArrowLeft, FileText, TrendingUp, DollarSign, Shield, CheckCircle } from "lucide-react";
+import { ArrowLeft, FileText, TrendingUp, DollarSign, Shield, CheckCircle, FileDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { generateAuditReportPDF, type AuditReportData } from "@/lib/exportAuditReport";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useMemo } from "react";
 
@@ -92,18 +94,102 @@ export function Reports() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <div className="flex items-center gap-3">
-          <Link href="/">
-            <button className="p-2 hover:bg-accent rounded-md">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-          </Link>
-          <h1 className="text-4xl font-bold tracking-tight">Financial Reports</h1>
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-3">
+            <Link href="/">
+              <button className="p-2 hover:bg-accent rounded-md">
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+            </Link>
+            <h1 className="text-4xl font-bold tracking-tight">Financial Reports</h1>
+          </div>
+          <p className="text-muted-foreground mt-2">
+            Bank-grade financial reporting with real-time valuations
+          </p>
         </div>
-        <p className="text-muted-foreground mt-2">
-          Bank-grade financial reporting with real-time valuations
-        </p>
+        <Button
+          onClick={() => {
+            if (summary && cattle && clients) {
+              // Prepare audit report data
+              const totalValue = summary.totalValue || 0;
+              const totalCost = cattle.reduce((sum, c) => sum + (c.acquisitionCost || 0), 0);
+              const unrealizedGain = totalValue - totalCost;
+              const lvrRatio = 75;
+              const assumedLoan = Math.floor(totalValue * (lvrRatio / 100));
+              const equityCushion = 100 - lvrRatio;
+              const interestRate = 6.0;
+              const annualInterest = Math.floor(assumedLoan * (interestRate / 100));
+              const debtServiceCoverage = unrealizedGain > 0 ? unrealizedGain / annualInterest : 0;
+              
+              const healthyCount = cattle.filter(c => c.healthStatus === 'healthy').length;
+              const sickCount = cattle.filter(c => c.healthStatus !== 'healthy').length;
+              const healthRiskPercent = (sickCount / cattle.length) * 100;
+              
+              // Find largest client
+              const clientValues = clients.map(client => {
+                const clientCattle = cattle.filter(c => c.clientId === client.id);
+                const value = clientCattle.reduce((sum, c) => sum + (c.currentValuation || 0), 0);
+                return { name: client.name, value, count: clientCattle.length };
+              });
+              const largestClient = clientValues.reduce((max, c) => c.value > max.value ? c : max, clientValues[0]);
+              const concentrationRisk = (largestClient.value / totalValue) * 100;
+              
+              // Breed distribution
+              const breedCounts = cattle.reduce((acc, c) => {
+                acc[c.breed] = (acc[c.breed] || 0) + 1;
+                return acc;
+              }, {} as Record<string, number>);
+              const breedDistribution = Object.entries(breedCounts)
+                .map(([breed, count]) => ({
+                  breed,
+                  count,
+                  percentage: (count / cattle.length) * 100
+                }))
+                .sort((a, b) => b.count - a.count);
+              
+              const auditData: AuditReportData = {
+                totalValue,
+                totalCattle: cattle.length,
+                totalClients: clients.length,
+                avgValuePerHead: summary.avgValue || 0,
+                totalAcquisitionCost: totalCost,
+                unrealizedGain,
+                unrealizedGainPercent: totalCost > 0 ? (unrealizedGain / totalCost) * 100 : 0,
+                lvrRatio,
+                assumedLoan,
+                equityCushion,
+                interestRate,
+                debtServiceCoverage,
+                annualInterest,
+                healthyCount,
+                sickCount,
+                healthRiskPercent,
+                concentrationRisk,
+                largestClientName: largestClient.name,
+                largestClientValue: largestClient.value,
+                nlisCompliant: cattle.length,
+                blockchainVerified: cattle.length,
+                breedDistribution,
+                clients: clientValues.map(c => ({
+                  name: c.name,
+                  cattleCount: c.count,
+                  value: c.value,
+                  percentage: (c.value / totalValue) * 100
+                })),
+                reportDate: new Date().toISOString().split('T')[0],
+                reportPeriod: 'Current Portfolio Status'
+              };
+              
+              generateAuditReportPDF(auditData);
+            }
+          }}
+          variant="outline"
+          className="gap-2"
+        >
+          <FileDown className="h-4 w-4" />
+          Export Audit Report
+        </Button>
       </div>
 
       {/* Compliance Badges */}
