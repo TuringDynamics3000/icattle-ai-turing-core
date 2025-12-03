@@ -116,6 +116,7 @@ export const cattle = mysqlTable("cattle", {
   
   // Metadata
   imageUrl: varchar("imageUrl", { length: 500 }),
+  muzzleImageUrl: varchar("muzzleImageUrl", { length: 500 }), // Biometric muzzle photo
   notes: text("notes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

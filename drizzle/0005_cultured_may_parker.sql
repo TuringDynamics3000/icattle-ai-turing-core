@@ -1,0 +1,1 @@
+ALTER TABLE `cattle` ADD `muzzleImageUrl` varchar(500);

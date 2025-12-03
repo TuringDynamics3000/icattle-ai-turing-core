@@ -197,6 +197,24 @@ export function CattleDetail() {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {animal.muzzleImageUrl && (
+            <div className="mb-6">
+              <div className="flex items-center gap-4">
+                <img 
+                  src={animal.muzzleImageUrl} 
+                  alt={`${animal.visualId} muzzle biometric`}
+                  className="w-32 h-32 rounded-lg object-cover border-2 border-border shadow-md"
+                />
+                <div>
+                  <h4 className="font-semibold text-lg">Biometric Muzzle Pattern</h4>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Unique muzzle pattern used for visual identification and fraud prevention.
+                    Each cattle's muzzle pattern is as unique as a human fingerprint.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="grid gap-6 md:grid-cols-3">
             <div className="space-y-2">
               <div className="flex items-center justify-between">

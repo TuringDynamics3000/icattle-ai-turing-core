@@ -333,12 +333,23 @@ export function Cattle() {
                   onClick={(e) => e.stopPropagation()}
                   className="mt-1"
                 />
-                  <div>
-                    <CardTitle className="text-xl">{animal.visualId}</CardTitle>
-                    <CardDescription className="mt-1">
-                      {animal.breed} • {animal.sex}
-                    </CardDescription>
+                <div className="flex-1 ml-3">
+                  <div className="flex items-start gap-3">
+                    {animal.muzzleImageUrl && (
+                      <img 
+                        src={animal.muzzleImageUrl} 
+                        alt={`${animal.visualId} muzzle`}
+                        className="w-16 h-16 rounded-lg object-cover border-2 border-border"
+                      />
+                    )}
+                    <div className="flex-1">
+                      <CardTitle className="text-xl">{animal.visualId}</CardTitle>
+                      <CardDescription className="mt-1">
+                        {animal.breed} • {animal.sex}
+                      </CardDescription>
+                    </div>
                   </div>
+                </div>
                 {getHealthBadge(animal.healthStatus)}
               </div>
             </CardHeader>
