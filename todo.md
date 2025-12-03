@@ -370,3 +370,20 @@
 - [x] Clear data source labeling (SYNTHETIC training + REAL MLA API data)
 - [ ] Write vitest tests for ML/RL endpoints (pending)
 - [x] Write comprehensive ML/RL documentation
+
+
+## 🔒 Turing Protocol Implementation (Golden Record)
+- [ ] Design cattle_events table schema (event sourcing backbone)
+- [ ] Add cryptographic hash fields for tamper detection
+- [ ] Create event types (CATTLE_CREATED, OWNERSHIP_TRANSFER, TAG_CHANGED, VALUATION_UPDATE, LOCATION_MOVED, HEALTH_RECORD)
+- [ ] Implement event sourcing layer in server/_core/turingProtocol.ts
+- [ ] Add hash generation and verification functions
+- [ ] Create provenance_scores table for confidence scoring
+- [ ] Build multi-source validation (NLIS + photos + GPS + biometrics)
+- [ ] Implement fraud detection rules (tag-swap detection, price anomalies, rapid movement)
+- [ ] Add suspicious_transactions table and flagging system
+- [ ] Create Turing Protocol compliance dashboard page
+- [ ] Add audit trail viewer with event replay
+- [ ] Build provenance report generator
+- [ ] Write tests for event sourcing and integrity verification
+- [ ] Document Turing Protocol implementation for iCattle

@@ -1,0 +1,8 @@
+{
+  "query": "-- Apply Turing Protocol schema\n-- Read from file\n\\i /home/ubuntu/icattle-dashboard/drizzle/turing_protocol_schema.sql",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2X4GSDJ3Lo6cm4b.c886d086f2d2 --database N9vdLi2osDHwYqt7zCuboB --execute -- Apply Turing Protocol schema\n-- Read from file\n\\i /home/ubuntu/icattle-dashboard/drizzle/turing_protocol_schema.sql",
+  "returncode": 1,
+  "logs": [
+    "ERROR at line 3: Unknown command '\\i'."
+  ]
+}
