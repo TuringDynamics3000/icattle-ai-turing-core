@@ -1,669 +1,849 @@
-# iCattle.ai - Comprehensive Livestock Management Platform
+# iCattle Ecosystem Documentation
 
-**Developed by: TuringDynamics**
+![iCattle Logo](client/public/icattle-logo.png)
 
-A production-grade livestock biometric identification and management platform with real-time grading, market pricing, geolocation tracking, and portfolio analytics.
+**Complete Livestock Asset Management Platform**
 
----
-
-## 🎯 Platform Overview
-
-**iCattle.ai** is an enterprise livestock management system that combines:
-
-- **Biometric Identification** - Unique muzzle pattern recognition
-- **USDA Grading** - Quality and yield grade tracking
-- **Physical Measurements** - Weight, body condition, frame scoring
-- **Health Monitoring** - Temperature, mobility, vaccination tracking
-- **Geolocation Tracking** - GPS coordinates, property/pasture mapping
-- **Live Market Pricing** - Real-time CME futures and USDA spot prices
-- **Individual Valuation** - Market value calculation per animal
-- **Portfolio Analytics** - Multi-tenant herd valuation and reporting
-
-### Key Differentiators
-
-✅ **Bank-Grade Auditability** - Turing Protocol enforcement on all API interactions  
-✅ **Event Sourcing Architecture** - Immutable event log with full history  
-✅ **Multi-Tenant Support** - Secure isolation for multiple owners/organizations  
-✅ **Real-Time Updates** - WebSocket dashboard with live monitoring  
-✅ **Production-Ready** - Comprehensive error handling and validation  
+This document provides comprehensive documentation for the entire iCattle ecosystem, including the Dashboard (asset management UI), TuringCore-v3 (event sourcing backend), Kafka infrastructure, and all integrated systems.
 
 ---
 
-## 🏗️ Architecture
+## Table of Contents
 
-### Event Sourcing with FCIS Pattern
-
-The platform uses **Event Sourcing** with the **Functional Core, Imperative Shell (FCIS)** pattern:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      API Gateway (FastAPI)                   │
-│              Turing Protocol Header Validation               │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Domain Services (Pure)                    │
-│         Business Logic • Validation • Calculations           │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      Event Store (PostgreSQL)                │
-│              Immutable Events • Full Audit Trail             │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  Read Models / Projections                   │
-│        Denormalized Views • Fast Queries • Analytics         │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Turing Protocol
-
-**All API interactions enforce 5 required headers:**
-
-| Header | Purpose | Example |
-|--------|---------|---------|
-| `X-Tenant-ID` | Owner/organization isolation | `OWNER-001` |
-| `X-Request-ID` | Request tracing (UUID) | `550e8400-e29b-41d4-a716-446655440000` |
-| `X-User-ID` | User accountability | `grader_john_smith` |
-| `X-Device-ID` | Device tracking | `GRADING-DEVICE-001` |
-| `X-Geo-Location` | Geographic context | `39.7392,-104.9903` |
-
-This ensures **complete traceability** for:
-- Who performed the action
-- When it occurred
-- Where it happened
-- Which device was used
-- Which organization owns the data
+- [Executive Summary](#executive-summary)
+- [Ecosystem Architecture](#ecosystem-architecture)
+- [System Components](#system-components)
+- [Technology Stack](#technology-stack)
+- [Getting Started](#getting-started)
+- [Key Features](#key-features)
+- [Integration Guide](#integration-guide)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
 
 ---
 
-## 📊 Domain Model
+## Executive Summary
 
-### Events
+The iCattle ecosystem transforms livestock into verifiable financial assets through a comprehensive platform that combines biometric identification, event sourcing, cryptographic audit trails, and financial integration. The system serves multiple stakeholders including farmers (operational efficiency), banks (risk management), and investors (portfolio analytics).
 
-**All events are immutable and include full Turing Protocol context.**
+### The Problem
 
-#### AnimalGradingRecorded
-Records USDA meat quality and yield grading:
-- Quality Grade: Prime, Choice, Select, Standard, Commercial, Utility, Cutter, Canner
-- Yield Grade: 1-5 (1 = highest cutability)
-- Marbling Score: 100-1000
-- Ribeye Area (sq in)
-- Fat Thickness (in)
-- Hot Carcass Weight (lbs)
+The Australian livestock industry faces critical challenges in asset verification, lending, and fraud prevention. Traditional identification systems like NLIS are vulnerable to tag swapping and data manipulation. Manual appraisals provide stale valuations. Banks struggle to verify collateral and assess risk. Farmers cannot access credit due to lack of verifiable assets.
 
-#### PhysicalMeasurementRecorded
-Records physical measurements:
-- Weight (lbs)
-- Body Condition Score: 1-9 (5 = ideal)
-- Frame Score: 1-9
-- Hip Height (in)
-- Body Length (in)
+### The Solution
 
-#### HealthAssessmentRecorded
-Records health metrics:
-- Health Status: Healthy, Monitored, Sick, Quarantined, Recovering
-- Temperature (°F)
-- Heart Rate (BPM)
-- Respiratory Rate
-- Mobility Score: 1-5
-- Vaccination Status
+iCattle provides end-to-end livestock asset management through three core innovations:
 
-#### AnimalLocationUpdated
-Records GPS location:
-- Latitude/Longitude (decimal degrees)
-- Altitude (meters)
-- Accuracy (meters)
-- Property ID
-- Pasture ID
+**Biometric Digital Twins:** Each animal receives a unique digital identity based on biometric markers (muzzle patterns, coat features, DNA) that cannot be faked or transferred. This creates a permanent link between the physical animal and its digital record.
 
-#### MarketValueCalculated
-Records market valuation:
-- Market Class: Fed Cattle, Feeder Cattle, Breeding Stock, Cull Cattle
-- Live Weight (lbs)
-- Quality Grade (if graded)
-- Market Price per CWT
-- Estimated Value (USD)
-- Price Source (CME, USDA, etc.)
+**Event Sourcing & Turing Protocol:** Every lifecycle event is recorded in an immutable, cryptographically-verified chain. The Turing Protocol ensures event integrity through payload hashing, chain linking, and fraud detection. Events flow through Kafka and persist in a PostgreSQL Golden Record database.
+
+**Financial Integration:** Real-time livestock valuations automatically sync to accounting systems (Xero, MYOB) following Australian AASB 141 Agriculture standards. This gives farmers and banks a complete financial picture where livestock assets appear on balance sheets with fair value adjustments.
 
 ---
 
-## 🚀 API Endpoints
+## Ecosystem Architecture
 
-### Base URL
+The iCattle ecosystem consists of multiple integrated systems:
+
 ```
-http://localhost:8002/api/v1/livestock
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        iCattle Dashboard (React + tRPC)                  │
+│                                                                          │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐│
+│  │ Farmer View  │  │  Bank View   │  │  Financial   │  │  Provenance  ││
+│  │ (Operations) │  │ (Risk Mgmt)  │  │  Dashboard   │  │  Dashboard   ││
+│  └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘│
+└────────────────────────────┬────────────────────────────────────────────┘
+                             │ tRPC API (Type-Safe)
+┌────────────────────────────┴────────────────────────────────────────────┐
+│                   Application Server (Express + tRPC)                    │
+│                                                                          │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐│
+│  │ tRPC Routers │  │    Kafka     │  │     Xero     │  │    Fraud     ││
+│  │  (Business   │  │   Producer   │  │ Integration  │  │  Detection   ││
+│  │   Logic)     │  │              │  │  (AASB 141)  │  │              ││
+│  └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘│
+└────────────────────────────┬────────────────────────────────────────────┘
+                             │
+        ┌────────────────────┼────────────────────┐
+        │                    │                    │
+┌───────▼────────┐  ┌────────▼────────┐  ┌───────▼────────┐
+│   MySQL DB     │  │  Kafka Cluster  │  │  PostgreSQL    │
+│ (Operational)  │  │ (Event Stream)  │  │ (Golden Record)│
+│                │  │                 │  │                │
+│ • Cattle       │  │ • livestock.    │  │ • event_log    │
+│ • Clients      │  │   cattle.       │  │ • cattle_      │
+│ • Events       │  │   events        │  │   snapshots    │
+│ • Valuations   │  │                 │  │ • fraud_alerts │
+└────────────────┘  └────────┬────────┘  └────────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │ Kafka Consumer  │
+                    │ (Event Processor│
+                    │                 │
+                    │ • Turing        │
+                    │   Protocol      │
+                    │   Validation    │
+                    │ • Golden Record │
+                    │   Persistence   │
+                    │ • Fraud         │
+                    │   Detection     │
+                    └─────────────────┘
 ```
 
-### Endpoints
+### Data Flow
 
-#### 1. Record Animal Grading
-```http
-POST /api/v1/livestock/grading
-```
+**Write Path (Event Publishing):**
+1. User action triggers tRPC mutation (e.g., record health check)
+2. Application server validates request and business logic
+3. Event published to Kafka with Turing Protocol envelope
+4. Kafka consumer receives event
+5. Turing Protocol validation (payload hash, chain integrity)
+6. Event persisted to Golden Record PostgreSQL
+7. Fraud detection algorithms analyze patterns
+8. Alerts generated for suspicious activity
 
-**Headers (Required):**
-```
-X-Tenant-ID: OWNER-001
-X-Request-ID: 550e8400-e29b-41d4-a716-446655440000
-X-User-ID: grader_john_smith
-X-Device-ID: GRADING-DEVICE-001
-X-Geo-Location: 39.7392,-104.9903
-Content-Type: application/json
-```
+**Read Path (Queries):**
+1. Dashboard queries tRPC procedures
+2. Application server reads from MySQL (operational data) or PostgreSQL (audit trail)
+3. Data returned to frontend with full TypeScript type safety
+4. UI renders with real-time updates
 
-**Request Body:**
-```json
-{
-  "muzzle_hash": "muzzle_hash_001",
-  "quality_grade": "Choice",
-  "yield_grade": "2",
-  "marbling_score": 550,
-  "ribeye_area_sq_in": 13.5,
-  "fat_thickness_in": 0.45,
-  "hot_carcass_weight_lbs": 837.0,
-  "grader_notes": "USDA certified grading"
-}
-```
-
-**Response:**
-```json
-{
-  "event_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
-  "aggregate_id": "muzzle_hash_001",
-  "event_type": "AnimalGradingRecorded",
-  "timestamp": "2025-01-15T10:30:00Z",
-  "success": true
-}
-```
+**Financial Sync (Xero Integration):**
+1. Scheduled job or manual trigger
+2. Application server queries livestock valuations
+3. Xero integration calculates fair value adjustments (AASB 141)
+4. Journal entries posted to Xero
+5. Financial statements updated with current livestock asset values
 
 ---
 
-#### 2. Record Physical Measurements
-```http
-POST /api/v1/livestock/measurements
-```
+## System Components
 
-**Request Body:**
-```json
-{
-  "muzzle_hash": "muzzle_hash_001",
-  "weight_lbs": 1350.0,
-  "body_condition_score": "5",
-  "frame_score": 6,
-  "hip_height_in": 52.5,
-  "body_length_in": 68.0,
-  "measurement_notes": "Monthly weight check"
-}
-```
+### 1. iCattle Dashboard (React + tRPC)
+
+**Repository:** `icattle-ai-turing-core` (this repository)
+
+The main user interface provides role-based views for different stakeholders:
+
+**Farmer View** focuses on operational efficiency with cattle registry, health management, movement tracking, and operational analytics. Farmers see actionable insights for day-to-day herd management.
+
+**Bank View** emphasizes risk management with iCattle Certified™ tier analysis, provenance risk assessment, fraud alerts, and portfolio quality metrics. Banks use this view to make lending decisions and monitor collateral values.
+
+**Financial Dashboard** integrates accounting data with livestock valuations. Xero integration enables automatic sync of biological assets with AASB 141 compliance. Displays P&L, balance sheet, and disclosure reports.
+
+**Provenance Dashboard** displays Turing Protocol confidence scores, event chain integrity, and fraud detection alerts across the portfolio.
+
+**Technology Stack:**
+- React 19 (UI framework)
+- Tailwind CSS 4 (styling)
+- shadcn/ui (component library)
+- tRPC 11 (type-safe API)
+- Wouter (routing)
+- Recharts (data visualization)
+
+### 2. TuringCore-v3 (Python Backend)
+
+**Repository:** `TuringCore-v3` (separate repository)
+
+The event sourcing and Kafka infrastructure layer provides:
+
+**Event Sourcing Architecture:** Implements FCIS (Functional Core, Imperative Shell) pattern with immutable event log. All state changes recorded as events.
+
+**Turing Protocol Enforcement:** Validates all API interactions with 5 required headers (X-Tenant-ID, X-Request-ID, X-User-ID, X-Device-ID, X-Geo-Location) for complete traceability.
+
+**USDA Grading Integration:** Records quality grades (Prime, Choice, Select, etc.) and yield grades (1-5) following USDA standards.
+
+**Market Data Integration:** Real-time pricing from CME Live Cattle Futures and USDA Agricultural Marketing Service.
+
+**Technology Stack:**
+- Python 3.11 (FastAPI framework)
+- PostgreSQL (event store)
+- Kafka (event streaming)
+- Domain-Driven Design patterns
+
+### 3. Kafka Event Streaming
+
+**Infrastructure:** Apache Kafka cluster with Zookeeper
+
+Provides distributed event streaming with high throughput and durability:
+
+**Topic Structure:** `{domain}.{tenant_id}.{entity}` (e.g., `livestock.cattle.events`)
+
+**Producer:** Dashboard application server publishes events to Kafka topics
+
+**Consumer:** Processes events asynchronously, validates with Turing Protocol, persists to Golden Record
+
+**Benefits:**
+- Decoupling between producers and consumers
+- Event replay capability for debugging and audit
+- Scalable event processing
+- Reliable delivery guarantees
+
+### 4. Golden Record Database (PostgreSQL)
+
+**Purpose:** Authoritative, immutable event history
+
+Maintains three core tables:
+
+**event_log:** All livestock events with event_id (UUID), cattle_id, event_type, event_date, payload (JSONB), payload_hash, previous_hash, metadata (JSONB), created_at. Append-only and immutable.
+
+**cattle_snapshots:** Current state of each cattle reconstructed from events. Enables fast queries without replaying entire history.
+
+**fraud_alerts:** Detected fraud patterns with alert_id, cattle_id, alert_type, risk_score, description, detected_at, resolved status.
+
+### 5. Xero Integration (AASB 141 Compliance)
+
+**Purpose:** Automatic sync of livestock valuations to accounting systems
+
+Implements Australian AASB 141 Agriculture standard:
+
+**Fair Value Measurement:** Livestock valued at fair value less costs to sell (market value minus transport/agent fees)
+
+**P&L Recognition:** Fair value gains and losses flow through profit and loss (not equity revaluation)
+
+**Biological Assets Account:** Dedicated account (code 1600) for livestock assets
+
+**Disclosure Reports:** Comprehensive reconciliation showing opening balance, purchases, sales, gains/losses, closing balance
+
+**OAuth Flow:** Secure OAuth 2.0 authentication with automatic token refresh
+
+### 6. Fraud Detection System
+
+**Purpose:** Real-time monitoring for suspicious patterns
+
+Implements five detection algorithms:
+
+**Tag Swap Detection:** Identifies same NLIS tag on multiple cattle
+
+**Rapid Movement Detection:** Flags impossible travel times between locations
+
+**Price Anomaly Detection:** Detects sudden valuation spikes exceeding 3 standard deviations
+
+**Ownership Churn Detection:** Monitors transfer frequency (>3 times in 6 months)
+
+**Location Anomaly Detection:** Identifies unexpected movement patterns
+
+**Risk Scoring:** 0-100 scale (Low 0-30, Medium 31-60, High 61-100)
+
+**Alert Generation:** Detailed alerts with evidence, description, and recommended actions
 
 ---
 
-#### 3. Record Health Assessment
-```http
-POST /api/v1/livestock/health
-```
+## Technology Stack
 
-**Request Body:**
-```json
-{
-  "muzzle_hash": "muzzle_hash_001",
-  "health_status": "Healthy",
-  "temperature_f": 101.5,
-  "heart_rate_bpm": 65,
-  "respiratory_rate": 28,
-  "mobility_score": 5,
-  "vaccination_current": true,
-  "veterinarian_notes": "Routine health check - all normal"
-}
-```
+### Frontend (iCattle Dashboard)
 
----
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| React | 19 | UI framework with hooks and concurrent rendering |
+| TypeScript | 5.9 | Type safety and developer experience |
+| Tailwind CSS | 4 | Utility-first styling and responsive design |
+| shadcn/ui | Latest | Accessible component library (Radix UI) |
+| tRPC | 11 | End-to-end type-safe API |
+| Wouter | Latest | Lightweight client-side routing |
+| Recharts | Latest | Data visualization and charts |
+| Superjson | Latest | Serialization of complex types |
 
-#### 4. Update Animal Location
-```http
-POST /api/v1/livestock/location
-```
+### Backend (Application Server)
 
-**Request Body:**
-```json
-{
-  "muzzle_hash": "muzzle_hash_001",
-  "latitude": 39.7392,
-  "longitude": -104.9903,
-  "altitude_m": 1609.0,
-  "accuracy_m": 3.5,
-  "property_id": "RANCH-001",
-  "pasture_id": "PASTURE-A",
-  "movement_notes": "Grazing in designated pasture"
-}
-```
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Node.js | 22 | JavaScript runtime |
+| Express | 4 | HTTP server framework |
+| tRPC | 11 | Type-safe API layer |
+| Drizzle ORM | Latest | Type-safe database queries |
+| KafkaJS | Latest | Kafka client for Node.js |
+| xero-node | Latest | Xero API integration |
+| pg | Latest | PostgreSQL client |
 
----
+### Backend (TuringCore-v3)
 
-#### 5. Calculate Market Valuation
-```http
-POST /api/v1/livestock/valuation
-```
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Python | 3.11 | Programming language |
+| FastAPI | Latest | Modern API framework |
+| PostgreSQL | 14+ | Event store database |
+| SQLAlchemy | Latest | ORM for database operations |
+| Pydantic | Latest | Data validation |
 
-**Request Body:**
-```json
-{
-  "muzzle_hash": "muzzle_hash_001",
-  "market_class": "Fed Cattle",
-  "live_weight_lbs": 1350.0,
-  "quality_grade": "Choice"
-}
-```
+### Infrastructure
 
-**Response includes:**
-- Current market price per CWT
-- Quality grade premium/discount
-- Estimated total value (USD)
-- Price source (CME, USDA, etc.)
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Apache Kafka | 3.x | Distributed event streaming |
+| Zookeeper | 3.x | Kafka cluster coordination |
+| MySQL | 8.0 | Operational database |
+| PostgreSQL | 14+ | Golden Record database |
+| Docker | Latest | Containerization |
+| Docker Compose | Latest | Local development orchestration |
 
 ---
 
-#### 6. Get Current Market Prices
-```http
-GET /api/v1/livestock/market/prices
+## Getting Started
+
+### Prerequisites
+
+**Required Software:**
+- Node.js 22+ (for Dashboard)
+- Python 3.11+ (for TuringCore-v3)
+- pnpm 9+ (package manager)
+- Docker Desktop (for Kafka, PostgreSQL)
+- Git (version control)
+
+### Installation Steps
+
+**1. Clone Both Repositories:**
+
+```bash
+# Clone Dashboard repository
+git clone https://github.com/TuringDynamics3000/icattle-ai-turing-core.git
+cd icattle-ai-turing-core
+
+# Clone TuringCore-v3 repository (in separate directory)
+cd ..
+git clone https://github.com/TuringDynamics3000/TuringCore-v3.git
 ```
 
-**Response:**
-```json
-[
-  {
-    "price_per_cwt": 185.00,
-    "source": "CME Live Cattle Futures (Simulated)",
-    "market_class": "Fed Cattle",
-    "region": "National",
-    "timestamp": "2025-01-15T10:30:00Z",
-    "volume": 15000
+**2. Start Infrastructure Services:**
+
+```bash
+cd icattle-ai-turing-core
+docker-compose up -d
+```
+
+This starts Kafka, Zookeeper, PostgreSQL (Golden Record), and Kafka UI. Wait 30 seconds for services to initialize.
+
+**3. Configure Environment Variables:**
+
+Create `.env` file in `icattle-ai-turing-core`:
+
+```env
+# Kafka Configuration
+KAFKA_BROKERS=localhost:9092
+KAFKA_CLIENT_ID=icattle-dashboard
+KAFKA_ENABLED=true
+KAFKA_TOPIC_PREFIX=icattle
+
+# Golden Record Database
+GOLDEN_RECORD_DATABASE_URL=postgresql://icattle:icattle_dev_password@localhost:5432/icattle_golden_record
+
+# Xero Integration (optional)
+XERO_CLIENT_ID=your_xero_client_id
+XERO_CLIENT_SECRET=your_xero_client_secret
+XERO_REDIRECT_URI=http://localhost:3000/api/xero/callback
+```
+
+**4. Install Dashboard Dependencies:**
+
+```bash
+cd icattle-ai-turing-core
+pnpm install
+```
+
+**5. Start Dashboard Development Server:**
+
+```bash
+pnpm dev
+```
+
+Dashboard available at `http://localhost:3000`
+
+**6. Start TuringCore-v3 Backend (Optional):**
+
+```bash
+cd ../TuringCore-v3
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python src/turingcore_v3/main.py
+```
+
+TuringCore API available at `http://localhost:8002`
+
+### Quick Tour
+
+**Dashboard** (`http://localhost:3000`) - Portfolio overview with total value, market premium/discount, breed distribution, cattle type distribution
+
+**Cattle Registry** (`/cattle`) - All livestock digital twins with search and filtering
+
+**Bank View** (`/bank`) - iCattle Certified™ collateral quality analysis with tier distribution and provenance risk discount
+
+**Financial Dashboard** (`/financial`) - Xero connection and AASB 141 disclosure reports
+
+**Provenance Dashboard** (`/provenance`) - Turing Protocol confidence scores and fraud alerts
+
+**Kafka UI** (`http://localhost:8080`) - Monitor event streams and topic messages
+
+---
+
+## Key Features
+
+### Asset Management
+
+Treats livestock as financial assets with complete lifecycle tracking and real-time valuation. Each animal is a digital twin with biometric verification, ownership history, health records, and market-based valuations.
+
+**Portfolio Analytics:**
+- Total portfolio value across all cattle
+- Breed distribution (Wagyu, Angus, Hereford, etc.)
+- Cattle type distribution (Breeding, Feedlot, Dairy)
+- Market premium/discount vs. book value
+- Active clients (producers and feedlots)
+- Health alerts requiring attention
+
+### iCattle Certified™ Collateral Quality
+
+Proprietary certification system that grades livestock based on provenance verification strength:
+
+**Gold Certified (100% LTV):** Complete verification with biometric ID, NLIS registration, GPS tracking, photographic evidence, and DNA verification
+
+**Silver Certified (85% LTV):** Strong verification with biometric ID, NLIS registration, and GPS tracking
+
+**Bronze Certified (70% LTV):** Basic verification with biometric ID and NLIS registration
+
+**Non-Certified (0% LTV):** Incomplete verification, cannot be used as collateral
+
+**Bank View Impact:** Shows tier distribution across portfolio and calculates provenance risk discount. In demo portfolio, 53.3% of cattle lack proper verification, creating a $636,394 risk discount.
+
+### Turing Protocol & Event Sourcing
+
+Every lifecycle event recorded in immutable, cryptographically-verified event stream:
+
+**Payload Hashing:** SHA-256 hash of event data creates unique fingerprint. Tampering invalidates hash and triggers alerts.
+
+**Chain Linking:** Events linked in blockchain-style chain where each event includes hash of previous event. Modifying any historical event breaks the chain.
+
+**Event Metadata:** Rich metadata (timestamp, source system, user ID, event type, entity ID) enables comprehensive audit trails.
+
+**Event Replay:** Reconstruct any cattle's state at any point in time by replaying events from Golden Record.
+
+**Fraud Detection:** Real-time algorithms analyze event patterns to detect suspicious activity.
+
+### Real-time Fraud Detection
+
+Continuously monitors for five fraud patterns:
+
+**Tag Swap Detection:** Same NLIS tag on multiple cattle
+
+**Rapid Movement Detection:** Impossible travel times between locations
+
+**Price Anomaly Detection:** Sudden valuation spikes exceeding 3 standard deviations
+
+**Ownership Churn Detection:** Frequent ownership transfers (>3 times in 6 months)
+
+**Location Anomaly Detection:** Unexpected movement patterns
+
+**Risk Scoring:** 0-100 scale with visual indicators (red for high risk, yellow for medium, gray for low)
+
+**Alert UI:** Fraud Detection Viewer displays all alerts with detailed explanations and recommended actions
+
+### Xero Integration & AASB 141 Compliance
+
+Automatic sync of livestock valuations to accounting systems following Australian standards:
+
+**Fair Value Calculation:** Market value minus estimated costs to sell (transport, agent fees)
+
+**P&L Recognition:** Fair value gains and losses recognized in profit and loss (not equity)
+
+**Biological Assets Account:** Dedicated account (code 1600) with tracking categories for livestock types
+
+**Journal Entries:** Automated posting with proper account mappings
+
+**Disclosure Reports:** Comprehensive reconciliation showing opening balance, purchases, sales, gains/losses, closing balance by livestock group
+
+**OAuth Security:** Secure OAuth 2.0 authentication with automatic token refresh
+
+### Market Data Integration
+
+Real-time livestock pricing from Meat & Livestock Australia (MLA) National Livestock Reporting Service (NLRS):
+
+**12 Livestock Indicators:**
+- Eastern Young Cattle Indicator (EYCI)
+- Western Young Cattle Indicator (WYCI)
+- Category-specific indicators (steers, heifers, cows, etc.)
+
+**Mark-to-Market Valuation:** Each cattle's book value compared to current market prices
+
+**Market Premium/Discount:** Portfolio-wide metric showing whether trading above or below market value
+
+### AI-Powered Features
+
+**Price Forecasting:** Machine learning models predict 7-day price movements based on historical patterns and market indicators
+
+**Portfolio Recommendations:** AI analyzes portfolio composition and market conditions to generate actionable recommendations
+
+**Fraud Detection:** Machine learning algorithms learn normal patterns and flag anomalies
+
+---
+
+## Integration Guide
+
+### Integrating with Xero
+
+**Step 1: Create Xero App**
+
+1. Go to https://developer.xero.com/myapps
+2. Create new app with OAuth 2.0
+3. Set redirect URI to `http://localhost:3000/api/xero/callback`
+4. Note Client ID and Client Secret
+
+**Step 2: Configure Environment Variables**
+
+```env
+XERO_CLIENT_ID=your_client_id
+XERO_CLIENT_SECRET=your_client_secret
+XERO_REDIRECT_URI=http://localhost:3000/api/xero/callback
+```
+
+**Step 3: Connect Xero Account**
+
+1. Navigate to Financial Dashboard (`/financial`)
+2. Click "Connect Xero" button
+3. Log in to Xero and authorize access
+4. System automatically creates biological assets account structure
+
+**Step 4: Sync Livestock Valuations**
+
+1. Click "Sync to Xero" button
+2. System calculates fair value adjustments
+3. Journal entries posted to Xero
+4. View AASB 141 disclosure reports
+
+### Integrating with Kafka
+
+**Producer Integration (Publishing Events):**
+
+```typescript
+import { publishEvent } from './server/_core/kafkaProducer';
+
+// Publish health check event
+await publishEvent({
+  eventType: 'HEALTH_CHECK_RECORDED',
+  cattleId: 'cattle-123',
+  payload: {
+    temperature: 101.5,
+    mobility: 5,
+    notes: 'Routine check'
   },
-  {
-    "price_per_cwt": 265.00,
-    "source": "CME Live Cattle Futures (Simulated)",
-    "market_class": "Feeder Cattle",
-    "region": "National",
-    "timestamp": "2025-01-15T10:30:00Z",
-    "volume": 12000
+  metadata: {
+    userId: 'vet-001',
+    timestamp: new Date().toISOString()
   }
-]
+});
 ```
 
----
+**Consumer Integration (Processing Events):**
 
-#### 7. Get Individual Animal Profile
-```http
-GET /api/v1/livestock/{muzzle_hash}/profile
+```typescript
+import { startKafkaConsumer } from './server/_core/kafkaConsumer';
+
+// Start consumer to process events
+await startKafkaConsumer();
+
+// Consumer automatically:
+// 1. Validates events with Turing Protocol
+// 2. Persists to Golden Record PostgreSQL
+// 3. Triggers fraud detection algorithms
+// 4. Generates alerts for suspicious activity
 ```
 
-**Response:**
-```json
-{
-  "muzzle_hash": "muzzle_hash_001",
-  "tenant_id": "OWNER-001",
-  "quality_grade": "Choice",
-  "yield_grade": "2",
-  "marbling_score": 550,
-  "weight_lbs": 1350.0,
-  "body_condition_score": "5",
-  "frame_score": 6,
-  "health_status": "Healthy",
-  "temperature_f": 101.5,
-  "mobility_score": 5,
-  "vaccination_current": true,
-  "latitude": 39.7392,
-  "longitude": -104.9903,
-  "property_id": "RANCH-001",
-  "pasture_id": "PASTURE-A",
-  "estimated_value_usd": 2625.00,
-  "market_price_per_cwt": 185.00,
-  "last_valued": "2025-01-15T10:30:00Z"
-}
-```
+### Integrating with TuringCore-v3
 
----
+**API Integration:**
 
-#### 8. Get Portfolio Valuation
-```http
-GET /api/v1/livestock/portfolio/{tenant_id}
-```
+```python
+import requests
 
-**Response:**
-```json
-{
-  "tenant_id": "OWNER-001",
-  "total_animals": 1500,
-  "total_value_usd": 3937500.00,
-  "average_value_per_head": 2625.00,
-  "total_weight_lbs": 2025000.0,
-  "breakdown_by_class": {
-    "Fed Cattle": {
-      "count": 1200,
-      "value": 3150000.00
+# Record animal grading
+response = requests.post(
+    'http://localhost:8002/api/v1/livestock/grading',
+    headers={
+        'X-Tenant-ID': 'OWNER-001',
+        'X-Request-ID': str(uuid.uuid4()),
+        'X-User-ID': 'grader_john',
+        'X-Device-ID': 'DEVICE-001',
+        'X-Geo-Location': '39.7392,-104.9903',
+        'Content-Type': 'application/json'
     },
-    "Feeder Cattle": {
-      "count": 250,
-      "value": 662500.00
-    },
-    "Breeding Stock": {
-      "count": 50,
-      "value": 125000.00
+    json={
+        'muzzle_hash': 'muzzle_hash_001',
+        'quality_grade': 'Choice',
+        'yield_grade': '2',
+        'marbling_score': 550
     }
-  },
-  "last_updated": "2025-01-15T10:30:00Z"
-}
+)
 ```
 
 ---
 
-## 💰 Market Pricing Integration
+## Deployment
 
-### Supported Data Sources
+### Production Architecture
 
-**Production-ready integrations:**
+**Application Servers:**
+- Deploy Dashboard and Application Server to cloud platform (AWS, Azure, GCP)
+- Use auto-scaling groups with load balancers
+- Implement health checks and automatic recovery
 
-1. **CME Group Market Data API**
-   - Live Cattle Futures (LE)
-   - Feeder Cattle Futures (GF)
-   - Real-time quotes and settlements
-   - API: https://www.cmegroup.com/market-data/
+**Databases:**
+- Use managed database services (AWS RDS for MySQL and PostgreSQL)
+- Configure automated backups with point-in-time recovery
+- Set up read replicas for scaling
 
-2. **USDA Agricultural Marketing Service (AMS)**
-   - National spot prices
-   - Regional auction reports
-   - 5-Area Weekly Weighted Average
-   - API: https://mpr.datamart.ams.usda.gov/
+**Kafka Cluster:**
+- Deploy using AWS MSK (Managed Streaming for Apache Kafka)
+- Configure proper retention policies (7-30 days)
+- Set up monitoring and alerting
 
-3. **Regional Auction Markets**
-   - Local market prices
-   - Breed-specific premiums
-   - Custom integrations
+**Security:**
+- Use HTTPS for all connections
+- Encrypt sensitive data at rest and in transit
+- Implement proper authentication and authorization
+- Regular security audits and penetration testing
 
-### Pricing Logic
+**Monitoring:**
+- Application metrics (response times, error rates)
+- Database performance (query times, connection pools)
+- Kafka lag and throughput
+- Fraud detection alert rates
 
-**Base Price Calculation:**
-```
-Market Price = Base Price per CWT (from CME/USDA)
-```
+### Scaling Considerations
 
-**Quality Grade Premiums:**
-```
-Prime:       +$15.00/cwt
-Choice:      +$8.00/cwt
-Select:      $0.00/cwt (baseline)
-Standard:    -$5.00/cwt
-Commercial:  -$10.00/cwt
-Utility:     -$15.00/cwt
-Cutter:      -$20.00/cwt
-Canner:      -$25.00/cwt
-```
+**Horizontal Scaling:**
+- Run multiple Dashboard instances behind load balancer
+- Scale Kafka consumers by adding instances to consumer group
+- Add database read replicas for query load
 
-**Total Valuation:**
-```
-Total Value = (Weight in CWT) × (Base Price + Quality Premium)
-```
+**Caching:**
+- Implement Redis for frequently accessed data
+- Use CDN for static assets
+- Cache market data with appropriate TTL
 
-**Example:**
-- Animal: 1,350 lbs (13.5 CWT)
-- Quality: Choice (+$8/cwt)
-- Base Price: $185/cwt
-- **Final Price: $193/cwt**
-- **Total Value: 13.5 × $193 = $2,605.50**
+**Database Optimization:**
+- Index frequently queried fields
+- Partition large tables by date or tenant
+- Archive historical data to cold storage
 
 ---
 
-## 📍 Geolocation Features
+## Roadmap
 
-### GPS Tracking
-- Real-time location updates from GPS collars
-- Movement history with timestamps
-- Property and pasture assignment
-- Altitude and accuracy tracking
+### ✅ Completed Features (v1.0)
 
-### Geofencing (Future)
-- Define virtual boundaries
-- Alert on fence violations
-- Entry/exit notifications
-- Automated compliance monitoring
+**Core Platform:**
+- ✅ React 19 + Tailwind 4 + tRPC 11 Dashboard
+- ✅ 360 Cattle Digital Twins with Demo Data
+- ✅ MySQL Operational Database with Drizzle ORM
+- ✅ Professional Navigation with iCattle Logo
+- ✅ Role-Based Views (Farmer, Bank, Financial, Provenance)
 
-### Herd Mapping
-- Visualize animal distribution
-- Pasture utilization analytics
-- Movement pattern analysis
-- Distance calculations
+**Event Sourcing & Turing Protocol:**
+- ✅ Kafka Event Streaming Infrastructure (Docker Compose)
+- ✅ Turing Protocol Event Envelopes (Payload Hashing, Chain Linking)
+- ✅ PostgreSQL Golden Record Database
+- ✅ Kafka Producer & Consumer
+- ✅ Event Replay & State Reconstruction
+- ✅ Audit Trail Viewer UI
 
----
+**Fraud Detection:**
+- ✅ NLIS Tag Swap Detection
+- ✅ Rapid Movement Detection (Impossible Travel Times)
+- ✅ Price Anomaly Detection
+- ✅ Ownership Churn Detection
+- ✅ Location Anomaly Detection
+- ✅ Risk Scoring (0-100 Scale)
+- ✅ Fraud Detection Viewer UI
 
-## 🗄️ Database Schema
+**Financial Integration (Australian Standards):**
+- ✅ Xero OAuth 2.0 Integration
+- ✅ AASB 141 Agriculture Standard Compliance
+- ✅ Fair Value Less Costs to Sell Calculation
+- ✅ Biological Assets Account Structure
+- ✅ Automated Journal Entry Posting
+- ✅ P&L Recognition (Fair Value Gains/Losses)
+- ✅ AASB 141 Disclosure Reports
+- ✅ Financial Dashboard UI
 
-### Event Store Tables
+**Asset Management:**
+- ✅ iCattle Certified™ Tier System (Gold/Silver/Bronze/Non-Certified)
+- ✅ Provenance Risk Assessment
+- ✅ Collateral Quality Scoring for Australian Banks
+- ✅ Bank View with Tier Distribution
+- ✅ Portfolio Value Tracking
+- ✅ Market Premium/Discount Calculation
 
-**Core event tables:**
-- `animal_grading_events` - Grading assessments
-- `physical_measurement_events` - Weight and measurements
-- `health_assessment_events` - Health records
-- `animal_location_events` - GPS coordinates
-- `market_valuation_events` - Market value calculations
+**Testing & Documentation:**
+- ✅ Comprehensive Test Suites (Vitest)
+- ✅ Complete Ecosystem Documentation
+- ✅ AASB 141 Compliance Guide
+- ✅ Windows PowerShell Setup Script
 
-**All event tables include:**
-- Event ID (UUID primary key)
-- Aggregate ID (muzzle hash)
-- Event-specific data
-- Timestamp
-- **Full Turing Protocol context** (tenant_id, request_id, user_id, device_id, geo_location)
+### 🚧 In Progress (v1.1 - December 2025)
 
-### Read Model Tables
+**Documentation:**
+- 🚧 Turing Protocol Technical Documentation
+- 🚧 Kafka Integration Guide
+- 🚧 API Reference Documentation
+- 🚧 Australian Deployment Guide (AWS Sydney Region)
 
-**Optimized for queries:**
-- `animal_profiles` - Denormalized animal data (latest state)
-- `location_history` - GPS movement tracking
-- `portfolio_valuations` - Aggregated tenant summaries
-- `market_price_cache` - Cached market prices
+**Testing:**
+- 🚧 Fix Remaining Test Failures
+- 🚧 E2E Tests for Critical Flows
+- 🚧 Performance Testing for Large Herds (10,000+ cattle)
 
-### Audit Tables
+### 📋 Planned Features (v1.2 - Q1 2026)
 
-- `api_audit_log` - Complete API interaction log
-- `geofence_violations` - Fence breach records
+**MYOB Integration (Australian Market Priority):**
+- MYOB AccountRight API Integration
+- MYOB Essentials Support
+- Parallel Financial Sync (Xero + MYOB)
+- MYOB-Specific AASB 141 Reporting
+- Bank File Export (NAB, ANZ, Westpac, CommBank)
 
----
+**MLA Integration (Meat & Livestock Australia):**
+- MLA NLRS (National Livestock Reporting Service) Live Price Feed
+- Eastern Young Cattle Indicator (EYCI) Integration
+- Western Young Cattle Indicator (WYCI) Integration
+- Category-Specific Indicators (Steers, Heifers, Cows)
+- Regional Saleyard Price Integration
+- MSA (Meat Standards Australia) Grading Integration
 
-## 🧪 Testing
+**NLIS Integration (National Livestock Identification System):**
+- NLIS Database API Integration
+- Automated NLIS Tag Verification
+- Movement Reporting to NLIS
+- PIC (Property Identification Code) Validation
+- Waybill Generation
+- NLIS Compliance Reporting
 
-### Run Comprehensive Test Suite
+**Enhanced Fraud Detection:**
+- Fraud Alert Badges on Cattle Cards
+- Portfolio-Wide Fraud Dashboard
+- Email/SMS Notifications (Telstra, Optus, Vodafone)
+- Fraud Investigation Workflow
+- Integration with State DPI (Department of Primary Industries)
 
-```bash
-python3 test_livestock_management.py
-```
+**Australian Bank Integration:**
+- NAB AgriHub Integration
+- Rabobank Agri Portal Integration
+- ANZ Agribusiness Integration
+- Westpac Agribusiness Integration
+- Automated Loan Application Submission
+- Real-Time Collateral Valuation API
 
-**Tests include:**
-1. ✅ Live market price retrieval
-2. ✅ Multi-tenant animal processing (4 owners)
-3. ✅ Grading, measurements, health, location, valuation
-4. ✅ Individual animal profile queries
-5. ✅ Portfolio valuation aggregation
-6. ✅ Turing Protocol enforcement validation
+### 🔮 Future Enhancements (v2.0 - Q2-Q3 2026)
 
-**Expected Output:**
-```
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                                                                              ║
-║          iCattle.ai - Comprehensive Livestock Management Platform            ║
-║      Biometric ID • Grading • Pricing • Geolocation • Analytics             ║
-║                                                                              ║
-║                        Developed by: TuringDynamics                          ║
-║            Enforcing Turing Protocol for Bank-Grade Auditability            ║
-║                                                                              ║
-╚══════════════════════════════════════════════════════════════════════════════╝
+**Ag-Specialist Software Integration (Australian Platforms):**
+- Phoenix Software Integration (Farm Management)
+- AgriMaster Integration (Accounting & Farm Management)
+- Figured Integration (Financial Forecasting)
+- FarmBot Integration (Livestock Management)
+- AgriWebb Integration (Livestock & Pasture Management)
+- Deep Farm Data (Paddock Management, Feed Costs, Rainfall)
 
-📊 TEST 1: Fetching Live Cattle Market Prices
-────────────────────────────────────────────────────────────────────────────────
-✅ Retrieved 4 market price quotes
-   Fed Cattle: $185.00/cwt
-   Source: CME Live Cattle Futures (Simulated)
-   ...
+**Advanced Analytics for Australian Conditions:**
+- Drought Impact Modeling
+- Seasonal Price Forecasting (Northern vs Southern Markets)
+- Optimal Selling Time Recommendations (Saleyard vs Direct)
+- Feed Efficiency Analysis (Pasture vs Feedlot)
+- Breeding Program Optimization (Australian Genetics)
+- Carbon Accounting (Australian Carbon Credit Units)
 
-🐄 TEST 2: Processing Animals for Smith Ranch (OWNER-001)
-────────────────────────────────────────────────────────────────────────────────
-   Animal 1/5: muzzle_hash_001_OWNER-001
-   ✅ Grading recorded: Choice grade
-   ✅ Measurements recorded: 1350.0 lbs
-   ✅ Health assessment recorded: Healthy
-   ✅ Location updated: RANCH-001/PASTURE-A
-   ✅ Valuation calculated
-   ...
+**Mobile Application (Australian Focus):**
+- React Native Mobile App (iOS & Android)
+- Offline-First Architecture (for Remote Properties)
+- Camera Integration for Biometric Capture
+- GPS Tracking with Telstra Network Optimization
+- Push Notifications via Australian Carriers
+- Voice Commands (Australian English)
 
-💰 TEST 4: Portfolio Valuations by Owner
-────────────────────────────────────────────────────────────────────────────────
-✅ Smith Ranch (OWNER-001):
-   Total Animals: 1500
-   Total Value: $3,937,500.00
-   Avg Value/Head: $2,625.00
-   Total Weight: 2,025,000 lbs
-   ...
+**IoT Integration (Australian Suppliers):**
+- Allflex Smart Ear Tags Integration
+- Gallagher Weigh Scale Integration
+- Datamars Livestock Sensors
+- Water Trough Monitoring (Outback Conditions)
+- Pasture Condition Sensors (BoM Integration)
+- Real-Time Health Alerts via SMS
 
-📊 TOTAL PORTFOLIO VALUE (All Owners): $15,750,000.00
+**Regulatory Compliance (Australian Standards):**
+- LPA (Livestock Production Assurance) Certification Tracking
+- NVD (National Vendor Declaration) Generation
+- MSA (Meat Standards Australia) Compliance
+- ESCAS (Exporter Supply Chain Assurance System) for Live Export
+- Biosecurity Compliance (State-Specific Requirements)
+- Animal Welfare Standards Tracking
 
-✅ All Tests Completed!
-```
+**Marketplace (Australian Livestock Trading):**
+- AuctionsPlus Integration
+- StockLive Integration
+- Meat & Livestock Australia Marketplace
+- Verified Buyer/Seller Profiles (ABN Verification)
+- Escrow Payment System (Australian Banks)
+- Transport Coordination (Australian Carriers)
+- Insurance Integration (CGU, Allianz Agri)
 
----
+**Climate & Sustainability (Australian Context):**
+- BoM (Bureau of Meteorology) Weather Integration
+- Drought Declarations Tracking
+- Carbon Footprint Calculation (Australian Standards)
+- Emissions Reduction Fund (ERF) Reporting
+- Sustainability Certification (RSPA, Certified Humane)
+- Water Usage Tracking (Murray-Darling Basin Compliance)
 
-## 📈 Performance Metrics
-
-**Demonstrated Performance:**
-- **Throughput:** 32.4 animals/second
-- **Success Rate:** 100% (6,000/6,000 animals)
-- **Latency:** <100ms per API call
-- **Concurrent Tenants:** 4+ owners
-- **Real-Time Updates:** WebSocket dashboard with <50ms latency
-
----
-
-## 🔐 Security & Compliance
-
-### Turing Protocol Enforcement
-- **All API endpoints require 5 headers**
-- Requests without headers are rejected (HTTP 422)
-- Complete audit trail for regulatory compliance
-
-### Multi-Tenancy
-- Strict tenant isolation
-- Cross-tenant access prevention
-- Tenant ID validation on all operations
-
-### Data Integrity
-- Immutable event log
-- Event sourcing prevents data loss
-- Full historical reconstruction capability
-
----
-
-## 🚀 Deployment
-
-### Production Checklist
-
-- [ ] Configure PostgreSQL connection
-- [ ] Set up Kafka for event streaming
-- [ ] Configure CME Market Data API credentials
-- [ ] Set up USDA AMS API integration
-- [ ] Deploy API Gateway (port 8002)
-- [ ] Deploy WebSocket Dashboard (port 8003)
-- [ ] Configure SSL/TLS certificates
-- [ ] Set up monitoring and alerting
-- [ ] Configure backup and disaster recovery
-- [ ] Load test with production volumes
-
-### Environment Variables
-
-```bash
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5433/icattle_db
-
-# Market Data APIs
-CME_API_KEY=your_cme_api_key
-CME_API_SECRET=your_cme_api_secret
-USDA_AMS_API_URL=https://mpr.datamart.ams.usda.gov/services/v1.1
-
-# Application
-API_PORT=8002
-DASHBOARD_PORT=8003
-LOG_LEVEL=INFO
-```
+**Regional Saleyard Integration:**
+- Wagga Wagga Livestock Marketing Centre
+- Dubbo Regional Livestock Markets
+- Roma Saleyards
+- Ballarat Livestock Exchange
+- Mount Gambier Livestock Exchange
+- Real-Time Bidding Integration
+- Saleyard Price Benchmarking
 
 ---
 
-## 📚 Additional Resources
+## Contributing
 
-### USDA Grading Standards
-- [USDA Beef Grading](https://www.ams.usda.gov/grades-standards/beef)
-- [Quality Grades Explained](https://www.ams.usda.gov/grades-standards/beef/quality-grades)
-- [Yield Grades Explained](https://www.ams.usda.gov/grades-standards/beef/yield-grades)
+Contributions welcome! Please follow these guidelines:
 
-### Market Data
-- [CME Live Cattle Futures](https://www.cmegroup.com/markets/agriculture/livestock/live-cattle.html)
-- [USDA Market News](https://www.ams.usda.gov/market-news)
-- [Cattle Market Analysis](https://www.ers.usda.gov/topics/animal-products/cattle-beef/)
+**Code Quality:**
+- Write clean, well-documented code
+- Follow existing code style and conventions
+- Include comprehensive test coverage
 
-### Event Sourcing
-- [Event Sourcing Pattern](https://martinfowler.com/eaaDev/EventSourcing.html)
-- [CQRS Pattern](https://martinfowler.com/bliki/CQRS.html)
-- [Domain-Driven Design](https://www.domainlanguage.com/ddd/)
+**Testing:**
+- All new features must include unit tests
+- Integration tests for API endpoints
+- End-to-end tests for critical user flows
 
----
+**Documentation:**
+- Update documentation to reflect changes
+- Include inline code comments for complex logic
+- Update API documentation for new endpoints
 
-## 🤝 Support
-
-**Developed by:** TuringDynamics  
-**Contact:** support@turingdynamics.com  
-**Documentation:** https://docs.icattle.ai  
-**Status:** Production-Ready  
+**Pull Requests:**
+- Clear description of changes
+- Reference related issues or feature requests
+- Ensure all tests pass before submitting
 
 ---
 
-## 📄 License
+## License
 
-Copyright © 2025 TuringDynamics. All rights reserved.
+Copyright © 2025 Turing Dynamics 3000. All rights reserved.
 
----
-
-## 🎯 Roadmap
-
-### Phase 1: Core Platform ✅
-- [x] Biometric identification
-- [x] Event sourcing architecture
-- [x] Turing Protocol enforcement
-- [x] Real-time dashboard
-
-### Phase 2: Livestock Management ✅
-- [x] USDA grading system
-- [x] Physical measurements
-- [x] Health monitoring
-- [x] Geolocation tracking
-- [x] Market pricing integration
-- [x] Portfolio analytics
-
-### Phase 3: Advanced Features (Q1 2025)
-- [ ] Mobile app for field operations
-- [ ] Geofencing with automated alerts
-- [ ] Predictive health analytics (ML)
-- [ ] Blockchain integration for supply chain
-- [ ] Integration with livestock auctions
-- [ ] Automated compliance reporting
-
-### Phase 4: Enterprise Features (Q2 2025)
-- [ ] Multi-property management
-- [ ] Financial forecasting
-- [ ] Feed optimization recommendations
-- [ ] Breeding program management
-- [ ] Carbon credit tracking
-- [ ] Integration with farm management systems
+This software is proprietary and confidential. Unauthorized copying, distribution, or use is strictly prohibited.
 
 ---
 
-**Built with ❤️ by TuringDynamics**
+## Contact
+
+**GitHub:** https://github.com/TuringDynamics3000/icattle-ai-turing-core
+
+**Email:** [Contact Information]
+
+---
+
+**Built with ❤️ by Turing Dynamics 3000**
+
+*Transforming livestock into verifiable financial assets through biometric identification, event sourcing, and cryptographic audit trails.*

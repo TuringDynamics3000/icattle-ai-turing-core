@@ -610,3 +610,15 @@
 - [x] Update Navigation component to use logo image
 - [x] Ensure logo displays correctly on all screen sizes
 - [ ] Update favicon (future enhancement)
+
+
+## 📚 Documentation
+- [ ] Create comprehensive README.md
+- [ ] Document architecture and system design
+- [ ] Create API documentation
+- [ ] Document Kafka event streaming system
+- [ ] Document Turing Protocol and fraud detection
+- [ ] Document AASB 141 compliance and Xero integration
+- [ ] Create deployment guide
+- [ ] Document environment variables
+- [ ] Create developer onboarding guide
