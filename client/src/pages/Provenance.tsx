@@ -11,7 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Shield, AlertTriangle, CheckCircle2, XCircle, Search, FileText } from 'lucide-react';
-import { trpc } from '@/lib/trpc';
+import { trpc } from "@/lib/trpc";
+import { CertificationBadge } from "@/components/CertificationBadge";
 
 export default function Provenance() {
   const [searchTag, setSearchTag] = useState('');
@@ -164,6 +165,13 @@ export default function Provenance() {
                         <Badge variant="outline">NLIS: {animal.nlisId}</Badge>
                       )}
                       {getConfidenceBadge(confidenceScore)}
+                      {animal.certification && (
+                        <CertificationBadge 
+                          tier={animal.certification.tier} 
+                          score={animal.certification.confidenceScore}
+                          size="sm"
+                        />
+                      )}
                     </CardTitle>
                     <CardDescription className="mt-2">
                       {animal.breed} {animal.sex} • {animal.currentWeight}kg

@@ -4,6 +4,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
+import { calculateCertification } from "./_core/certificationScoring";
 import { marketLiveRouter } from "./routers/market-live";
 import { BreedPremiums } from './_core/breedPremiums';
 
@@ -48,7 +49,12 @@ export const appRouter = router({
   
   cattle: router({
     list: publicProcedure.query(async () => {
-      return await db.getAllCattle();
+      const cattle = await db.getAllCattle();
+      // Add certification scoring to each cattle
+      return cattle.map((c: any) => ({
+        ...c,
+        certification: calculateCertification(c),
+      }));
     }),
     
     active: publicProcedure.query(async () => {
