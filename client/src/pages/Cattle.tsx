@@ -319,47 +319,47 @@ export function Cattle() {
             <CardContent className="space-y-3">
               <Link href={`/cattle/${animal.id}`}>
                 <div className="cursor-pointer">
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <div className="text-muted-foreground">NLIS ID</div>
-                    <div className="font-mono text-xs">{animal.nlisId}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">Weight</div>
-                    <div className="font-semibold">{animal.currentWeight}kg</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">Type</div>
-                    <div className="capitalize">{animal.cattleType}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">Location</div>
-                    <div className="text-xs">{animal.currentLocation}</div>
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">Current Value</div>
-                    <div className="text-lg font-bold text-green-600">
-                      {formatCurrency(animal.currentValuation)}
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <div className="text-muted-foreground">NLIS ID</div>
+                      <div className="font-mono text-xs">{animal.nlisId}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Weight</div>
+                      <div className="font-semibold">{animal.currentWeight}kg</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Type</div>
+                      <div className="capitalize">{animal.cattleType}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Location</div>
+                      <div className="text-xs">{animal.currentLocation}</div>
                     </div>
                   </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    Owner: {getClientName(animal.clientId)}
-                  </div>
-                </div>
 
-                {animal.biometricId && (
-                  <div className="pt-2 border-t">
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
-                      <span className="text-xs text-muted-foreground">
-                        Biometric ID: {animal.biometricId.substring(0, 8)}...
-                      </span>
+                  <div className="pt-3 border-t">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-muted-foreground">Current Value</div>
+                      <div className="text-lg font-bold text-green-600">
+                        {formatCurrency(animal.currentValuation)}
+                      </div>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Owner: {getClientName(animal.clientId)}
                     </div>
                   </div>
-                )}
+
+                  {animal.biometricId && (
+                    <div className="pt-2 border-t">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
+                        <span className="text-xs text-muted-foreground">
+                          Biometric ID: {animal.biometricId.substring(0, 8)}...
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </Link>
             </CardContent>

@@ -69,9 +69,23 @@ export function BankView() {
     : { client: null, value: 0, count: 0 };
   const concentrationRisk = totalValue > 0 ? (largestClient.value / totalValue) * 100 : 0;
 
-  // Loan-to-Value (LTV) - assuming 70% lending ratio as standard
-  const assumedLoanAmount = totalValue * 0.7; // 70% LTV
-  const currentLTV = totalValue > 0 ? (assumedLoanAmount / totalValue) * 100 : 0;
+  // Loan-to-Value (LVR) - realistic 75% based on NAB/Rabobank research (70-80% range)
+  const lvrRatio = 0.75; // 75% LVR (mid-range of industry standard 70-80%)
+  const assumedLoanAmount = totalValue * lvrRatio;
+  const currentLVR = totalValue > 0 ? (assumedLoanAmount / totalValue) * 100 : 0;
+  const equityCushion = 100 - currentLVR; // Equity buffer
+  
+  // Interest rate assumption based on 2025 market rates
+  const interestRate = 6.0; // 6.0% p.a. (mid-range of 5.5-6.5%)
+  
+  // Debt Service Coverage Ratio (DSCR)
+  // Estimated annual income from cattle sales (assuming 20% turnover at current values)
+  const estimatedAnnualIncome = totalValue * 0.20; // 20% of portfolio value as annual sales
+  const annualInterestPayment = assumedLoanAmount * (interestRate / 100);
+  const debtServiceCoverage = annualInterestPayment > 0 ? estimatedAnnualIncome / annualInterestPayment : 0;
+  
+  // Collateral coverage ratio
+  const collateralCoverage = totalValue > 0 ? (totalValue / assumedLoanAmount) * 100 : 0;
 
   // Compliance status
   const blockchainVerified = cattle?.filter(c => c.biometricId).length || 0;
@@ -107,8 +121,8 @@ export function BankView() {
     else if (concentrationRisk > 25) riskScore += 2;
     else riskScore += 1;
 
-    if (currentLTV > 80) riskScore += 3;
-    else if (currentLTV > 70) riskScore += 2;
+    if (currentLVR > 80) riskScore += 3;
+    else if (currentLVR > 70) riskScore += 2;
     else riskScore += 1;
 
     if (riskScore <= 4) return { rating: 'Low Risk', color: 'text-green-600', variant: 'default' as const };
@@ -142,7 +156,7 @@ export function BankView() {
                 portfolioValue: totalValue,
                 unrealizedGain: unrealizedGain,
                 unrealizedGainPercent: unrealizedGainPercent,
-                ltvRatio: currentLTV,
+                ltvRatio: currentLVR,
                 assumedLoan: assumedLoanAmount,
                 healthyCount: totalCattle - sickCattle,
                 totalCount: totalCattle,
@@ -217,7 +231,7 @@ export function BankView() {
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatPercent(currentLTV)}</div>
+            <div className="text-2xl font-bold">{formatPercent(currentLVR)}</div>
             <p className="text-xs text-muted-foreground mt-1">
               {formatCurrency(assumedLoanAmount)} assumed loan
             </p>
@@ -233,6 +247,45 @@ export function BankView() {
             <div className="text-2xl font-bold">{totalCattle - sickCattle}/{totalCattle}</div>
             <p className="text-xs text-muted-foreground mt-1">
               {formatPercent(100 - healthRiskPercent)} healthy assets
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Debt Service Coverage</CardTitle>
+            <Shield className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{debtServiceCoverage.toFixed(2)}x</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {formatCurrency(annualInterestPayment)} annual interest
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Equity Cushion</CardTitle>
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{formatPercent(equityCushion)}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {formatCurrency(totalValue - assumedLoanAmount)} equity buffer
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Interest Rate</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{interestRate.toFixed(2)}%</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Based on 2025 market rates
             </p>
           </CardContent>
         </Card>
@@ -311,17 +364,17 @@ export function BankView() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">Current LTV</span>
-                  <span className="text-sm font-bold text-green-600">{formatPercent(currentLTV)}</span>
+                  <span className="text-sm font-bold text-green-600">{formatPercent(currentLVR)}</span>
                 </div>
                 <div className="w-full bg-muted rounded-full h-2">
                   <div 
                     className="bg-green-600 h-2 rounded-full transition-all"
-                    style={{ width: `${currentLTV}%` }}
+                    style={{ width: `${currentLVR}%` }}
                   />
                 </div>
               </div>
               <div className="text-sm text-muted-foreground">
-                {formatPercent(100 - currentLTV)} equity cushion
+                {formatPercent(100 - currentLVR)} equity cushion
               </div>
             </div>
           </CardContent>

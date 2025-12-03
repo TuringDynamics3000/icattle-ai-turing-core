@@ -229,3 +229,17 @@
 - [x] Add visual feedback (selected cattle highlighted with blue ring)
 - [ ] Show progress indicators for batch processing (future enhancement)
 - [ ] Add bulk status change (active/sold/deceased) (future enhancement)
+
+
+## 🏦 Realistic Bank Lending Metrics
+- [x] Update Bank View with realistic LVR (75% mid-range of 70-80%)
+- [x] Add interest rate assumptions (6.0% based on 2025 rates)
+- [x] Calculate and display equity cushion (25% at 75% LVR)
+- [x] Add debt service coverage ratio (DSCR calculation)
+- [x] Show assumed loan amount based on LVR
+- [x] Add collateral quality assessment
+- [x] Add collateral coverage ratio
+- [x] Research and document NAB/Rabobank lending standards
+- [x] Add new metric cards (Debt Service Coverage, Equity Cushion, Interest Rate)
+- [ ] Include loan type indicators (breeding/feeder/stocker) (future enhancement)
+- [ ] Show production cycle vs. loan maturity alignment (future enhancement)
