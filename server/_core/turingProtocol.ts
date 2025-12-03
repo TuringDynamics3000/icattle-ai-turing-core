@@ -20,7 +20,9 @@ export type EventType =
   | 'TAG_CHANGED'
   | 'VALUATION_UPDATE'
   | 'LOCATION_MOVED'
+  | 'MOVEMENT'
   | 'HEALTH_RECORD'
+  | 'HEALTH_CHECK'
   | 'WEIGHT_RECORDED'
   | 'BREEDING_EVENT'
   | 'SALE_INITIATED'
@@ -118,7 +120,16 @@ export function createEventMetadata(params: {
  * SHA-256 hash of payload for tamper detection
  */
 export function calculatePayloadHash(payload: any): string {
-  const content = JSON.stringify(payload, Object.keys(payload).sort());
+  let content: string;
+  
+  if (payload === null || payload === undefined) {
+    content = String(payload);
+  } else if (typeof payload !== 'object') {
+    content = JSON.stringify(payload);
+  } else {
+    content = JSON.stringify(payload, Object.keys(payload).sort());
+  }
+  
   return crypto.createHash('sha256').update(content).digest('hex');
 }
 
@@ -446,10 +457,48 @@ export function validateEventEnvelope<T>(envelope: EventEnvelope<T>): Validation
 // EXPORTS
 // ============================================================================
 
+/**
+ * Convenience function to create complete event envelope in one call
+ * Combines createEventMetadata + createEventEnvelope
+ */
+export function createCompleteEventEnvelope<T>(params: {
+  event_type: EventType;
+  event_ref: string;
+  cattle_id: number;
+  payload: T;
+  occurred_at?: Date;
+  correlation_id?: string;
+  causation_id?: string;
+  source_system?: SourceSystem;
+  created_by?: string;
+  previous_hash?: string;
+}): EventEnvelope<T> {
+  const idempotency_key = generateIdempotencyKey(
+    params.event_type,
+    params.cattle_id,
+    params.event_ref
+  );
+
+  const metadata = createEventMetadata({
+    event_type: params.event_type,
+    event_ref: params.event_ref,
+    cattle_id: params.cattle_id,
+    occurred_at: params.occurred_at,
+    idempotency_key,
+    correlation_id: params.correlation_id,
+    causation_id: params.causation_id,
+    source_system: params.source_system || 'iCattle',
+    created_by: params.created_by,
+  });
+
+  return createEventEnvelope(metadata, params.payload, params.previous_hash);
+}
+
 export const TuringProtocol = {
   // Event creation
   createEventMetadata,
   createEventEnvelope,
+  createCompleteEventEnvelope,
   generateEventId,
   generateIdempotencyKey,
   

@@ -8,6 +8,7 @@
  */
 
 import { Kafka, Consumer, EachMessagePayload } from 'kafkajs';
+import { Pool } from 'pg';
 import type { EventEnvelope } from './turingProtocol';
 import { TuringProtocol } from './turingProtocol';
 
@@ -15,10 +16,13 @@ import { TuringProtocol } from './turingProtocol';
 // CONFIGURATION
 // ============================================================================
 
-const KAFKA_BROKERS = process.env.KAFKA_BROKERS?.split(',') || ['localhost:9093'];
+const KAFKA_BROKERS = process.env.KAFKA_BROKERS?.split(',') || ['localhost:9092'];
 const KAFKA_CLIENT_ID = process.env.KAFKA_CLIENT_ID || 'icattle-consumer';
 const KAFKA_GROUP_ID = process.env.KAFKA_GROUP_ID || 'icattle-event-processor';
 const KAFKA_TOPIC_PREFIX = process.env.KAFKA_TOPIC_PREFIX || 'icattle';
+
+const GOLDEN_RECORD_DB_URL = process.env.GOLDEN_RECORD_DATABASE_URL || 
+  'postgresql://icattle:icattle_dev_password@localhost:5432/icattle_golden_record';
 
 // ============================================================================
 // KAFKA CLIENT
@@ -28,49 +32,108 @@ let kafka: Kafka | null = null;
 let consumer: Consumer | null = null;
 let isConnected = false;
 
+// PostgreSQL connection pool
+let pgPool: Pool | null = null;
+
+function getPostgresPool(): Pool {
+  if (!pgPool) {
+    pgPool = new Pool({
+      connectionString: GOLDEN_RECORD_DB_URL,
+      max: 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000,
+    });
+
+    pgPool.on('error', (err) => {
+      console.error('[PostgreSQL] Unexpected error on idle client', err);
+    });
+  }
+  return pgPool;
+}
+
 // ============================================================================
 // EVENT PERSISTENCE (Database I/O - Imperative Shell)
 // ============================================================================
 
 /**
- * Persist event to PostgreSQL (side effect)
- * This would use webdev_execute_sql or a proper database client
+ * Persist event to PostgreSQL Golden Record database (side effect)
  */
 async function persistEventToDatabase(envelope: EventEnvelope): Promise<void> {
-  // TODO: Implement actual database persistence
-  // For now, log the event
-  console.log('[DB] Persisting event to PostgreSQL:', {
-    event_id: envelope.metadata.event_id,
-    event_type: envelope.metadata.event_type,
-    cattle_id: envelope.metadata.cattle_id,
-    payload_hash: envelope.payload_hash,
-  });
+  const pool = getPostgresPool();
+  const { metadata, payload, payload_hash, previous_hash } = envelope;
 
-  // In production, this would be:
-  // await db.execute(`
-  //   INSERT INTO cattle_events (
-  //     event_id, seq_id, occurred_at, recorded_at,
-  //     event_type, event_ref, cattle_id,
-  //     idempotency_key, correlation_id, causation_id,
-  //     payload_hash, previous_hash, payload_json,
-  //     source_system, schema_version, created_by
-  //   ) VALUES (...)
-  // `, envelope);
+  const query = `
+    INSERT INTO cattle_events (
+      event_id,
+      event_type,
+      event_ref,
+      cattle_id,
+      occurred_at,
+      recorded_at,
+      idempotency_key,
+      correlation_id,
+      causation_id,
+      source_system,
+      schema_version,
+      created_by,
+      payload,
+      payload_hash,
+      previous_hash
+    ) VALUES (
+      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
+    )
+    ON CONFLICT (idempotency_key) DO NOTHING
+    RETURNING event_id;
+  `;
+
+  const values = [
+    metadata.event_id,
+    metadata.event_type,
+    metadata.event_ref,
+    metadata.cattle_id,
+    metadata.occurred_at,
+    metadata.recorded_at,
+    metadata.idempotency_key,
+    metadata.correlation_id || null,
+    metadata.causation_id || null,
+    metadata.source_system,
+    metadata.schema_version,
+    metadata.created_by || null,
+    JSON.stringify(payload),
+    payload_hash,
+    previous_hash || null,
+  ];
+
+  try {
+    const result = await pool.query(query, values);
+    
+    if (result.rowCount === 0) {
+      console.log(`[Golden Record] Event ${metadata.event_id} already exists (idempotency)`);
+    } else {
+      console.log(`[Golden Record] Persisted event ${metadata.event_id}`);
+    }
+  } catch (error) {
+    console.error('[Golden Record] Failed to persist event:', error);
+    throw error;
+  }
 }
 
 /**
  * Check if event already processed (idempotency check)
  */
 async function isEventProcessed(idempotency_key: string): Promise<boolean> {
-  // TODO: Implement actual database check
-  // For now, return false (always process)
-  return false;
-
-  // In production:
-  // const result = await db.execute(`
-  //   SELECT 1 FROM cattle_events WHERE idempotency_key = ?
-  // `, [idempotency_key]);
-  // return result.length > 0;
+  const pool = getPostgresPool();
+  
+  try {
+    const result = await pool.query(
+      'SELECT 1 FROM cattle_events WHERE idempotency_key = $1',
+      [idempotency_key]
+    );
+    return result.rowCount! > 0;
+  } catch (error) {
+    console.error('[Golden Record] Failed to check idempotency:', error);
+    return false;
+  }
 }
 
 // ============================================================================
@@ -197,6 +260,12 @@ export async function disconnectKafkaConsumer(): Promise<void> {
     isConnected = false;
     console.log('[Kafka] Consumer disconnected');
   }
+
+  if (pgPool) {
+    await pgPool.end();
+    pgPool = null;
+    console.log('[PostgreSQL] Connection pool closed');
+  }
 }
 
 // ============================================================================
@@ -222,7 +291,43 @@ process.on('SIGINT', async () => {
 // EXPORTS
 // ============================================================================
 
+/**
+ * Get audit trail for a cattle from Golden Record database
+ */
+export async function getCattleAuditTrail(cattleId: number): Promise<any[]> {
+  const pool = getPostgresPool();
+
+  const query = `
+    SELECT * FROM get_cattle_audit_trail($1);
+  `;
+
+  try {
+    const result = await pool.query(query, [cattleId]);
+    return result.rows;
+  } catch (error) {
+    console.error('[Golden Record] Failed to get audit trail:', error);
+    throw error;
+  }
+}
+
+/**
+ * Refresh the Golden Record materialized view
+ */
+export async function refreshGoldenRecord(): Promise<void> {
+  const pool = getPostgresPool();
+
+  try {
+    await pool.query('SELECT refresh_golden_record();');
+    console.log('[Golden Record] Materialized view refreshed');
+  } catch (error) {
+    console.error('[Golden Record] Failed to refresh materialized view:', error);
+    throw error;
+  }
+}
+
 export const KafkaConsumer = {
   init: initKafkaConsumer,
   disconnect: disconnectKafkaConsumer,
+  getCattleAuditTrail,
+  refreshGoldenRecord,
 };

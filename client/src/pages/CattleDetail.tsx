@@ -8,6 +8,7 @@ import {
   ArrowLeft, Calendar, MapPin, Activity, DollarSign, Shield,
   CheckCircle2, AlertCircle, TrendingUp, Syringe, Scale, FileText
 } from "lucide-react";
+import { AuditTrailViewer } from "@/components/AuditTrailViewer";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 export function CattleDetail() {
@@ -318,6 +319,7 @@ export function CattleDetail() {
           <TabsTrigger value="timeline">Lifecycle Timeline</TabsTrigger>
           <TabsTrigger value="health">Health Records</TabsTrigger>
           <TabsTrigger value="valuation">Valuation History</TabsTrigger>
+          <TabsTrigger value="audit">Audit Trail</TabsTrigger>
           <TabsTrigger value="details">Details</TabsTrigger>
         </TabsList>
 
@@ -613,6 +615,11 @@ export function CattleDetail() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Audit Trail Tab */}
+        <TabsContent value="audit" className="space-y-4">
+          <AuditTrailViewer cattleId={cattleId!} />
         </TabsContent>
       </Tabs>
     </div>

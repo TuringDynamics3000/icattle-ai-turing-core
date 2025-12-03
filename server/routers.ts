@@ -7,6 +7,8 @@ import * as db from "./db";
 import { calculateCertification } from "./_core/certificationScoring";
 import { marketLiveRouter } from "./routers/market-live";
 import { BreedPremiums } from './_core/breedPremiums';
+import { KafkaProducer } from './_core/kafkaProducer';
+import { KafkaConsumer } from './_core/kafkaConsumer';
 
 export const appRouter = router({
   system: systemRouter,
@@ -80,8 +82,30 @@ export const appRouter = router({
         healthStatus: z.enum(["healthy", "sick", "quarantine"]),
         notes: z.string().optional(),
       }))
-      .mutation(async ({ input }) => {
-        return await db.batchHealthCheck(input.cattleIds, input.healthStatus, input.notes);
+      .mutation(async ({ input, ctx }) => {
+        const result = await db.batchHealthCheck(input.cattleIds, input.healthStatus, input.notes);
+        
+        // Publish Kafka events for each cattle health check
+        try {
+          const events = input.cattleIds.map(cattleId => ({
+            event_type: 'HEALTH_CHECK' as const,
+            event_ref: `health-check-${cattleId}-${Date.now()}`,
+            cattle_id: cattleId,
+            payload: {
+              health_status: input.healthStatus,
+              notes: input.notes,
+              checked_at: new Date().toISOString(),
+            },
+            created_by: ctx.user?.name || 'system',
+          }));
+          
+          await KafkaProducer.publishBatch(events);
+        } catch (error) {
+          console.error('[Kafka] Failed to publish health check events:', error);
+          // Don't fail the operation if Kafka is down
+        }
+        
+        return result;
       }),
     
     batchMovement: protectedProcedure
@@ -90,8 +114,29 @@ export const appRouter = router({
         toLocation: z.string(),
         notes: z.string().optional(),
       }))
-      .mutation(async ({ input }) => {
-        return await db.batchMovement(input.cattleIds, input.toLocation, input.notes);
+      .mutation(async ({ input, ctx }) => {
+        const result = await db.batchMovement(input.cattleIds, input.toLocation, input.notes);
+        
+        // Publish Kafka events for each cattle movement
+        try {
+          const events = input.cattleIds.map(cattleId => ({
+            event_type: 'MOVEMENT' as const,
+            event_ref: `movement-${cattleId}-${Date.now()}`,
+            cattle_id: cattleId,
+            payload: {
+              to_location: input.toLocation,
+              notes: input.notes,
+              moved_at: new Date().toISOString(),
+            },
+            created_by: ctx.user?.name || 'system',
+          }));
+          
+          await KafkaProducer.publishBatch(events);
+        } catch (error) {
+          console.error('[Kafka] Failed to publish movement events:', error);
+        }
+        
+        return result;
       }),
     
     batchValuation: protectedProcedure
@@ -100,8 +145,42 @@ export const appRouter = router({
         valuationMethod: z.string(),
         notes: z.string().optional(),
       }))
-      .mutation(async ({ input }) => {
-        return await db.batchValuation(input.cattleIds, input.valuationMethod, input.notes);
+      .mutation(async ({ input, ctx }) => {
+        const result = await db.batchValuation(input.cattleIds, input.valuationMethod, input.notes);
+        
+        // Publish Kafka events for each valuation update
+        try {
+          const events = input.cattleIds.map(cattleId => ({
+            event_type: 'VALUATION_UPDATE' as const,
+            event_ref: `valuation-${cattleId}-${Date.now()}`,
+            cattle_id: cattleId,
+            payload: {
+              valuation_method: input.valuationMethod,
+              notes: input.notes,
+              updated_at: new Date().toISOString(),
+            },
+            created_by: ctx.user?.name || 'system',
+          }));
+          
+          await KafkaProducer.publishBatch(events);
+        } catch (error) {
+          console.error('[Kafka] Failed to publish valuation events:', error);
+        }
+        
+        return result;
+      }),
+    
+    // Audit Trail from Golden Record
+    auditTrail: publicProcedure
+      .input(z.object({ cattleId: z.number() }))
+      .query(async ({ input }) => {
+        try {
+          const auditTrail = await KafkaConsumer.getCattleAuditTrail(input.cattleId);
+          return auditTrail;
+        } catch (error) {
+          console.error('[Audit Trail] Failed to fetch:', error);
+          return [];
+        }
       }),
   }),
 
