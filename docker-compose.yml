@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  # Zookeeper - Required for Kafka coordination
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: icattle-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - icattle-network
+
+  # Kafka Broker
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: icattle-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+    networks:
+      - icattle-network
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # Kafka UI - Web interface for managing Kafka
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: icattle-kafka-ui
+    depends_on:
+      - kafka
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: icattle-local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9093
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - icattle-network
+
+  # PostgreSQL - Golden Record database for event sourcing
+  postgres:
+    image: postgres:15-alpine
+    container_name: icattle-postgres
+    environment:
+      POSTGRES_USER: icattle
+      POSTGRES_PASSWORD: icattle_dev_password
+      POSTGRES_DB: icattle_golden_record
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - icattle-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U icattle"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  icattle-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local

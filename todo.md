@@ -466,3 +466,17 @@
 - [x] Write comprehensive test suite (30 tests, all passing)
 - [ ] Connect live Kafka event streaming to TuringCore-v3 (next task)
 - [ ] Build Audit Trail Viewer UI (next task)
+
+
+## 🔗 Kafka Event Streaming Integration (In Progress)
+- [ ] Create Docker Compose file for local Kafka development
+- [ ] Update Kafka producer configuration to support local/production modes
+- [ ] Add environment variables for Kafka brokers and authentication
+- [ ] Test Kafka connection with local Docker instance
+- [ ] Create Kafka topic for iCattle livestock events
+- [ ] Test event publishing to Kafka
+- [ ] Test event consumption from Kafka
+- [ ] Build Audit Trail Viewer UI component
+- [ ] Add "View Audit Trail" button functionality to cattle detail pages
+- [ ] Display complete event history with cryptographic verification
+- [ ] Write comprehensive tests for Kafka integration
