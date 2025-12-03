@@ -1,11 +1,13 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { z } from "zod";
+import * as db from "./db";
 
 export const appRouter = router({
-    // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
+  
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
@@ -17,12 +19,130 @@ export const appRouter = router({
     }),
   }),
 
-  // TODO: add feature routers here, e.g.
-  // todo: router({
-  //   list: protectedProcedure.query(({ ctx }) =>
-  //     db.getUserTodos(ctx.user.id)
-  //   ),
-  // }),
+  // ============================================================================
+  // CLIENTS
+  // ============================================================================
+  
+  clients: router({
+    list: publicProcedure.query(async () => {
+      return await db.getAllClients();
+    }),
+    
+    active: publicProcedure.query(async () => {
+      return await db.getActiveClients();
+    }),
+    
+    get: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getClientById(input.id);
+      }),
+  }),
+
+  // ============================================================================
+  // CATTLE
+  // ============================================================================
+  
+  cattle: router({
+    list: publicProcedure.query(async () => {
+      return await db.getAllCattle();
+    }),
+    
+    active: publicProcedure.query(async () => {
+      return await db.getActiveCattle();
+    }),
+    
+    get: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getCattleById(input.id);
+      }),
+    
+    byClient: publicProcedure
+      .input(z.object({ clientId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getCattleByClient(input.clientId);
+      }),
+  }),
+
+  // ============================================================================
+  // LIFECYCLE EVENTS
+  // ============================================================================
+  
+  events: router({
+    forCattle: publicProcedure
+      .input(z.object({ cattleId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getLifecycleEvents(input.cattleId);
+      }),
+    
+    recent: publicProcedure
+      .input(z.object({ limit: z.number().optional() }))
+      .query(async ({ input }) => {
+        return await db.getRecentEvents(input.limit);
+      }),
+  }),
+
+  // ============================================================================
+  // VALUATIONS
+  // ============================================================================
+  
+  valuations: router({
+    history: publicProcedure
+      .input(z.object({ cattleId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getValuationHistory(input.cattleId);
+      }),
+    
+    latest: publicProcedure
+      .input(z.object({ cattleId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getLatestValuation(input.cattleId);
+      }),
+  }),
+
+  // ============================================================================
+  // MARKET DATA
+  // ============================================================================
+  
+  market: router({
+    latest: publicProcedure.query(async () => {
+      return await db.getLatestMarketData();
+    }),
+    
+    byCategory: publicProcedure
+      .input(z.object({ 
+        category: z.string(),
+        days: z.number().optional()
+      }))
+      .query(async ({ input }) => {
+        return await db.getMarketDataByCategory(input.category, input.days);
+      }),
+  }),
+
+  // ============================================================================
+  // PORTFOLIO ANALYTICS
+  // ============================================================================
+  
+  portfolio: router({
+    summary: publicProcedure
+      .input(z.object({ clientId: z.number().optional() }))
+      .query(async ({ input }) => {
+        return await db.getPortfolioSummary(input.clientId);
+      }),
+    
+    breedDistribution: publicProcedure
+      .input(z.object({ clientId: z.number().optional() }))
+      .query(async ({ input }) => {
+        return await db.getBreedDistribution(input.clientId);
+      }),
+    
+    typeDistribution: publicProcedure
+      .input(z.object({ clientId: z.number().optional() }))
+      .query(async ({ input }) => {
+        return await db.getCattleTypeDistribution(input.clientId);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

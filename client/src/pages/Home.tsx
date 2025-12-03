@@ -1,31 +1,236 @@
-import { useAuth } from "@/_core/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { getLoginUrl } from "@/const";
-import { Streamdown } from 'streamdown';
+import { trpc } from "@/lib/trpc";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { TrendingUp, TrendingDown, DollarSign, Activity, Users, AlertCircle } from "lucide-react";
+import { Link } from "wouter";
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
-/**
- * All content in this page are only for example, replace with your own feature implementation
- * When building pages, remember your instructions in Frontend Workflow, Frontend Best Practices, Design Guide and Common Pitfalls
- */
-export default function Home() {
-  // The userAuth hooks provides authentication state
-  // To implement login/logout functionality, simply call logout() or redirect to getLoginUrl()
-  let { user, loading, error, isAuthenticated, logout } = useAuth();
+export function Home() {
+  const { data: summary, isLoading: summaryLoading } = trpc.portfolio.summary.useQuery({});
+  const { data: breedDist, isLoading: breedLoading } = trpc.portfolio.breedDistribution.useQuery({});
+  const { data: typeDist, isLoading: typeLoading } = trpc.portfolio.typeDistribution.useQuery({});
+  const { data: recentEvents, isLoading: eventsLoading } = trpc.events.recent.useQuery({ limit: 10 });
+  const { data: activeClients, isLoading: clientsLoading } = trpc.clients.active.useQuery();
+  const { data: activeCattle, isLoading: cattleLoading } = trpc.cattle.active.useQuery();
 
-  // If theme is switchable in App.tsx, we can implement theme toggling like this:
-  // const { theme, toggleTheme } = useTheme();
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#FF6B9D'];
+
+  if (summaryLoading || breedLoading || typeLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-12 w-64" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-32" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const totalValue = summary?.totalValue || 0;
+  const totalCattle = summary?.totalCattle || 0;
+  const avgValue = totalCattle > 0 ? totalValue / totalCattle : 0;
+  const totalClients = activeClients?.length || 0;
+  const sickCattle = activeCattle?.filter(c => c.healthStatus === 'sick').length || 0;
+
+  // Format currency (cents to dollars)
+  const formatCurrency = (cents: number) => {
+    return new Intl.NumberFormat('en-AU', {
+      style: 'currency',
+      currency: 'AUD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(cents / 100);
+  };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <main>
-        {/* Example: lucide-react for icons */}
-        <Loader2 className="animate-spin" />
-        Example Page
-        {/* Example: Streamdown for markdown rendering */}
-        <Streamdown>Any **markdown** content</Streamdown>
-        <Button variant="default">Example Button</Button>
-      </main>
+    <div className="space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-4xl font-bold tracking-tight">iCattle Dashboard</h1>
+        <p className="text-muted-foreground mt-2">
+          Real-time livestock asset management and valuation platform
+        </p>
+      </div>
+
+      {/* Key Metrics */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Portfolio Value</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(totalValue)}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Across {totalCattle} head of cattle
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Average Value per Head</CardTitle>
+            <TrendingUp className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(avgValue)}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Mark-to-market valuation
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Clients</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalClients}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Producers and feedlots
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Health Alerts</CardTitle>
+            <AlertCircle className="h-4 w-4 text-orange-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{sickCattle}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Require attention
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts Row */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Breed Distribution */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Breed Distribution</CardTitle>
+            <CardDescription>Portfolio composition by breed</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={breedDist}
+                  dataKey="count"
+                  nameKey="breed"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  label={(entry) => `${entry.breed} (${entry.count})`}
+                >
+                  {breedDist?.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Type Distribution */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Cattle Type Distribution</CardTitle>
+            <CardDescription>By production purpose</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={typeDist}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="type" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="count" fill="#0088FE" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Activity */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Lifecycle Events</CardTitle>
+          <CardDescription>Latest updates across all cattle</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {eventsLoading ? (
+            <div className="space-y-2">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-16" />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {recentEvents?.slice(0, 8).map((event) => (
+                <div key={event.id} className="flex items-start justify-between border-b pb-3 last:border-0">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Activity className="h-4 w-4 text-blue-600" />
+                      <span className="font-medium capitalize">
+                        {event.eventType.replace('_', ' ')}
+                      </span>
+                      {event.weight && (
+                        <span className="text-sm text-muted-foreground">
+                          • {event.weight}kg
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {event.notes || 'No notes'}
+                    </p>
+                  </div>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    {new Date(event.eventDate).toLocaleDateString('en-AU')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Quick Links */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Link href="/cattle">
+          <Card className="hover:bg-accent cursor-pointer transition-colors">
+            <CardHeader>
+              <CardTitle>View All Cattle</CardTitle>
+              <CardDescription>Browse digital twin registry</CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+
+        <Link href="/clients">
+          <Card className="hover:bg-accent cursor-pointer transition-colors">
+            <CardHeader>
+              <CardTitle>Client Accounts</CardTitle>
+              <CardDescription>Manage producer portfolios</CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+
+        <Link href="/reports">
+          <Card className="hover:bg-accent cursor-pointer transition-colors">
+            <CardHeader>
+              <CardTitle>Financial Reports</CardTitle>
+              <CardDescription>Bank-grade reporting</CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+      </div>
     </div>
   );
 }
