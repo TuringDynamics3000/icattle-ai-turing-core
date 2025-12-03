@@ -1,7 +1,7 @@
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp, TrendingDown, Users, DollarSign, AlertCircle, Activity, Brain } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, DollarSign, AlertCircle, Activity, Brain, Shield } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Link } from "wouter";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -296,7 +296,21 @@ export function Home() {
           </Card>
         </Link>
 
-        <Link href="/recommendations">
+            <Link href="/provenance">
+              <Card className="hover:bg-accent cursor-pointer transition-colors">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5" />
+                    Provenance Dashboard
+                  </CardTitle>
+                  <CardDescription>
+                    Turing Protocol confidence scores & fraud detection
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
+            
+            <Link href="/recommendations">
           <Card className="hover:bg-accent cursor-pointer transition-colors border-purple-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

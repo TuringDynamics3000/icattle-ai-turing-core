@@ -5,6 +5,7 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
 import { marketLiveRouter } from "./routers/market-live";
+import { BreedPremiums } from './_core/breedPremiums';
 
 export const appRouter = router({
   system: systemRouter,
@@ -210,7 +211,13 @@ export const appRouter = router({
           }
           
           if (priceData) {
-            totalMarketValue += priceData.avg_price_per_kg * animal.currentWeight;
+            // Apply breed premium to base MLA price
+            const adjustedPrice = BreedPremiums.calculateAdjustedPrice(
+              priceData.avg_price_per_kg,
+              animal.breed,
+              animal.sex as any
+            );
+            totalMarketValue += adjustedPrice * animal.currentWeight;
             cattleWithMarketData++;
           }
         }

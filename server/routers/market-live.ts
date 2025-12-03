@@ -7,6 +7,7 @@
 
 import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
+import { BreedPremiums } from '../_core/breedPremiums';
 import {
   getAllCattleMarketData,
   getLatestPrice,
@@ -254,21 +255,43 @@ export const marketLiveRouter = router({
       try {
         const priceData = await getAveragePrice(indicatorId);
         
-        // Calculate estimated value
-        const estimatedValue = priceData.avg_price_per_kg * input.weight;
-        const minValue = priceData.min_price_per_kg * input.weight;
-        const maxValue = priceData.max_price_per_kg * input.weight;
+        // Apply breed premium to base MLA price
+        const adjustedPricePerKg = BreedPremiums.calculateAdjustedPrice(
+          priceData.avg_price_per_kg,
+          input.breed,
+          input.category as any
+        );
+        const adjustedMinPrice = BreedPremiums.calculateAdjustedPrice(
+          priceData.min_price_per_kg,
+          input.breed,
+          input.category as any
+        );
+        const adjustedMaxPrice = BreedPremiums.calculateAdjustedPrice(
+          priceData.max_price_per_kg,
+          input.breed,
+          input.category as any
+        );
+        
+        // Calculate estimated value with breed premium
+        const estimatedValue = adjustedPricePerKg * input.weight;
+        const minValue = adjustedMinPrice * input.weight;
+        const maxValue = adjustedMaxPrice * input.weight;
+        
+        // Get breed premium percentage for display
+        const breedPremium = BreedPremiums.getBreedPremium(input.breed);
         
         return {
-          price_per_kg: priceData.avg_price_per_kg,
-          price_range_min: priceData.min_price_per_kg,
-          price_range_max: priceData.max_price_per_kg,
+          price_per_kg: adjustedPricePerKg,
+          price_range_min: adjustedMinPrice,
+          price_range_max: adjustedMaxPrice,
+          base_price_per_kg: priceData.avg_price_per_kg,
+          breed_premium_pct: breedPremium,
           estimated_value: Math.round(estimatedValue),
           value_range_min: Math.round(minValue),
           value_range_max: Math.round(maxValue),
           sample_size: priceData.total_head_count,
           last_updated: priceData.date_range.to,
-          source: `MLA NLRS - ${priceData.indicator_desc}`,
+          source: `MLA NLRS - ${priceData.indicator_desc} + ${input.breed} Premium`,
         };
       } catch (error) {
         console.error("Failed to get market price:", error);
