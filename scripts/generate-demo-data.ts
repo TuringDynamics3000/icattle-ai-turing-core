@@ -32,16 +32,17 @@ const LOCATIONS = [
   "Home Paddock", "Back Paddock", "Creek Paddock", "Top Paddock"
 ];
 
-// GPS coordinates for paddocks (Riverina region, NSW)
+// GPS coordinates for paddocks (Rural areas 15-25km outside Wagga Wagga, NSW)
+// Wagga Wagga city center: -35.1082, 147.3598
 const PADDOCK_GPS: Record<string, { lat: number; lng: number; radius: number }> = {
-  "North Paddock": { lat: -35.1082, lng: 147.3598, radius: 0.01 },
-  "South Paddock": { lat: -35.1282, lng: 147.3598, radius: 0.01 },
-  "River Flat": { lat: -35.1182, lng: 147.3798, radius: 0.008 },
-  "Hill Country": { lat: -35.0982, lng: 147.3498, radius: 0.012 },
-  "Home Paddock": { lat: -35.1182, lng: 147.3598, radius: 0.005 },
-  "Back Paddock": { lat: -35.1382, lng: 147.3698, radius: 0.01 },
-  "Creek Paddock": { lat: -35.1082, lng: 147.3898, radius: 0.009 },
-  "Top Paddock": { lat: -35.0882, lng: 147.3598, radius: 0.011 },
+  "North Paddock": { lat: -34.9500, lng: 147.3600, radius: 0.015 },    // 17km north
+  "South Paddock": { lat: -35.2800, lng: 147.3600, radius: 0.015 },   // 19km south
+  "River Flat": { lat: -35.1100, lng: 147.5500, radius: 0.012 },      // 15km east near Murrumbidgee
+  "Hill Country": { lat: -34.9800, lng: 147.1800, radius: 0.018 },    // 20km northwest
+  "Home Paddock": { lat: -35.0600, lng: 147.4800, radius: 0.010 },    // 12km northeast
+  "Back Paddock": { lat: -35.2500, lng: 147.5200, radius: 0.015 },    // 22km southeast
+  "Creek Paddock": { lat: -35.0800, lng: 147.1500, radius: 0.014 },   // 18km west
+  "Top Paddock": { lat: -34.9200, lng: 147.4200, radius: 0.016 },     // 21km north
 };
 
 // Generate random GPS within paddock

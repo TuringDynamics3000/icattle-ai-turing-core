@@ -243,3 +243,11 @@
 - [x] Add new metric cards (Debt Service Coverage, Equity Cushion, Interest Rate)
 - [ ] Include loan type indicators (breeding/feeder/stocker) (future enhancement)
 - [ ] Show production cycle vs. loan maturity alignment (future enhancement)
+
+
+## 🗺️ GPS Coordinate Fix
+- [x] Update demo data generator with rural paddock coordinates
+- [x] Move cattle locations from city streets to farm paddocks (15-25km outside Wagga)
+- [x] Use coordinates in rural areas outside townships
+- [x] Regenerate demo data with corrected GPS locations
+- [x] Now have 360 cattle across 9 clients with realistic rural locations
