@@ -25,7 +25,17 @@ export function CattleDetail() {
   );
   const { data: clients } = trpc.clients.active.useQuery();
 
+  // Get market price for this cattle
   const animal = cattle?.find(c => c.id === cattleId);
+  const { data: marketPrice } = trpc.market.getMarketPrice.useQuery(
+    {
+      breed: animal?.breed || '',
+      category: animal?.sex || '', // Using sex (Steer/Heifer/Bull/Cow) for market category
+      weight: animal?.currentWeight || 0,
+    },
+    { enabled: !!animal?.breed && !!animal?.sex && !!animal?.currentWeight }
+  );
+
   const client = clients?.find(c => c.id === animal?.clientId);
 
   const formatCurrency = (cents: number) => {
@@ -134,10 +144,10 @@ export function CattleDetail() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Current Value</CardTitle>
+            <CardTitle className="text-sm font-medium">Book Value</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -145,6 +155,48 @@ export function CattleDetail() {
             <p className="text-xs text-muted-foreground mt-1">
               Last updated {formatDate(animal.lastValuationDate)}
             </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-blue-200 bg-blue-50/30">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Market Value</CardTitle>
+            <TrendingUp className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            {marketPrice ? (
+              <>
+                <div className="text-2xl font-bold text-blue-900">
+                  ${marketPrice.estimated_value.toLocaleString()}
+                </div>
+                <div className="flex items-center gap-2 mt-1">
+                  <p className="text-xs text-muted-foreground">
+                    ${marketPrice.price_per_kg}/kg × {animal.currentWeight}kg
+                  </p>
+                  {(() => {
+                    const bookValue = (animal.currentValuation || 0) / 100;
+                    const difference = marketPrice.estimated_value - bookValue;
+                    const percentDiff = bookValue > 0 ? (difference / bookValue) * 100 : 0;
+                    const isPositive = difference > 0;
+                    return (
+                      <Badge 
+                        variant={isPositive ? "default" : "destructive"}
+                        className="text-xs"
+                      >
+                        {isPositive ? '+' : ''}{percentDiff.toFixed(1)}%
+                      </Badge>
+                    );
+                  })()}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold text-muted-foreground">N/A</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  No market data available
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
 

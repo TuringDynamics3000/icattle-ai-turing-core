@@ -156,6 +156,67 @@ export const appRouter = router({
       .query(async ({ input }) => {
         return await db.getCattleTypeDistribution(input.clientId);
       }),
+    
+    marketValuation: publicProcedure
+      .input(z.object({ clientId: z.number().optional() }))
+      .query(async ({ input }) => {
+        // Get all cattle (filtered by client if provided)
+        const cattle = await db.getAllCattle();
+        const filteredCattle = input.clientId 
+          ? cattle.filter(c => c.clientId === input.clientId && c.status === 'active')
+          : cattle.filter(c => c.status === 'active');
+        
+        // Get market prices from cache
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        const cacheFile = path.join(process.cwd(), 'scripts', 'auctionsplus_cache.json');
+        
+        let marketData: any = null;
+        try {
+          const cacheContent = await fs.readFile(cacheFile, 'utf-8');
+          marketData = JSON.parse(cacheContent);
+        } catch (error) {
+          // Cache file doesn't exist or is invalid
+          return {
+            totalBookValue: filteredCattle.reduce((sum, c) => sum + (c.currentValuation || 0), 0),
+            totalMarketValue: null,
+            marketPremium: null,
+            cattleWithMarketData: 0,
+            totalCattle: filteredCattle.length,
+          };
+        }
+        
+        // Calculate market value for each cattle
+        let totalMarketValue = 0;
+        let cattleWithMarketData = 0;
+        
+        for (const animal of filteredCattle) {
+          if (!animal.breed || !animal.sex || !animal.currentWeight) continue;
+          
+          const priceData = marketData.price_discovery?.find((p: any) => 
+            p.breed.toLowerCase() === animal.breed.toLowerCase() &&
+            p.category.toLowerCase() === animal.sex.toLowerCase()
+          );
+          
+          if (priceData) {
+            totalMarketValue += priceData.price_per_kg * animal.currentWeight;
+            cattleWithMarketData++;
+          }
+        }
+        
+        const totalBookValue = filteredCattle.reduce((sum, c) => sum + (c.currentValuation || 0), 0);
+        const marketPremium = cattleWithMarketData > 0 
+          ? ((totalMarketValue * 100) - totalBookValue) 
+          : null;
+        
+        return {
+          totalBookValue,
+          totalMarketValue: cattleWithMarketData > 0 ? Math.round(totalMarketValue * 100) : null,
+          marketPremium,
+          cattleWithMarketData,
+          totalCattle: filteredCattle.length,
+        };
+      }),
   }),
   
   // ============================================================================

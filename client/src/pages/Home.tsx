@@ -10,6 +10,7 @@ export function Home() {
   const { data: summary, isLoading: summaryLoading } = trpc.portfolio.summary.useQuery({});
   const { data: breedDist, isLoading: breedLoading } = trpc.portfolio.breedDistribution.useQuery({});
   const { data: typeDist, isLoading: typeLoading } = trpc.portfolio.typeDistribution.useQuery({});
+  const { data: marketVal, isLoading: marketLoading } = trpc.portfolio.marketValuation.useQuery({});
   const { data: recentEvents, isLoading: eventsLoading } = trpc.events.recent.useQuery({ limit: 10 });
   const { data: activeClients, isLoading: clientsLoading } = trpc.clients.active.useQuery();
   const { data: activeCattle, isLoading: cattleLoading } = trpc.cattle.active.useQuery();
@@ -73,16 +74,37 @@ export function Home() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className={marketVal?.marketPremium !== null && marketVal?.marketPremium !== undefined ? ((marketVal?.marketPremium || 0) > 0 ? "border-green-200 bg-green-50/30" : "border-red-200 bg-red-50/30") : ""}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Value per Head</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-medium">Market Premium/Discount</CardTitle>
+            {marketVal?.marketPremium !== null && marketVal?.marketPremium !== undefined ? (
+              (marketVal?.marketPremium || 0) > 0 ? (
+                <TrendingUp className="h-4 w-4 text-green-600" />
+              ) : (
+                <TrendingDown className="h-4 w-4 text-red-600" />
+              )
+            ) : (
+              <Activity className="h-4 w-4 text-muted-foreground" />
+            )}
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(avgValue)}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Mark-to-market valuation
-            </p>
+            {marketVal?.marketPremium !== null && marketVal?.marketPremium !== undefined ? (
+              <>
+                <div className={`text-2xl font-bold ${(marketVal?.marketPremium || 0) > 0 ? 'text-green-700' : 'text-red-700'}`}>
+                  {(marketVal?.marketPremium || 0) > 0 ? '+' : ''}{formatCurrency(marketVal?.marketPremium || 0)}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {marketVal?.cattleWithMarketData || 0} of {marketVal?.totalCattle || 0} cattle valued
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold text-muted-foreground">N/A</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Market data unavailable
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
 

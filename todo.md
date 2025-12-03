@@ -269,7 +269,8 @@
 
 
 ## 🐛 Bug Fixes
-- [x] Fix nested anchor tag error on client detail page
+- [x] Fix nested anchor tag error on client detail page (first occurrence)
+- [ ] Fix nested anchor tag error on client detail page (second occurrence at /clients/30003)
 
 
 ## 📸 Cattle Muzzle Image Integration
@@ -310,3 +311,16 @@
 - [x] Add comprehensive test suite (21 tests, all passing)
 - [x] Display real market pricing data (Angus $6/kg, Wagyu $8.41/kg, Hereford $4.62/kg)
 - [ ] Integrate live AuctionsPlus API (requires authentication) (future enhancement)
+
+
+## 💰 Market Price Integration into Valuations
+- [x] Update CattleDetail page to show market value vs. book value
+- [x] Add market premium/discount badge to cattle detail pages
+- [ ] Create MarketValueComparison component (not needed - integrated directly)
+- [x] Update portfolio analytics with total market value
+- [x] Show unrealized market gains/losses on portfolio summary
+- [x] Add market premium/discount card to home dashboard
+- [x] Update home dashboard metrics with market-based valuations
+- [ ] Add market vs. book value chart to Bank View (future enhancement)
+- [x] Write tests for market valuation calculations (15 tests, all passing)
+- [x] Test market premium/discount display
