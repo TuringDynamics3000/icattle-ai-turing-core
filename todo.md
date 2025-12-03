@@ -622,3 +622,10 @@
 - [ ] Create deployment guide
 - [ ] Document environment variables
 - [ ] Create developer onboarding guide
+
+
+## 🇦🇺 Australian Standards Compliance
+- [x] Replace all USDA grading references with MSA (Meat Standards Australia)
+- [x] Update TuringCore-v3 backend description to use MSA standards
+- [x] Replace CME/USDA market data references with MLA/NLRS
+- [x] Verify all documentation uses Australian terminology

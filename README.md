@@ -153,9 +153,9 @@ The event sourcing and Kafka infrastructure layer provides:
 
 **Turing Protocol Enforcement:** Validates all API interactions with 5 required headers (X-Tenant-ID, X-Request-ID, X-User-ID, X-Device-ID, X-Geo-Location) for complete traceability.
 
-**USDA Grading Integration:** Records quality grades (Prime, Choice, Select, etc.) and yield grades (1-5) following USDA standards.
+**MSA Grading Integration:** Records quality grades (MSA 3-5 star ratings) and yield grades following Meat Standards Australia (MSA) standards for Australian beef quality assessment.
 
-**Market Data Integration:** Real-time pricing from CME Live Cattle Futures and USDA Agricultural Marketing Service.
+**Market Data Integration:** Real-time pricing from MLA National Livestock Reporting Service (NLRS) and live auction data from regional Australian saleyards.
 
 **Technology Stack:**
 - Python 3.11 (FastAPI framework)
