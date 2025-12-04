@@ -74,19 +74,30 @@ export const appRouter = router({
       .query(async ({ ctx, input }) => {
         const { cursor = 0, limit = 50, filters } = input || {};
         
-        const { cattle, total } = await db.getCattleWithFilters({
+        // Get cattle with pagination
+        const cattleList = await db.getCattlePaginated(
+          cursor,
+          limit + 1,
+          {
+            clientId: filters?.clientId,
+            healthStatus: filters?.healthStatus,
+            breed: filters?.breed,
+            sex: filters?.sex,
+            searchQuery: filters?.searchQuery,
+          }
+        );
+        
+        // Get total count with filters
+        const total = await db.getCattleCount({
           clientId: filters?.clientId,
           healthStatus: filters?.healthStatus,
           breed: filters?.breed,
           sex: filters?.sex,
-          search: filters?.searchQuery,
-          limit: limit + 1,
-          offset: cursor,
         });
         
         // Check if there are more results
-        const hasMore = cattle.length > limit;
-        const items = hasMore ? cattle.slice(0, -1) : cattle;
+        const hasMore = cattleList.length > limit;
+        const items = hasMore ? cattleList.slice(0, -1) : cattleList;
         
         // Add certification scoring to each cattle
         const itemsWithCert = items.map((c: any) => ({

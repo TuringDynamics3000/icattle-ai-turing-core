@@ -146,6 +146,40 @@ export async function getAllCattle(): Promise<Cattle[]> {
   return await db.select().from(cattle).orderBy(desc(cattle.createdAt));
 }
 
+export async function getCattleCount(filters?: {
+  clientId?: number;
+  healthStatus?: string;
+  breed?: string;
+  sex?: string;
+}): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  
+  const conditions = [eq(cattle.status, 'active')];
+  
+  if (filters?.clientId) {
+    conditions.push(eq(cattle.clientId, filters.clientId));
+  }
+  
+  if (filters?.healthStatus) {
+    conditions.push(eq(cattle.healthStatus, filters.healthStatus));
+  }
+  
+  if (filters?.breed) {
+    conditions.push(eq(cattle.breed, filters.breed));
+  }
+  
+  if (filters?.sex) {
+    conditions.push(eq(cattle.sex, filters.sex));
+  }
+  
+  const result = await db.select({ count: sql<number>`count(*)` })
+    .from(cattle)
+    .where(and(...conditions));
+  
+  return Number(result[0]?.count || 0);
+}
+
 export async function getCattleById(id: number): Promise<Cattle | undefined> {
   const db = await getDb();
   if (!db) return undefined;
