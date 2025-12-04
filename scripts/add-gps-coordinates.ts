@@ -60,13 +60,13 @@ async function addGPSCoordinates() {
     for (const farm of farms) {
       const location = farmLocations[farm.name];
       if (location) {
-        await db
-          .update(clients)
-          .set({
-            latitude: location.lat,
-            longitude: location.lng,
-          })
-          .where(eq(clients.id, farm.id));
+      await db
+        .update(clients)
+        .set({
+          latitude: location.lat.toString(),
+          longitude: location.lng.toString(),
+        })
+        .where(eq(clients.id, farm.id));
         
         console.log(`✅ ${farm.name}: ${location.lat}, ${location.lng}`);
       }
@@ -97,8 +97,9 @@ async function addGPSCoordinates() {
       await db
         .update(cattle)
         .set({
-          currentLatitude: cattleLat,
-          currentLongitude: cattleLng,
+          latitude: cattleLat.toString(),
+          longitude: cattleLng.toString(),
+          lastGpsUpdate: new Date(),
         })
         .where(eq(cattle.id, cow.id));
 

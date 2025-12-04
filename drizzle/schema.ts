@@ -92,6 +92,8 @@ export const clients = pgTable("clients", {
   agriwebbFarmId: varchar("agriwebbFarmId", { length: 255 }), // AgriWebb farm ID
   agriwebbConnected: boolean("agriwebbConnected").default(false), // Is AgriWebb connected?
   agriwebbLastSync: timestamp("agriwebbLastSync"), // Last sync timestamp
+  latitude: varchar("latitude", { length: 20 }), // Farm center latitude
+  longitude: varchar("longitude", { length: 20 }), // Farm center longitude
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
