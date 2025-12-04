@@ -72,6 +72,19 @@ async function seed() {
     await pool.query('SELECT 1');
     console.log('✅ Database connection established\n');
 
+    // Clear existing data (in reverse order of foreign key dependencies)
+    console.log('🗑️  Clearing existing data...');
+    await pool.query('DELETE FROM cattle_events');
+    await pool.query('DELETE FROM fraud_alerts');
+    await pool.query('DELETE FROM financial_reports');
+    await pool.query('DELETE FROM market_data');
+    await pool.query('DELETE FROM valuations');
+    await pool.query('DELETE FROM lifecycle_events');
+    await pool.query('DELETE FROM cattle');
+    await pool.query('DELETE FROM clients');
+    await pool.query('DELETE FROM users');
+    console.log('   ✅ Database cleared\n');
+
     // Create admin user
     console.log('👤 Creating admin user...');
     const [user] = await db.insert(users).values({
