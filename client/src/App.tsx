@@ -17,6 +17,8 @@ import PriceForecast from "./pages/PriceForecast";
 import PortfolioRecommendations from "./pages/PortfolioRecommendations";
 import Provenance from "./pages/Provenance";
 import FinancialDashboard from "./pages/FinancialDashboard";
+import { DemoGoldenRecord } from "./pages/DemoGoldenRecord";
+import { GoldenRecordDetail } from "./pages/GoldenRecordDetail";
 import { Navigation } from "./components/Navigation";
 
 function Router() {
@@ -36,6 +38,8 @@ function Router() {
       <Route path="/recommendations" component={PortfolioRecommendations} />
       <Route path="/provenance" component={Provenance} />
       <Route path="/financial" component={FinancialDashboard} />
+      <Route path="/demo" component={DemoGoldenRecord} />
+      <Route path="/golden-record/:id" component={GoldenRecordDetail} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

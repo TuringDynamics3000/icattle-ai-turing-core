@@ -3,8 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Shield, MapPin, TrendingUp, CheckCircle2, Database, Activity, Info } from "lucide-react";
+import { Shield, MapPin, TrendingUp, CheckCircle2, Database, Activity, Info, Eye } from "lucide-react";
 import { Link } from "wouter";
+import { TuringProtocolBadge } from "@/components/TuringProtocolBadge";
 
 export function DemoGoldenRecord() {
   const { data: summary, isLoading: summaryLoading } = trpc.portfolio.summary.useQuery({});
@@ -45,18 +46,43 @@ export function DemoGoldenRecord() {
       {/* Hero Section */}
       <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 p-8 text-white">
         <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-4">
-            <Shield className="h-12 w-12" />
-            <div>
-              <h1 className="text-4xl font-bold tracking-tight">iCattle</h1>
-              <p className="text-blue-100 text-lg mt-1">The Golden Record of Ownership</p>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <Shield className="h-12 w-12" />
+              <div>
+                <h1 className="text-4xl font-bold tracking-tight">iCattle</h1>
+                <p className="text-blue-100 text-lg mt-1">The Golden Record of Ownership</p>
+              </div>
             </div>
+            <TuringProtocolBadge
+              cattleId={1}
+              biometricVerified={true}
+              blockchainVerified={true}
+              gpsVerified={true}
+              compact={true}
+            />
           </div>
           <p className="text-xl text-blue-50 max-w-3xl mb-4">
             Cryptographically verified, biometrically secured, blockchain-audited proof of ownership 
             for every animal's entire lifecycle.
           </p>
           
+          {/* Call to Action */}
+          <div className="flex gap-3 mt-6">
+            <Link href="/golden-record/1">
+              <button className="bg-white text-blue-700 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2">
+                <Eye className="h-5 w-5" />
+                View Sample Golden Record
+              </button>
+            </Link>
+            <Link href="/cattle">
+              <button className="bg-white/10 backdrop-blur-sm border border-white/30 text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/20 transition-colors flex items-center gap-2">
+                <Database className="h-5 w-5" />
+                Browse All {formatNumber(totalCattle)} Cattle
+              </button>
+            </Link>
+          </div>
+
           {/* System Overview Callout */}
           <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-4 mt-6">
             <div className="flex items-start gap-3">
@@ -271,7 +297,8 @@ export function DemoGoldenRecord() {
           ) : recentEvents && recentEvents.length > 0 ? (
             <div className="space-y-4">
               {recentEvents.slice(0, 5).map((event) => (
-                <div key={event.id} className="flex items-start justify-between border-b pb-3 last:border-0">
+                <Link key={event.id} href={`/golden-record/${event.cattleId}`}>
+                <div className="flex items-start justify-between border-b pb-3 last:border-0 hover:bg-accent/50 -mx-4 px-4 py-2 rounded-lg transition-colors cursor-pointer">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <Activity className="h-4 w-4 text-blue-600" />
@@ -301,6 +328,7 @@ export function DemoGoldenRecord() {
                     </div>
                   </div>
                 </div>
+                </Link>
               ))}
             </div>
           ) : (

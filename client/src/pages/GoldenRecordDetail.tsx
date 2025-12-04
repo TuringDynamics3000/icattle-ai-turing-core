@@ -1,5 +1,6 @@
-import { useParams, Link } from "wouter";
+import { Link, useParams } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { TuringProtocolBadge } from "@/components/TuringProtocolBadge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -82,8 +83,8 @@ export function GoldenRecordDetail() {
 
   // Calculate certification tier based on verification status
   const getCertificationTier = () => {
-    if (animal.biometricId && animal.gpsLat && animal.gpsLong) return 'Gold';
-    if (animal.biometricId || (animal.gpsLat && animal.gpsLong)) return 'Silver';
+    if (animal.biometricId && animal.latitude && animal.longitude) return 'Gold';
+    if (animal.biometricId || (animal.latitude && animal.longitude)) return 'Silver';
     return 'Bronze';
   };
 
@@ -115,6 +116,15 @@ export function GoldenRecordDetail() {
           </p>
         </div>
       </div>
+
+      {/* Turing Protocol Badge */}
+      <TuringProtocolBadge
+        cattleId={animal.id}
+        biometricVerified={!!animal.biometricId}
+        blockchainVerified={true}
+        gpsVerified={!!(animal.latitude && animal.longitude)}
+        confidenceScore={99.9}
+      />
 
       {/* Biometric Identity Card */}
       <Card className="border-2 border-blue-200 bg-blue-50/30">
@@ -189,9 +199,9 @@ export function GoldenRecordDetail() {
           </CardHeader>
           <CardContent>
             <div className="text-xl font-bold">{animal.currentLocation || 'Unknown'}</div>
-            {animal.gpsLat && animal.gpsLong && (
+            {animal.latitude && animal.longitude && (
               <div className="text-xs text-muted-foreground mt-1 font-mono">
-                {animal.gpsLat.toFixed(4)}, {animal.gpsLong.toFixed(4)}
+                {parseFloat(animal.latitude).toFixed(4)}, {parseFloat(animal.longitude).toFixed(4)}
               </div>
             )}
             <div className="flex items-center gap-1 mt-2">
@@ -210,7 +220,7 @@ export function GoldenRecordDetail() {
           </CardHeader>
           <CardContent>
             <div className="text-xl font-bold">
-              {animal.bodyConditionScore ? `${animal.bodyConditionScore}/5` : 'N/A'}
+              {animal.currentWeight ? `${Math.round(animal.currentWeight / 100)}/5` : 'N/A'}
             </div>
             <div className="text-xs text-muted-foreground mt-1">
               Weight: {animal.currentWeight}kg
@@ -231,7 +241,7 @@ export function GoldenRecordDetail() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl font-bold">{formatCurrency(animal.currentValue || 0)}</div>
+            <div className="text-xl font-bold">{formatCurrency(animal.currentValuation || 0)}</div>
             <div className="text-xs text-muted-foreground mt-1">
               Market-based valuation
             </div>
@@ -404,7 +414,7 @@ export function GoldenRecordDetail() {
                   Location: {animal.currentLocation || 'Unknown'} • Weight: {animal.currentWeight}kg
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Value: {formatCurrency(animal.currentValue || 0)} • {certTier} Tier Certification
+                  Value: {formatCurrency(animal.currentValuation || 0)} • {certTier} Tier Certification
                 </div>
               </div>
             </div>
