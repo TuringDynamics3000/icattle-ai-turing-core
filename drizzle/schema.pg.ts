@@ -1,36 +1,22 @@
 import { integer, pgEnum, pgTable, text, timestamp, varchar, decimal, boolean, index, serial } from "drizzle-orm/pg-core";
 
+
 // ============================================================================
 // ENUMS
 // ============================================================================
 
 export const roleEnum = pgEnum("role", ["user", "admin", "farmer", "bank", "investor"]);
 export const clientTypeEnum = pgEnum("clientType", ["producer", "feedlot", "breeder", "dairy"]);
-export const clientStatusEnum = pgEnum("client_status", ["active", "inactive", "suspended"]);
+export const statusEnum = pgEnum("status", ["active", "inactive", "suspended"]);
 export const sexEnum = pgEnum("sex", ["bull", "steer", "cow", "heifer", "calf"]);
 export const cattleTypeEnum = pgEnum("cattleType", ["beef", "dairy", "breeding", "feeder"]);
 export const healthStatusEnum = pgEnum("healthStatus", ["healthy", "sick", "quarantine", "deceased"]);
-export const cattleStatusEnum = pgEnum("cattle_status", ["active", "sold", "deceased", "transferred"]);
-export const eventTypeEnum = pgEnum("eventType", [
-  "birth",
-  "acquisition",
-  "weight_update",
-  "health_check",
-  "vaccination",
-  "treatment",
-  "movement",
-  "grading",
-  "breeding",
-  "calving",
-  "sale",
-  "death",
-  "transfer"
-]);
+export const eventTypeEnum = pgEnum("eventType", ["birth", "acquisition", "weight_update", "health_check", "vaccination", "treatment", "movement", "grading", "breeding", "calving", "sale", "death", "transfer"]);
 export const methodEnum = pgEnum("method", ["market", "weight", "breeding", "comparable"]);
 export const confidenceEnum = pgEnum("confidence", ["high", "medium", "low"]);
 export const reportTypeEnum = pgEnum("reportType", ["balance_sheet", "profit_loss", "portfolio_summary"]);
 export const syncStatusEnum = pgEnum("syncStatus", ["pending", "in_progress", "completed", "failed"]);
-export const notificationTypeEnum = pgEnum("notificationType", ["health_alert", "valuation_update", "compliance_warning", "system"]);
+export const typeEnum = pgEnum("type", ["health_alert", "valuation_update", "compliance_warning", "system"]);
 
 /**
  * iCattle Database Schema
@@ -56,7 +42,7 @@ export const users = pgTable("users", {
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: roleEnum("role").default("user").notNull(),
+  role: mysqlEnum("role", ["user", "admin", "farmer", "bank", "investor"]).default("user").notNull(),
   viewPreference: varchar("viewPreference", { length: 50 }), // farmer, bank, investor, admin
   
   // Xero Integration
@@ -87,8 +73,8 @@ export const clients = pgTable("clients", {
   state: varchar("state", { length: 3 }), // NSW, VIC, QLD, etc.
   postcode: varchar("postcode", { length: 4 }),
   propertySize: integer("propertySize"), // hectares
-  clientType: clientTypeEnum("clientType").notNull(),
-  status: clientStatusEnum("status").default("active").notNull(),
+  clientType: mysqlEnum("clientType", ["producer", "feedlot", "breeder", "dairy"]).notNull(),
+  status: mysqlEnum("status", ["active", "inactive", "suspended"]).default("active").notNull(),
   agriwebbFarmId: varchar("agriwebbFarmId", { length: 255 }), // AgriWebb farm ID
   agriwebbConnected: boolean("agriwebbConnected").default(false), // Is AgriWebb connected?
   agriwebbLastSync: timestamp("agriwebbLastSync"), // Last sync timestamp
@@ -114,7 +100,7 @@ export const cattle = pgTable("cattle", {
   
   // Basic Info
   breed: varchar("breed", { length: 100 }).notNull(), // Angus, Hereford, Wagyu, etc.
-  sex: sexEnum("sex").notNull(),
+  sex: mysqlEnum("sex", ["bull", "steer", "cow", "heifer", "calf"]).notNull(),
   dateOfBirth: timestamp("dateOfBirth"),
   
   // Ownership
@@ -132,7 +118,7 @@ export const cattle = pgTable("cattle", {
   color: varchar("color", { length: 100 }),
   
   // Classification
-  cattleType: cattleTypeEnum("cattleType").notNull(),
+  cattleType: mysqlEnum("cattleType", ["beef", "dairy", "breeding", "feeder"]).notNull(),
   grade: varchar("grade", { length: 50 }), // MSA grade
   
   // Pedigree (for breeding cattle)
@@ -141,7 +127,7 @@ export const cattle = pgTable("cattle", {
   pedigreeDetails: text("pedigreeDetails"), // JSON with full pedigree
   
   // Health
-  healthStatus: healthStatusEnum("healthStatus").default("healthy").notNull(),
+  healthStatus: mysqlEnum("healthStatus", ["healthy", "sick", "quarantine", "deceased"]).default("healthy").notNull(),
   lastHealthCheck: timestamp("lastHealthCheck"),
   
   // Valuation
@@ -151,7 +137,7 @@ export const cattle = pgTable("cattle", {
   acquisitionDate: timestamp("acquisitionDate"),
   
   // Status
-  status: cattleStatusEnum("status").default("active").notNull(),
+  status: mysqlEnum("status", ["active", "sold", "deceased", "transferred"]).default("active").notNull(),
   
   // Metadata
   imageUrl: varchar("imageUrl", { length: 500 }),
@@ -176,7 +162,21 @@ export const lifecycleEvents = pgTable("lifecycleEvents", {
   id: serial("id").primaryKey(),
   cattleId: integer("cattleId").notNull().references(() => cattle.id),
   
-  eventType: eventTypeEnum("eventType").notNull(),
+  eventType: mysqlEnum("eventType", [
+    "birth",
+    "acquisition",
+    "weight_update",
+    "health_check",
+    "vaccination",
+    "treatment",
+    "movement",
+    "grading",
+    "breeding",
+    "calving",
+    "sale",
+    "death",
+    "transfer"
+  ]).notNull(),
   
   eventDate: timestamp("eventDate").notNull(),
   
@@ -222,7 +222,7 @@ export const valuations = pgTable("valuations", {
   valuationAmount: integer("valuationAmount").notNull(), // AUD cents
   
   // Valuation Method
-  method: methodEnum("method").notNull(),
+  method: mysqlEnum("method", ["market", "weight", "breeding", "comparable"]).notNull(),
   
   // Market Data
   marketPrice: integer("marketPrice"), // AUD cents per kg
@@ -237,7 +237,7 @@ export const valuations = pgTable("valuations", {
   dataSource: varchar("dataSource", { length: 100 }), // "MLA", "AuctionsPlus", "Manual"
   
   // Confidence
-  confidence: confidenceEnum("confidence").default("medium"),
+  confidence: mysqlEnum("confidence", ["high", "medium", "low"]).default("medium"),
   
   // Metadata
   calculatedBy: varchar("calculatedBy", { length: 100 }), // "system" or user ID
@@ -291,7 +291,7 @@ export const financialReports = pgTable("financialReports", {
   id: serial("id").primaryKey(),
   
   clientId: integer("clientId").notNull().references(() => clients.id),
-  reportType: reportTypeEnum("reportType").notNull(),
+  reportType: mysqlEnum("reportType", ["balance_sheet", "profit_loss", "portfolio_summary"]).notNull(),
   reportDate: timestamp("reportDate").notNull(),
   
   // Report Data (JSON)
@@ -322,7 +322,7 @@ export const agriwebbSyncStatus = pgTable("agriwebbSyncStatus", {
   clientId: integer("clientId").notNull().references(() => clients.id),
   
   // Sync Status
-  syncStatus: syncStatusEnum("syncStatus").default("pending").notNull(),
+  syncStatus: mysqlEnum("syncStatus", ["pending", "in_progress", "completed", "failed"]).default("pending").notNull(),
   lastSyncAttempt: timestamp("lastSyncAttempt"),
   lastSuccessfulSync: timestamp("lastSuccessfulSync"),
   
@@ -357,7 +357,7 @@ export const notifications = pgTable("notifications", {
   userId: integer("userId").notNull().references(() => users.id),
   
   // Notification Details
-  type: notificationTypeEnum("type").notNull(),
+  type: mysqlEnum("type", ["health_alert", "valuation_update", "compliance_warning", "system"]).notNull(),
   title: varchar("title", { length: 255 }).notNull(),
   message: text("message").notNull(),
   

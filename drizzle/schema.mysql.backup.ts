@@ -1,36 +1,4 @@
-import { integer, pgEnum, pgTable, text, timestamp, varchar, decimal, boolean, index, serial } from "drizzle-orm/pg-core";
-
-// ============================================================================
-// ENUMS
-// ============================================================================
-
-export const roleEnum = pgEnum("role", ["user", "admin", "farmer", "bank", "investor"]);
-export const clientTypeEnum = pgEnum("clientType", ["producer", "feedlot", "breeder", "dairy"]);
-export const clientStatusEnum = pgEnum("client_status", ["active", "inactive", "suspended"]);
-export const sexEnum = pgEnum("sex", ["bull", "steer", "cow", "heifer", "calf"]);
-export const cattleTypeEnum = pgEnum("cattleType", ["beef", "dairy", "breeding", "feeder"]);
-export const healthStatusEnum = pgEnum("healthStatus", ["healthy", "sick", "quarantine", "deceased"]);
-export const cattleStatusEnum = pgEnum("cattle_status", ["active", "sold", "deceased", "transferred"]);
-export const eventTypeEnum = pgEnum("eventType", [
-  "birth",
-  "acquisition",
-  "weight_update",
-  "health_check",
-  "vaccination",
-  "treatment",
-  "movement",
-  "grading",
-  "breeding",
-  "calving",
-  "sale",
-  "death",
-  "transfer"
-]);
-export const methodEnum = pgEnum("method", ["market", "weight", "breeding", "comparable"]);
-export const confidenceEnum = pgEnum("confidence", ["high", "medium", "low"]);
-export const reportTypeEnum = pgEnum("reportType", ["balance_sheet", "profit_loss", "portfolio_summary"]);
-export const syncStatusEnum = pgEnum("syncStatus", ["pending", "in_progress", "completed", "failed"]);
-export const notificationTypeEnum = pgEnum("notificationType", ["health_alert", "valuation_update", "compliance_warning", "system"]);
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, decimal, boolean, index } from "drizzle-orm/mysql-core";
 
 /**
  * iCattle Database Schema
@@ -47,16 +15,15 @@ export const notificationTypeEnum = pgEnum("notificationType", ["health_alert", 
 
 // ============================================================================
 // USERS & AUTHENTICATION
-// Note: PostgreSQL does not support onUpdateNow(). Use triggers or application logic for auto-update.
 // ============================================================================
 
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
+export const users = mysqlTable("users", {
+  id: int("id").autoincrement().primaryKey(),
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: roleEnum("role").default("user").notNull(),
+  role: mysqlEnum("role", ["user", "admin", "farmer", "bank", "investor"]).default("user").notNull(),
   viewPreference: varchar("viewPreference", { length: 50 }), // farmer, bank, investor, admin
   
   // Xero Integration
@@ -65,7 +32,7 @@ export const users = pgTable("users", {
   xeroTokenExpiresAt: timestamp("xeroTokenExpiresAt"),
   
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
 });
 
@@ -76,8 +43,8 @@ export type InsertUser = typeof users.$inferInsert;
 // CLIENTS (Producers/Farms)
 // ============================================================================
 
-export const clients = pgTable("clients", {
-  id: serial("id").primaryKey(),
+export const clients = mysqlTable("clients", {
+  id: int("id").autoincrement().primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   abn: varchar("abn", { length: 11 }),
   contactName: varchar("contactName", { length: 255 }),
@@ -86,14 +53,14 @@ export const clients = pgTable("clients", {
   address: text("address"),
   state: varchar("state", { length: 3 }), // NSW, VIC, QLD, etc.
   postcode: varchar("postcode", { length: 4 }),
-  propertySize: integer("propertySize"), // hectares
-  clientType: clientTypeEnum("clientType").notNull(),
-  status: clientStatusEnum("status").default("active").notNull(),
+  propertySize: int("propertySize"), // hectares
+  clientType: mysqlEnum("clientType", ["producer", "feedlot", "breeder", "dairy"]).notNull(),
+  status: mysqlEnum("status", ["active", "inactive", "suspended"]).default("active").notNull(),
   agriwebbFarmId: varchar("agriwebbFarmId", { length: 255 }), // AgriWebb farm ID
   agriwebbConnected: boolean("agriwebbConnected").default(false), // Is AgriWebb connected?
   agriwebbLastSync: timestamp("agriwebbLastSync"), // Last sync timestamp
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
 export type Client = typeof clients.$inferSelect;
@@ -103,8 +70,8 @@ export type InsertClient = typeof clients.$inferInsert;
 // CATTLE DIGITAL TWINS
 // ============================================================================
 
-export const cattle = pgTable("cattle", {
-  id: serial("id").primaryKey(),
+export const cattle = mysqlTable("cattle", {
+  id: int("id").autoincrement().primaryKey(),
   
   // Identification
   nlisId: varchar("nlisId", { length: 16 }).unique(), // NLIS tag number
@@ -114,11 +81,11 @@ export const cattle = pgTable("cattle", {
   
   // Basic Info
   breed: varchar("breed", { length: 100 }).notNull(), // Angus, Hereford, Wagyu, etc.
-  sex: sexEnum("sex").notNull(),
+  sex: mysqlEnum("sex", ["bull", "steer", "cow", "heifer", "calf"]).notNull(),
   dateOfBirth: timestamp("dateOfBirth"),
   
   // Ownership
-  clientId: integer("clientId").notNull().references(() => clients.id),
+  clientId: int("clientId").notNull().references(() => clients.id),
   currentLocation: varchar("currentLocation", { length: 255 }),
   
   // GPS Tracking
@@ -127,38 +94,38 @@ export const cattle = pgTable("cattle", {
   lastGpsUpdate: timestamp("lastGpsUpdate"), // Last GPS update timestamp
   
   // Physical Attributes
-  currentWeight: integer("currentWeight"), // kg
+  currentWeight: int("currentWeight"), // kg
   lastWeighDate: timestamp("lastWeighDate"),
   color: varchar("color", { length: 100 }),
   
   // Classification
-  cattleType: cattleTypeEnum("cattleType").notNull(),
+  cattleType: mysqlEnum("cattleType", ["beef", "dairy", "breeding", "feeder"]).notNull(),
   grade: varchar("grade", { length: 50 }), // MSA grade
   
   // Pedigree (for breeding cattle)
-  sireId: integer("sireId"), // Father
-  damId: integer("damId"), // Mother
+  sireId: int("sireId"), // Father
+  damId: int("damId"), // Mother
   pedigreeDetails: text("pedigreeDetails"), // JSON with full pedigree
   
   // Health
-  healthStatus: healthStatusEnum("healthStatus").default("healthy").notNull(),
+  healthStatus: mysqlEnum("healthStatus", ["healthy", "sick", "quarantine", "deceased"]).default("healthy").notNull(),
   lastHealthCheck: timestamp("lastHealthCheck"),
   
   // Valuation
-  currentValuation: integer("currentValuation"), // AUD cents
+  currentValuation: int("currentValuation"), // AUD cents
   lastValuationDate: timestamp("lastValuationDate"),
-  acquisitionCost: integer("acquisitionCost"), // AUD cents
+  acquisitionCost: int("acquisitionCost"), // AUD cents
   acquisitionDate: timestamp("acquisitionDate"),
   
   // Status
-  status: cattleStatusEnum("status").default("active").notNull(),
+  status: mysqlEnum("status", ["active", "sold", "deceased", "transferred"]).default("active").notNull(),
   
   // Metadata
   imageUrl: varchar("imageUrl", { length: 500 }),
   muzzleImageUrl: varchar("muzzleImageUrl", { length: 500 }), // Biometric muzzle photo
   notes: text("notes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => ({
   clientIdx: index("client_idx").on(table.clientId),
   statusIdx: index("status_idx").on(table.status),
@@ -172,11 +139,25 @@ export type InsertCattle = typeof cattle.$inferInsert;
 // LIFECYCLE EVENTS (Event Sourcing)
 // ============================================================================
 
-export const lifecycleEvents = pgTable("lifecycleEvents", {
-  id: serial("id").primaryKey(),
-  cattleId: integer("cattleId").notNull().references(() => cattle.id),
+export const lifecycleEvents = mysqlTable("lifecycleEvents", {
+  id: int("id").autoincrement().primaryKey(),
+  cattleId: int("cattleId").notNull().references(() => cattle.id),
   
-  eventType: eventTypeEnum("eventType").notNull(),
+  eventType: mysqlEnum("eventType", [
+    "birth",
+    "acquisition",
+    "weight_update",
+    "health_check",
+    "vaccination",
+    "treatment",
+    "movement",
+    "grading",
+    "breeding",
+    "calving",
+    "sale",
+    "death",
+    "transfer"
+  ]).notNull(),
   
   eventDate: timestamp("eventDate").notNull(),
   
@@ -184,7 +165,7 @@ export const lifecycleEvents = pgTable("lifecycleEvents", {
   details: text("details").notNull(), // JSON with event-specific data
   
   // Weight (for weight_update events)
-  weight: integer("weight"), // kg
+  weight: int("weight"), // kg
   
   // Location (for movement events)
   fromLocation: varchar("fromLocation", { length: 255 }),
@@ -195,10 +176,10 @@ export const lifecycleEvents = pgTable("lifecycleEvents", {
   veterinarian: varchar("veterinarian", { length: 255 }),
   
   // Financial (for sale/acquisition events)
-  amount: integer("amount"), // AUD cents
+  amount: int("amount"), // AUD cents
   
   // Metadata
-  recordedBy: integer("recordedBy").references(() => users.id),
+  recordedBy: int("recordedBy").references(() => users.id),
   notes: text("notes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 }, (table) => ({
@@ -214,30 +195,30 @@ export type InsertLifecycleEvent = typeof lifecycleEvents.$inferInsert;
 // VALUATIONS (Real-Time Mark-to-Market)
 // ============================================================================
 
-export const valuations = pgTable("valuations", {
-  id: serial("id").primaryKey(),
-  cattleId: integer("cattleId").notNull().references(() => cattle.id),
+export const valuations = mysqlTable("valuations", {
+  id: int("id").autoincrement().primaryKey(),
+  cattleId: int("cattleId").notNull().references(() => cattle.id),
   
   valuationDate: timestamp("valuationDate").notNull(),
-  valuationAmount: integer("valuationAmount").notNull(), // AUD cents
+  valuationAmount: int("valuationAmount").notNull(), // AUD cents
   
   // Valuation Method
-  method: methodEnum("method").notNull(),
+  method: mysqlEnum("method", ["market", "weight", "breeding", "comparable"]).notNull(),
   
   // Market Data
-  marketPrice: integer("marketPrice"), // AUD cents per kg
-  weight: integer("weight"), // kg at valuation time
+  marketPrice: int("marketPrice"), // AUD cents per kg
+  weight: int("weight"), // kg at valuation time
   
   // Comparable Data (for market method)
   comparableBreed: varchar("comparableBreed", { length: 100 }),
-  comparableAge: integer("comparableAge"), // months
+  comparableAge: int("comparableAge"), // months
   comparableLocation: varchar("comparableLocation", { length: 100 }),
   
   // Source
   dataSource: varchar("dataSource", { length: 100 }), // "MLA", "AuctionsPlus", "Manual"
   
   // Confidence
-  confidence: confidenceEnum("confidence").default("medium"),
+  confidence: mysqlEnum("confidence", ["high", "medium", "low"]).default("medium"),
   
   // Metadata
   calculatedBy: varchar("calculatedBy", { length: 100 }), // "system" or user ID
@@ -255,8 +236,8 @@ export type InsertValuation = typeof valuations.$inferInsert;
 // MARKET DATA (Simulated MLA Prices)
 // ============================================================================
 
-export const marketData = pgTable("marketData", {
-  id: serial("id").primaryKey(),
+export const marketData = mysqlTable("marketData", {
+  id: int("id").autoincrement().primaryKey(),
   
   date: timestamp("date").notNull(),
   
@@ -265,7 +246,7 @@ export const marketData = pgTable("marketData", {
   breed: varchar("breed", { length: 100 }),
   
   // Price Data
-  pricePerKg: integer("pricePerKg").notNull(), // AUD cents per kg
+  pricePerKg: int("pricePerKg").notNull(), // AUD cents per kg
   
   // Location
   state: varchar("state", { length: 3 }),
@@ -287,20 +268,20 @@ export type InsertMarketData = typeof marketData.$inferInsert;
 // FINANCIAL REPORTS (Cached)
 // ============================================================================
 
-export const financialReports = pgTable("financialReports", {
-  id: serial("id").primaryKey(),
+export const financialReports = mysqlTable("financialReports", {
+  id: int("id").autoincrement().primaryKey(),
   
-  clientId: integer("clientId").notNull().references(() => clients.id),
-  reportType: reportTypeEnum("reportType").notNull(),
+  clientId: int("clientId").notNull().references(() => clients.id),
+  reportType: mysqlEnum("reportType", ["balance_sheet", "profit_loss", "portfolio_summary"]).notNull(),
   reportDate: timestamp("reportDate").notNull(),
   
   // Report Data (JSON)
   reportData: text("reportData").notNull(), // JSON with complete report
   
   // Summary Metrics
-  totalAssets: integer("totalAssets"), // AUD cents
-  totalLiabilities: integer("totalLiabilities"), // AUD cents
-  netWorth: integer("netWorth"), // AUD cents
+  totalAssets: int("totalAssets"), // AUD cents
+  totalLiabilities: int("totalLiabilities"), // AUD cents
+  netWorth: int("netWorth"), // AUD cents
   
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 }, (table) => ({
@@ -316,28 +297,28 @@ export type InsertFinancialReport = typeof financialReports.$inferInsert;
 // AGRIWEBB SYNC STATUS
 // ============================================================================
 
-export const agriwebbSyncStatus = pgTable("agriwebbSyncStatus", {
-  id: serial("id").primaryKey(),
+export const agriwebbSyncStatus = mysqlTable("agriwebbSyncStatus", {
+  id: int("id").autoincrement().primaryKey(),
   
-  clientId: integer("clientId").notNull().references(() => clients.id),
+  clientId: int("clientId").notNull().references(() => clients.id),
   
   // Sync Status
-  syncStatus: syncStatusEnum("syncStatus").default("pending").notNull(),
+  syncStatus: mysqlEnum("syncStatus", ["pending", "in_progress", "completed", "failed"]).default("pending").notNull(),
   lastSyncAttempt: timestamp("lastSyncAttempt"),
   lastSuccessfulSync: timestamp("lastSuccessfulSync"),
   
   // Sync Stats
-  animalsCreated: integer("animalsCreated").default(0),
-  animalsUpdated: integer("animalsUpdated").default(0),
-  animalsSkipped: integer("animalsSkipped").default(0),
-  errorCount: integer("errorCount").default(0),
+  animalsCreated: int("animalsCreated").default(0),
+  animalsUpdated: int("animalsUpdated").default(0),
+  animalsSkipped: int("animalsSkipped").default(0),
+  errorCount: int("errorCount").default(0),
   
   // Error Details
   errorMessage: text("errorMessage"),
   errorDetails: text("errorDetails"), // JSON with detailed errors
   
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => ({
   clientIdx: index("client_idx").on(table.clientId),
   statusIdx: index("status_idx").on(table.syncStatus),
@@ -351,19 +332,19 @@ export type InsertAgriwebbSyncStatus = typeof agriwebbSyncStatus.$inferInsert;
 // NOTIFICATIONS
 // ============================================================================
 
-export const notifications = pgTable("notifications", {
-  id: serial("id").primaryKey(),
+export const notifications = mysqlTable("notifications", {
+  id: int("id").autoincrement().primaryKey(),
   
-  userId: integer("userId").notNull().references(() => users.id),
+  userId: int("userId").notNull().references(() => users.id),
   
   // Notification Details
-  type: notificationTypeEnum("type").notNull(),
+  type: mysqlEnum("type", ["health_alert", "valuation_update", "compliance_warning", "system"]).notNull(),
   title: varchar("title", { length: 255 }).notNull(),
   message: text("message").notNull(),
   
   // Related Entity
-  cattleId: integer("cattleId").references(() => cattle.id),
-  clientId: integer("clientId").references(() => clients.id),
+  cattleId: int("cattleId").references(() => cattle.id),
+  clientId: int("clientId").references(() => clients.id),
   
   // Status
   isRead: boolean("isRead").default(false).notNull(),
