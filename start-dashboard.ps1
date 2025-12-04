@@ -56,7 +56,7 @@ if ($missingTools.Count -gt 0) {
     exit 1
 }
 
-Write-Host "✓ All prerequisites found" -ForegroundColor Green
+Write-Host "[OK] All prerequisites found" -ForegroundColor Green
 Write-Host ""
 
 # Pull latest changes
@@ -74,7 +74,7 @@ if ($LASTEXITCODE -ne 0) {
     Write-Host "ERROR: Failed to install dependencies" -ForegroundColor Red
     exit 1
 }
-Write-Host "✓ Dependencies installed" -ForegroundColor Green
+Write-Host "[OK] Dependencies installed" -ForegroundColor Green
 Write-Host ""
 
 # Check if .env exists
@@ -82,10 +82,10 @@ if (-not (Test-Path ".env")) {
     Write-Host "Creating .env file from template..." -ForegroundColor Yellow
     if (Test-Path ".env.local.example") {
         Copy-Item ".env.local.example" ".env"
-        Write-Host "✓ .env file created" -ForegroundColor Green
+        Write-Host "[OK] .env file created" -ForegroundColor Green
     } else {
         Write-Host "Creating default .env file..." -ForegroundColor Yellow
-        @"
+        $envContent = @"
 # iCattle Dashboard - Local Development
 DATABASE_URL=postgresql://icattle:icattle_dev_password@localhost:5432/icattle
 KAFKA_BROKERS=localhost:9092
@@ -95,8 +95,9 @@ APP_ID=dev-app-id
 COOKIE_SECRET=dev-secret-key-change-in-production
 NODE_ENV=development
 PORT=3000
-"@ | Out-File -FilePath ".env" -Encoding UTF8
-        Write-Host "✓ Default .env file created" -ForegroundColor Green
+"@
+        $envContent | Out-File -FilePath ".env" -Encoding UTF8
+        Write-Host "[OK] Default .env file created" -ForegroundColor Green
     }
     Write-Host ""
 }
@@ -109,17 +110,17 @@ if ($LASTEXITCODE -ne 0) {
     Write-Host "Please start Docker Desktop and try again" -ForegroundColor Yellow
     exit 1
 }
-Write-Host "✓ Docker is running" -ForegroundColor Green
+Write-Host "[OK] Docker is running" -ForegroundColor Green
 Write-Host ""
 
 # Start Docker services
-Write-Host "Starting Docker services (PostgreSQL, Kafka, Zookeeper, Kafka UI, pgAdmin)..." -ForegroundColor Yellow
+Write-Host "Starting Docker services (PostgreSQL, Kafka, Zookeeper)..." -ForegroundColor Yellow
 docker compose up -d
 if ($LASTEXITCODE -ne 0) {
     Write-Host "ERROR: Failed to start Docker services" -ForegroundColor Red
     exit 1
 }
-Write-Host "✓ Docker services started" -ForegroundColor Green
+Write-Host "[OK] Docker services started" -ForegroundColor Green
 Write-Host ""
 
 # Wait for PostgreSQL to be ready
@@ -143,7 +144,7 @@ while ($attempt -lt $maxAttempts -and -not $ready) {
 if (-not $ready) {
     Write-Host "WARNING: PostgreSQL may not be fully ready. Continuing anyway..." -ForegroundColor Yellow
 } else {
-    Write-Host "✓ PostgreSQL is ready" -ForegroundColor Green
+    Write-Host "[OK] PostgreSQL is ready" -ForegroundColor Green
 }
 Write-Host ""
 
@@ -153,7 +154,7 @@ pnpm db:push
 if ($LASTEXITCODE -ne 0) {
     Write-Host "WARNING: Failed to push database schema. You may need to run 'pnpm db:push' manually." -ForegroundColor Yellow
 } else {
-    Write-Host "✓ Database schema pushed" -ForegroundColor Green
+    Write-Host "[OK] Database schema pushed" -ForegroundColor Green
 }
 Write-Host ""
 
@@ -164,7 +165,7 @@ if ($seedResponse -eq "Y" -or $seedResponse -eq "y") {
     Write-Host "Seeding test data..." -ForegroundColor Yellow
     pnpm db:seed
     if ($LASTEXITCODE -eq 0) {
-        Write-Host "✓ Test data seeded" -ForegroundColor Green
+        Write-Host "[OK] Test data seeded" -ForegroundColor Green
     } else {
         Write-Host "WARNING: Failed to seed test data" -ForegroundColor Yellow
     }
@@ -177,12 +178,12 @@ Write-Host "  Services Ready!" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Access Points:" -ForegroundColor Green
-Write-Host "  🎯 iCattle Dashboard:  http://localhost:3000" -ForegroundColor White
-Write-Host "  📊 Kafka UI:           http://localhost:8080" -ForegroundColor White
-Write-Host "  🗄️  pgAdmin:            http://localhost:5050" -ForegroundColor White
-Write-Host "     Credentials:        admin@icattle.local / admin" -ForegroundColor Gray
-Write-Host "  🐘 PostgreSQL:         localhost:5432" -ForegroundColor White
-Write-Host "     Credentials:        icattle / icattle_dev_password" -ForegroundColor Gray
+Write-Host "  Dashboard:         http://localhost:3000" -ForegroundColor White
+Write-Host "  Kafka UI:          http://localhost:8080" -ForegroundColor White
+Write-Host "  pgAdmin:           http://localhost:5050" -ForegroundColor White
+Write-Host "     Credentials:    admin@icattle.local / admin" -ForegroundColor Gray
+Write-Host "  PostgreSQL:        localhost:5432" -ForegroundColor White
+Write-Host "     Credentials:    icattle / icattle_dev_password" -ForegroundColor Gray
 Write-Host ""
 
 # Start development server

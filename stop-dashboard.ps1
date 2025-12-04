@@ -18,7 +18,7 @@ Write-Host "Stopping Docker services..." -ForegroundColor Yellow
 docker compose down
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "✓ All services stopped" -ForegroundColor Green
+    Write-Host "[OK] All services stopped" -ForegroundColor Green
 } else {
     Write-Host "ERROR: Failed to stop services" -ForegroundColor Red
     exit 1

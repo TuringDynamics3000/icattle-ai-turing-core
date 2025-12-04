@@ -28,20 +28,20 @@ Write-Host ""
 # Stop services
 Write-Host "Stopping services..." -ForegroundColor Yellow
 docker compose down
-Write-Host "✓ Services stopped" -ForegroundColor Green
+Write-Host "[OK] Services stopped" -ForegroundColor Green
 Write-Host ""
 
 # Remove volumes
 Write-Host "Removing database volumes..." -ForegroundColor Yellow
 docker volume rm icattle-ai-turing-core_postgres-data -ErrorAction SilentlyContinue
 docker volume rm icattle-ai-turing-core_pgadmin-data -ErrorAction SilentlyContinue
-Write-Host "✓ Volumes removed" -ForegroundColor Green
+Write-Host "[OK] Volumes removed" -ForegroundColor Green
 Write-Host ""
 
 # Start services
 Write-Host "Starting services..." -ForegroundColor Yellow
 docker compose up -d
-Write-Host "✓ Services started" -ForegroundColor Green
+Write-Host "[OK] Services started" -ForegroundColor Green
 Write-Host ""
 
 # Wait for PostgreSQL
@@ -65,7 +65,7 @@ while ($attempt -lt $maxAttempts -and -not $ready) {
 if (-not $ready) {
     Write-Host "WARNING: PostgreSQL may not be fully ready" -ForegroundColor Yellow
 } else {
-    Write-Host "✓ PostgreSQL is ready" -ForegroundColor Green
+    Write-Host "[OK] PostgreSQL is ready" -ForegroundColor Green
 }
 Write-Host ""
 
@@ -73,7 +73,7 @@ Write-Host ""
 Write-Host "Pushing database schema..." -ForegroundColor Yellow
 pnpm db:push
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "✓ Database schema pushed" -ForegroundColor Green
+    Write-Host "[OK] Database schema pushed" -ForegroundColor Green
 } else {
     Write-Host "ERROR: Failed to push database schema" -ForegroundColor Red
     exit 1
@@ -84,7 +84,7 @@ Write-Host ""
 Write-Host "Seeding test data..." -ForegroundColor Yellow
 pnpm db:seed
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "✓ Test data seeded" -ForegroundColor Green
+    Write-Host "[OK] Test data seeded" -ForegroundColor Green
 } else {
     Write-Host "WARNING: Failed to seed test data" -ForegroundColor Yellow
 }
