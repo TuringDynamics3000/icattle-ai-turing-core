@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
  * Comprehensive Seed Script with Turing Protocol Enforcement
- * Seeds 268 cattle with muzzle photos and cryptographically signed events
+ * Seeds 218 cattle with muzzle photos and cryptographically signed events
  */
 
 import 'dotenv/config';
@@ -29,7 +29,7 @@ const FARMS = [
 
 async function seed() {
   console.log('🌱 Starting comprehensive database seed with Turing Protocol...\n');
-  console.log('📊 Target: 268 cattle with muzzle biometrics\n');
+  console.log('📊 Target: 218 cattle with muzzle biometrics\n');
   
   if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL not found in environment variables');
@@ -131,7 +131,9 @@ async function seed() {
     console.log(`\n   📊 Total farms: ${createdFarms.length}\n`);
 
     // Read cattle list
-    const cattleListPath = '/tmp/cattle_list.csv';
+    const cattleListPath = process.platform === 'win32' 
+      ? path.join(__dirname, '..', 'cattle_list.csv')
+      : '/tmp/cattle_list.csv';
     const cattleList = fs.readFileSync(cattleListPath, 'utf-8')
       .trim()
       .split('\n')
