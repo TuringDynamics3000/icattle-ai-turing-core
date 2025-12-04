@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Shield, MapPin, TrendingUp, CheckCircle2, Database, Activity, Zap, Lock, Info, AlertCircle, Sparkles } from "lucide-react";
+import { Shield, MapPin, TrendingUp, CheckCircle2, Database, Activity, Info } from "lucide-react";
 import { Link } from "wouter";
 
 export function DemoGoldenRecord() {
@@ -54,19 +54,19 @@ export function DemoGoldenRecord() {
           </div>
           <p className="text-xl text-blue-50 max-w-3xl mb-4">
             Cryptographically verified, biometrically secured, blockchain-audited proof of ownership 
-            for every animal's entire lifecycle. One source of truth for the entire livestock industry.
+            for every animal's entire lifecycle.
           </p>
           
-          {/* Key Differentiator Callout */}
+          {/* System Overview Callout */}
           <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-4 mt-6">
             <div className="flex items-start gap-3">
-              <Sparkles className="h-6 w-6 text-yellow-300 flex-shrink-0 mt-1" />
+              <Info className="h-6 w-6 text-blue-200 flex-shrink-0 mt-1" />
               <div>
-                <h3 className="font-semibold text-lg mb-1">🎯 What Makes Us Different</h3>
+                <h3 className="font-semibold text-lg mb-1">How It Works</h3>
                 <p className="text-blue-50 text-sm">
-                  We're not just another farm management system. iCattle is the <strong>only platform</strong> that provides 
-                  cryptographic proof of ownership with biometric verification at enterprise scale. No competitor can handle 
-                  5+ million records with instant performance while maintaining blockchain-level security.
+                  iCattle combines three verification technologies: biometric identification (muzzle prints), 
+                  image geolocation metadata, and blockchain transaction records. Together, these create a 
+                  permanent, verifiable record of each animal's identity, location, and ownership history.
                 </p>
               </div>
             </div>
@@ -75,13 +75,14 @@ export function DemoGoldenRecord() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
       </div>
 
-      {/* Performance Tip */}
+      {/* System Architecture Callout */}
       <Alert className="border-blue-200 bg-blue-50">
-        <Zap className="h-4 w-4 text-blue-600" />
-        <AlertTitle className="text-blue-900">⚡ Enterprise Performance at Scale</AlertTitle>
+        <Database className="h-4 w-4 text-blue-600" />
+        <AlertTitle className="text-blue-900">System Architecture</AlertTitle>
         <AlertDescription className="text-blue-800">
-          <strong>Pro Tip:</strong> Traditional livestock systems crash or slow down with just 100,000 records. 
-          iCattle handles <strong>50x more data</strong> with sub-second query times. Try searching across all {formatNumber(totalCattle)} cattle - it's instant.
+          The platform uses a distributed database architecture to manage large-scale cattle records. 
+          Each record includes biometric data, location history, ownership transfers, and lifecycle events, 
+          all linked through cryptographic hashes for data integrity.
         </AlertDescription>
       </Alert>
 
@@ -92,10 +93,10 @@ export function DemoGoldenRecord() {
             <div>
               <CardTitle className="text-2xl flex items-center gap-2">
                 <Database className="h-6 w-6 text-blue-600" />
-                Enterprise Scale Performance
+                Current System Scale
               </CardTitle>
               <CardDescription className="text-base mt-2">
-                Real-time management of millions of cattle records
+                Real-time management of cattle records across the platform
               </CardDescription>
             </div>
             <Badge variant="default" className="text-lg px-4 py-2 bg-blue-600">
@@ -108,55 +109,32 @@ export function DemoGoldenRecord() {
             <div className="bg-white rounded-lg p-4 border border-blue-200">
               <div className="text-3xl font-bold text-blue-700">{formatNumber(totalCattle)}</div>
               <div className="text-sm text-muted-foreground mt-1">Total Cattle Records</div>
-              <div className="text-xs text-green-600 mt-2 flex items-center gap-1">
-                <CheckCircle2 className="h-3 w-3" />
-                Instant query performance
-              </div>
-              <div className="text-xs text-blue-600 mt-1 flex items-center gap-1">
+              <div className="text-xs text-blue-600 mt-2 flex items-center gap-1">
                 <Info className="h-3 w-3" />
-                <span>50x industry average capacity</span>
+                <span>Each with full lifecycle history</span>
               </div>
             </div>
             <div className="bg-white rounded-lg p-4 border border-blue-200">
               <div className="text-3xl font-bold text-blue-700">{formatCurrency(totalValue)}</div>
               <div className="text-sm text-muted-foreground mt-1">Portfolio Value</div>
-              <div className="text-xs text-green-600 mt-2 flex items-center gap-1">
-                <TrendingUp className="h-3 w-3" />
-                Real-time valuation
-              </div>
-              <div className="text-xs text-blue-600 mt-1 flex items-center gap-1">
+              <div className="text-xs text-blue-600 mt-2 flex items-center gap-1">
                 <Info className="h-3 w-3" />
-                <span>Updated every 15 minutes</span>
+                <span>Calculated from current records</span>
               </div>
             </div>
             <div className="bg-white rounded-lg p-4 border border-blue-200">
               <div className="text-3xl font-bold text-blue-700">{formatCurrency(avgValue)}</div>
               <div className="text-sm text-muted-foreground mt-1">Average Value per Head</div>
-              <div className="text-xs text-green-600 mt-2 flex items-center gap-1">
-                <CheckCircle2 className="h-3 w-3" />
-                Market-based pricing
-              </div>
-              <div className="text-xs text-blue-600 mt-1 flex items-center gap-1">
+              <div className="text-xs text-blue-600 mt-2 flex items-center gap-1">
                 <Info className="h-3 w-3" />
-                <span>Live market data integration</span>
+                <span>Based on recorded data</span>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Security Callout */}
-      <Alert className="border-purple-200 bg-purple-50">
-        <Lock className="h-4 w-4 text-purple-600" />
-        <AlertTitle className="text-purple-900">🔒 Bank-Grade Security</AlertTitle>
-        <AlertDescription className="text-purple-800">
-          <strong>Why Banks Trust Us:</strong> Every transaction is cryptographically signed and stored on an immutable blockchain. 
-          This means <strong>zero fraud</strong>, complete audit trails, and instant verification for lending decisions. 
-          Banks can approve livestock loans in <strong>minutes instead of weeks</strong>.
-        </AlertDescription>
-      </Alert>
-
-      {/* Golden Record Features */}
+      {/* Verification Technologies */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card className="border-2 border-green-200">
           <CardHeader>
@@ -167,26 +145,26 @@ export function DemoGoldenRecord() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              Every animal uniquely identified by muzzle print biometrics - like a fingerprint for cattle.
+              Each animal is identified by its unique muzzle print pattern, similar to how fingerprints identify humans.
             </p>
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span>Verification Rate</span>
+                <span>Verification Accuracy</span>
                 <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                   99.9%
                 </Badge>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span>Fraud Prevention</span>
+                <span>Method</span>
                 <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                  100%
+                  Muzzle Print
                 </Badge>
               </div>
             </div>
             <div className="mt-4 p-3 bg-green-50 rounded-md border border-green-200">
               <p className="text-xs text-green-800">
-                <strong>💡 Pro Tip:</strong> At 99.9% accuracy, our muzzle print biometrics are more reliable than traditional ear tags. 
-                Muzzle prints can't be faked, transferred, or lost - eliminating double-counting and theft claims entirely.
+                <strong>ℹ️ How it works:</strong> Muzzle prints are captured from photos and converted into a unique digital signature. 
+                This signature is stored and used to verify the animal's identity in future photos.
               </p>
             </div>
           </CardContent>
@@ -201,7 +179,7 @@ export function DemoGoldenRecord() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              Every ownership transfer and lifecycle event cryptographically secured on immutable ledger.
+              Each transaction and lifecycle event is recorded with a cryptographic hash on an immutable ledger.
             </p>
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
@@ -211,16 +189,16 @@ export function DemoGoldenRecord() {
                 </Badge>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span>Tamper Proof</span>
+                <span>Technology</span>
                 <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
-                  ✓ Verified
+                  Blockchain
                 </Badge>
               </div>
             </div>
             <div className="mt-4 p-3 bg-purple-50 rounded-md border border-purple-200">
               <p className="text-xs text-purple-800">
-                <strong>💡 Industry First:</strong> We're the only livestock platform with full blockchain integration. 
-                Every event has a cryptographic hash that can be independently verified.
+                <strong>ℹ️ How it works:</strong> Each event generates a unique cryptographic hash that's stored on the blockchain. 
+                This creates a permanent record that cannot be altered or deleted, ensuring data integrity.
               </p>
             </div>
           </CardContent>
@@ -235,11 +213,11 @@ export function DemoGoldenRecord() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              Location verification using image metadata captured at the time of photo - tamper-proof and cryptographically secured.
+              Location data is captured from image metadata at the time each photo is taken.
             </p>
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span>Location Verified</span>
+                <span>Verification Accuracy</span>
                 <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
                   99.9%
                 </Badge>
@@ -253,21 +231,22 @@ export function DemoGoldenRecord() {
             </div>
             <div className="mt-4 p-3 bg-orange-50 rounded-md border border-orange-200">
               <p className="text-xs text-orange-800">
-                <strong>💡 For Banks:</strong> Image metadata verification is tamper-proof and cryptographically secured. 
-                Confirm collateral location without expensive site visits. Reduce loan processing costs by 80%.
+                <strong>ℹ️ How it works:</strong> When a photo is taken, the camera automatically embeds GPS coordinates, 
+                timestamp, and device information in the image file. This metadata is extracted and verified against the blockchain record.
               </p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* ROI Callout */}
-      <Alert className="border-green-200 bg-green-50">
-        <TrendingUp className="h-4 w-4 text-green-600" />
-        <AlertTitle className="text-green-900">📈 Proven ROI</AlertTitle>
-        <AlertDescription className="text-green-800">
-          <strong>Real Results:</strong> Farmers save 15+ hours/week on record-keeping. Banks reduce loan processing time by 85%. 
-          Buyers pay premium prices for verified provenance. <strong>Average ROI: 400% in first year.</strong>
+      {/* Data Integrity Callout */}
+      <Alert className="border-purple-200 bg-purple-50">
+        <Shield className="h-4 w-4 text-purple-600" />
+        <AlertTitle className="text-purple-900">Data Integrity & Verification</AlertTitle>
+        <AlertDescription className="text-purple-800">
+          The system uses cryptographic hashing to ensure data cannot be tampered with. Each record is linked to previous 
+          records through hash chains, creating an auditable trail. Any attempt to modify historical data would break the 
+          hash chain and be immediately detectable.
         </AlertDescription>
       </Alert>
 
@@ -279,7 +258,7 @@ export function DemoGoldenRecord() {
             Recent Lifecycle Events
           </CardTitle>
           <CardDescription>
-            Real-time updates across the entire Golden Record system
+            Latest recorded events across the system
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -309,7 +288,7 @@ export function DemoGoldenRecord() {
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {event.notes || 'Cryptographically secured lifecycle event'}
+                      {event.notes || 'Recorded lifecycle event with cryptographic verification'}
                     </p>
                   </div>
                   <div className="text-right">
@@ -334,7 +313,7 @@ export function DemoGoldenRecord() {
         </CardContent>
       </Card>
 
-      {/* Demo Navigation */}
+      {/* Navigation */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Link href="/cattle">
           <Card className="hover:bg-accent cursor-pointer transition-colors border-2 hover:border-blue-400">
@@ -344,14 +323,8 @@ export function DemoGoldenRecord() {
                 View All Cattle
               </CardTitle>
               <CardDescription>
-                Browse {formatNumber(totalCattle)} cattle records with instant search and filtering
+                Browse and search {formatNumber(totalCattle)} cattle records
               </CardDescription>
-              <div className="mt-2">
-                <Badge variant="outline" className="text-xs">
-                  <Zap className="h-3 w-3 mr-1" />
-                  Sub-second queries
-                </Badge>
-              </div>
             </CardHeader>
           </Card>
         </Link>
@@ -364,14 +337,8 @@ export function DemoGoldenRecord() {
                 Farmer View
               </CardTitle>
               <CardDescription>
-                Operational dashboard with location tracking and herd management
+                Operational dashboard for herd management and location tracking
               </CardDescription>
-              <div className="mt-2">
-                <Badge variant="outline" className="text-xs">
-                  <CheckCircle2 className="h-3 w-3 mr-1" />
-                  Save 15+ hrs/week
-                </Badge>
-              </div>
             </CardHeader>
           </Card>
         </Link>
@@ -384,25 +351,19 @@ export function DemoGoldenRecord() {
                 Bank View
               </CardTitle>
               <CardDescription>
-                Portfolio risk metrics and verified collateral valuation
+                Portfolio analysis and collateral verification tools
               </CardDescription>
-              <div className="mt-2">
-                <Badge variant="outline" className="text-xs">
-                  <Lock className="h-3 w-3 mr-1" />
-                  85% faster approvals
-                </Badge>
-              </div>
             </CardHeader>
           </Card>
         </Link>
       </div>
 
-      {/* Key Messaging */}
+      {/* Use Cases */}
       <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300">
         <CardHeader>
-          <CardTitle className="text-2xl">Why iCattle is Revolutionary</CardTitle>
+          <CardTitle className="text-2xl">System Use Cases</CardTitle>
           <CardDescription className="text-base">
-            The only platform that solves the trust problem in livestock finance
+            How different stakeholders use the verification system
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -410,69 +371,46 @@ export function DemoGoldenRecord() {
             <div className="bg-white rounded-lg p-4 border border-blue-200">
               <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
-                For Farmers
+                Farmers
               </h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                "Prove you own what you say you own - instantly, cryptographically, undeniably."
+              <p className="text-sm text-muted-foreground">
+                Record and verify ownership of cattle using biometric identification and blockchain records. 
+                Track location and lifecycle events with cryptographic proof.
               </p>
-              <div className="flex items-center gap-2 text-xs text-green-700">
-                <Sparkles className="h-3 w-3" />
-                <span>Access better loan rates with verified records</span>
-              </div>
             </div>
             <div className="bg-white rounded-lg p-4 border border-blue-200">
               <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
-                For Banks
+                Banks
               </h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                "Lend with confidence on verified collateral. No more site visits to count cattle."
+              <p className="text-sm text-muted-foreground">
+                Verify collateral ownership and location without physical site visits. Access complete 
+                ownership history and lifecycle records through blockchain verification.
               </p>
-              <div className="flex items-center gap-2 text-xs text-green-700">
-                <Sparkles className="h-3 w-3" />
-                <span>Reduce default risk by 60% with real-time monitoring</span>
-              </div>
             </div>
             <div className="bg-white rounded-lg p-4 border border-blue-200">
               <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
-                For Regulators
+                Regulators
               </h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                "Complete audit trail from birth to sale. Tamper-proof compliance records."
+              <p className="text-sm text-muted-foreground">
+                Access complete audit trails for compliance verification. All transactions are recorded 
+                with cryptographic hashes, creating tamper-proof compliance records.
               </p>
-              <div className="flex items-center gap-2 text-xs text-green-700">
-                <Sparkles className="h-3 w-3" />
-                <span>Instant compliance reporting and traceability</span>
-              </div>
             </div>
             <div className="bg-white rounded-lg p-4 border border-blue-200">
               <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
-                For Buyers
+                Buyers
               </h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                "Know the complete provenance of every animal. Verified quality and history."
+              <p className="text-sm text-muted-foreground">
+                Verify the complete provenance and ownership history of cattle before purchase. 
+                Access biometric verification and location history through the blockchain record.
               </p>
-              <div className="flex items-center gap-2 text-xs text-green-700">
-                <Sparkles className="h-3 w-3" />
-                <span>Pay premium prices for verified premium cattle</span>
-              </div>
             </div>
           </div>
         </CardContent>
       </Card>
-
-      {/* Final CTA Callout */}
-      <Alert className="border-blue-300 bg-gradient-to-r from-blue-50 to-indigo-50">
-        <Sparkles className="h-4 w-4 text-blue-600" />
-        <AlertTitle className="text-blue-900 text-lg">🚀 Ready to Transform Livestock Finance?</AlertTitle>
-        <AlertDescription className="text-blue-800">
-          iCattle isn't just software - it's the infrastructure for the future of livestock finance. 
-          <strong> Join the revolution.</strong> Be part of the platform that's setting the new standard for 
-          ownership verification, collateral management, and supply chain transparency.
-        </AlertDescription>
-      </Alert>
     </div>
   );
 }
