@@ -296,8 +296,8 @@ function generateValuation(weight: number, breed: string, sex: string): number {
 // ============================================================================
 
 async function seed() {
-  console.log('🚀 Starting 1 MILLION cattle synthetic data generation\n');
-  console.log('📊 Target: 1,000,000 cattle across Australian beef regions\n');
+  console.log('🚀 Starting 5 MILLION cattle synthetic data generation\n');
+  console.log('📊 Target: 5,000,000 cattle across Australian beef regions\n');
   
   if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL not found in environment variables');
@@ -430,11 +430,11 @@ async function seed() {
       });
     }
 
-    // Generate 1 million cattle in batches
-    console.log('🐄 Generating 1,000,000 cattle records...\n');
+    // Generate 5 million cattle in batches
+    console.log('🐄 Generating 5,000,000 cattle records...\n');
     
     const BATCH_SIZE = 1000;
-    const TOTAL_CATTLE = 1000000;
+    const TOTAL_CATTLE = 5000000;
     const totalBatches = Math.ceil(TOTAL_CATTLE / BATCH_SIZE);
     
     let totalGenerated = 0;
@@ -515,13 +515,13 @@ async function seed() {
     const totalTime = Date.now() - startTime;
     const totalMinutes = (totalTime / 60000).toFixed(1);
     
-    console.log(`\n✅ Generated 1,000,000 cattle in ${totalMinutes} minutes`);
+    console.log(`\n✅ Generated 5,000,000 cattle in ${totalMinutes} minutes`);
     console.log(`   Average: ${Math.round(TOTAL_CATTLE / (totalTime / 1000))} cattle/second\n`);
 
     // Summary
     console.log('📊 Final Summary:');
     console.log(`   Properties: ${createdClients.length}`);
-    console.log(`   Cattle: 1,000,000`);
+    console.log(`   Cattle: 5,000,000`);
     console.log(`   Users: 3 (admin, farmer, bank)`);
     console.log(`   Regions: ${AUSTRALIAN_BEEF_REGIONS.length}`);
     console.log(`   Geographic spread: ${AUSTRALIAN_BEEF_REGIONS.map(r => r.state).filter((v, i, a) => a.indexOf(v) === i).join(', ')}\n`);
