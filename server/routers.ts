@@ -37,18 +37,14 @@ export const appRouter = router({
   
   clients: router({
     list: publicProcedure
-      .use(withAccessScope)
-      .query(async ({ ctx }) => {
-        // @ts-ignore - ctx has accessScope from middleware
-        return await getClientsWithRLS(ctx.accessScope);
+      .query(async () => {
+        return await db.getClients();
       }),
     
     active: publicProcedure
-      .use(withAccessScope)
-      .query(async ({ ctx }) => {
-        // @ts-ignore
-        const clients = await getClientsWithRLS(ctx.accessScope);
-        return clients.filter((c: any) => c.active !== false);
+      .query(async () => {
+        const clients = await db.getClients();
+        return clients.filter((c: any) => c.status === 'active');
       }),
     
     get: publicProcedure
@@ -64,7 +60,6 @@ export const appRouter = router({
   
   cattle: router({
     list: publicProcedure
-      .use(withAccessScope)
       .input(z.object({
         cursor: z.number().optional().default(0),
         limit: z.number().min(1).max(100).optional().default(50),
@@ -79,8 +74,7 @@ export const appRouter = router({
       .query(async ({ ctx, input }) => {
         const { cursor = 0, limit = 50, filters } = input || {};
         
-        // @ts-ignore - ctx has accessScope from middleware
-        const { cattle, total } = await getCattleWithRLS(ctx.accessScope, {
+        const { cattle, total } = await db.getCattleWithFilters({
           clientId: filters?.clientId,
           healthStatus: filters?.healthStatus,
           breed: filters?.breed,
@@ -109,22 +103,14 @@ export const appRouter = router({
       }),
     
     active: publicProcedure
-      .use(withAccessScope)
-      .query(async ({ ctx }) => {
-        // @ts-ignore
-        const { cattle } = await getCattleWithRLS(ctx.accessScope, {
-          healthStatus: 'healthy',
-          limit: 1000,
-        });
-        return cattle;
+      .query(async () => {
+        return await db.getActiveCattle();
       }),
     
     get: publicProcedure
-      .use(withAccessScope)
       .input(z.object({ id: z.number() }))
-      .query(async ({ ctx, input }) => {
-        // @ts-ignore
-        return await getCattleByIdWithRLS(input.id, ctx.accessScope);
+      .query(async ({ input }) => {
+        return await db.getCattleById(input.id);
       }),
     
     byClient: publicProcedure
@@ -135,8 +121,6 @@ export const appRouter = router({
     
     // Batch operations
     batchHealthCheck: protectedProcedure
-      .use(withAccessScope)
-      .use(logMutation('cattle.batchHealthCheck'))
       .input(z.object({ 
         cattleIds: z.array(z.number()),
         healthStatus: z.enum(["healthy", "sick", "quarantine"]),
@@ -182,8 +166,6 @@ export const appRouter = router({
       }),
     
     batchMovement: protectedProcedure
-      .use(withAccessScope)
-      .use(logMutation('cattle.batchMovement'))
       .input(z.object({ 
         cattleIds: z.array(z.number()),
         toLocation: z.string(),
@@ -228,8 +210,6 @@ export const appRouter = router({
       }),
     
     batchValuation: protectedProcedure
-      .use(withAccessScope)
-      .use(logMutation('cattle.batchValuation'))
       .input(z.object({ 
         cattleIds: z.array(z.number()),
         valuationMethod: z.string(),
