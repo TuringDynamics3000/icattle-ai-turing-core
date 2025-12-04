@@ -15,7 +15,7 @@ PostgreSQL Golden Record (Event Store)
 ## Prerequisites
 
 1. **TuringCore-v3 Kafka running** on your local machine
-2. **Network connectivity** from Manus sandbox to your local Kafka
+2. **Network connectivity** from TuringDynamics sandbox to your local Kafka
 
 ## Setup Steps
 
@@ -66,7 +66,7 @@ export KAFKA_BROKERS="YOUR_LOCAL_IP:9093"
 
 ### 4. Test Connection
 
-From the Manus sandbox, test Kafka connectivity:
+From the TuringDynamics sandbox, test Kafka connectivity:
 
 ```bash
 # This will be added to iCattle

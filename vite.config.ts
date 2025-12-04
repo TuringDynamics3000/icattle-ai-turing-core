@@ -28,11 +28,11 @@ export default defineConfig({
   server: {
     host: true,
     allowedHosts: [
-      ".manuspre.computer",
-      ".manus.computer",
-      ".manus-asia.computer",
-      ".manuscomputer.ai",
-      ".manusvm.computer",
+      ".turingdynamicspre.computer",
+      ".turingdynamics.computer",
+      ".turingdynamics-asia.computer",
+      ".turingdynamicscomputer.ai",
+      ".turingdynamicsvm.computer",
       "localhost",
       "127.0.0.1",
     ],
