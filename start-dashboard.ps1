@@ -125,7 +125,7 @@ Write-Host ""
 
 # Wait for PostgreSQL to be ready
 Write-Host "Waiting for PostgreSQL to be ready..." -ForegroundColor Yellow
-$maxAttempts = 30
+$maxAttempts = 60
 $attempt = 0
 $ready = $false
 
@@ -133,26 +133,56 @@ while ($attempt -lt $maxAttempts -and -not $ready) {
     $attempt++
     Start-Sleep -Seconds 2
     
-    docker exec icattle-postgres pg_isready -U icattle > $null 2>&1
+    docker exec icattle-postgres pg_isready -U icattle -d icattle > $null 2>&1
     if ($LASTEXITCODE -eq 0) {
-        $ready = $true
-    } else {
-        Write-Host "  Attempt $attempt/$maxAttempts..." -ForegroundColor Gray
+        # Double check the user exists
+        docker exec icattle-postgres psql -U icattle -d icattle -c "SELECT 1" > $null 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            $ready = $true
+        }
+    }
+    
+    if (-not $ready) {
+        Write-Host "  Attempt $attempt/$maxAttempts... (waiting for PostgreSQL to fully initialize)" -ForegroundColor Gray
     }
 }
 
 if (-not $ready) {
-    Write-Host "WARNING: PostgreSQL may not be fully ready. Continuing anyway..." -ForegroundColor Yellow
+    Write-Host "ERROR: PostgreSQL did not become ready in time" -ForegroundColor Red
+    Write-Host "Please check Docker logs: docker compose logs postgres" -ForegroundColor Yellow
+    exit 1
 } else {
     Write-Host "[OK] PostgreSQL is ready" -ForegroundColor Green
 }
 Write-Host ""
 
-# Push database schema
+# Push database schema with retry
 Write-Host "Pushing database schema..." -ForegroundColor Yellow
-pnpm db:push
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "WARNING: Failed to push database schema. You may need to run 'pnpm db:push' manually." -ForegroundColor Yellow
+$pushAttempts = 3
+$pushSuccess = $false
+
+for ($i = 1; $i -le $pushAttempts; $i++) {
+    if ($i -gt 1) {
+        Write-Host "  Retry attempt $i/$pushAttempts..." -ForegroundColor Gray
+        Start-Sleep -Seconds 5
+    }
+    
+    pnpm db:push 2>&1 | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        $pushSuccess = $true
+        break
+    }
+}
+
+if (-not $pushSuccess) {
+    Write-Host "ERROR: Failed to push database schema after $pushAttempts attempts" -ForegroundColor Red
+    Write-Host "" -ForegroundColor Yellow
+    Write-Host "Troubleshooting steps:" -ForegroundColor Yellow
+    Write-Host "  1. Check PostgreSQL logs: docker compose logs postgres" -ForegroundColor White
+    Write-Host "  2. Restart PostgreSQL: docker compose restart postgres" -ForegroundColor White
+    Write-Host "  3. Try manually: pnpm db:push" -ForegroundColor White
+    Write-Host "  4. Reset everything: .\reset-dashboard.ps1" -ForegroundColor White
+    exit 1
 } else {
     Write-Host "[OK] Database schema pushed" -ForegroundColor Green
 }
