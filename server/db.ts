@@ -1,4 +1,4 @@
-import { eq, desc, and, sql, gte, lte } from "drizzle-orm";
+import { eq, desc, and, sql, gte, lte, or, like } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { 
@@ -173,6 +173,53 @@ export async function getActiveCattle(): Promise<Cattle[]> {
   return await db.select().from(cattle)
     .where(eq(cattle.status, 'active'))
     .orderBy(desc(cattle.currentValuation));
+}
+
+export async function getCattlePaginated(
+  offset: number,
+  limit: number,
+  filters?: {
+    clientId?: number;
+    healthStatus?: string;
+    breed?: string;
+    sex?: string;
+    searchQuery?: string;
+  }
+): Promise<Cattle[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const conditions = [eq(cattle.status, 'active')];
+  
+  if (filters?.clientId) {
+    conditions.push(eq(cattle.clientId, filters.clientId));
+  }
+  
+  if (filters?.healthStatus) {
+    conditions.push(eq(cattle.healthStatus, filters.healthStatus));
+  }
+  
+  if (filters?.breed) {
+    conditions.push(eq(cattle.breed, filters.breed));
+  }
+  
+  if (filters?.sex) {
+    conditions.push(eq(cattle.sex, filters.sex));
+  }
+  
+  if (filters?.searchQuery) {
+    const searchConditions = [
+      like(cattle.nlisId, `%${filters.searchQuery}%`),
+      like(cattle.visualId, `%${filters.searchQuery}%`),
+    ];
+    conditions.push(or(...searchConditions));
+  }
+  
+  return await db.select().from(cattle)
+    .where(and(...conditions))
+    .orderBy(desc(cattle.createdAt))
+    .limit(limit)
+    .offset(offset);
 }
 
 // ============================================================================

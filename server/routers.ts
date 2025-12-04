@@ -53,14 +53,40 @@ export const appRouter = router({
   // ============================================================================
   
   cattle: router({
-    list: publicProcedure.query(async () => {
-      const cattle = await db.getAllCattle();
-      // Add certification scoring to each cattle
-      return cattle.map((c: any) => ({
-        ...c,
-        certification: calculateCertification(c),
-      }));
-    }),
+    list: publicProcedure
+      .input(z.object({
+        cursor: z.number().optional().default(0),
+        limit: z.number().min(1).max(100).optional().default(50),
+        filters: z.object({
+          clientId: z.number().optional(),
+          healthStatus: z.enum(["healthy", "sick", "quarantine", "deceased"]).optional(),
+          breed: z.string().optional(),
+          sex: z.enum(["bull", "steer", "cow", "heifer", "calf"]).optional(),
+          searchQuery: z.string().optional(),
+        }).optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        const { cursor = 0, limit = 50, filters } = input || {};
+        
+        // Get cattle with pagination
+        const cattle = await db.getCattlePaginated(cursor, limit + 1, filters);
+        
+        // Check if there are more results
+        const hasMore = cattle.length > limit;
+        const items = hasMore ? cattle.slice(0, -1) : cattle;
+        
+        // Add certification scoring to each cattle
+        const itemsWithCert = items.map((c: any) => ({
+          ...c,
+          certification: calculateCertification(c),
+        }));
+        
+        return {
+          items: itemsWithCert,
+          nextCursor: hasMore ? cursor + limit : undefined,
+          hasMore,
+        };
+      }),
     
     active: publicProcedure.query(async () => {
       return await db.getActiveCattle();
