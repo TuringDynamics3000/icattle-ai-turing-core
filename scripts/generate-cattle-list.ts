@@ -5,6 +5,11 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+// ES module __dirname polyfill
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const muzzleMapping = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'muzzle-mapping-complete.json'), 'utf-8')
