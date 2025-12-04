@@ -55,7 +55,7 @@ export function DemoGoldenRecord() {
               </div>
             </div>
             <TuringProtocolBadge
-              cattleId={1106223}
+              cattleId={6000223}
               biometricVerified={true}
               blockchainVerified={true}
               gpsVerified={true}
@@ -69,7 +69,7 @@ export function DemoGoldenRecord() {
           
           {/* Call to Action */}
           <div className="flex gap-3 mt-6">
-            <Link href="/golden-record/1106223">
+            <Link href="/golden-record/6000223">
               <button className="bg-white text-blue-700 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2">
                 <Eye className="h-5 w-5" />
                 View Sample Golden Record
