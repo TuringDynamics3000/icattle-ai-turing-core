@@ -9,7 +9,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { Kafka } from 'kafkajs';
 import { clients, cattle, users, lifecycleEvents, valuations, marketData, cattleEvents } from '../drizzle/schema';
-import { TuringProtocol } from '../server/_core/turingProtocolV2';
+import { generateKeyPair, createEventMetadata, signEvent, calculatePayloadHash, toHex } from '../server/_core/turingProtocolV2';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -36,8 +36,7 @@ async function seed() {
   }
 
   // Initialize Turing Protocol
-  const turingProtocol = new TuringProtocol();
-  const keyPair = await turingProtocol.generateKeyPair();
+  const keyPair = await generateKeyPair();
   console.log('🔐 Generated cryptographic key pair for Turing Protocol');
   console.log(`   Public Key: ${keyPair.publicKey.substring(0, 32)}...`);
   console.log(`   Private Key: ${keyPair.privateKey.substring(0, 32)}...\n`);
@@ -175,10 +174,31 @@ async function seed() {
         source_system: 'icattle-seed',
       };
 
-      const signedEvent = await turingProtocol.createSignedEvent(
-        birthEventData,
+      // Create event metadata
+      const metadata = createEventMetadata({
+        eventType: 'CATTLE_CREATED',
+        actorId: user.openId,
+        sourceSystem: 'icattle-seed',
+      });
+
+      // Calculate payload hash
+      const payloadHash = calculatePayloadHash(birthEventData.payload);
+
+      // Sign the event
+      const signature = await signEvent(
+        metadata,
+        payloadHash,
         keyPair.privateKey
       );
+
+      // Create signed event envelope
+      const signedEvent = {
+        ...metadata,
+        payload: birthEventData.payload,
+        event_hash: payloadHash,
+        signature: toHex(signature),
+        public_key: keyPair.publicKey,
+      };
 
       // Store in cattle_events table
       await db.insert(cattleEvents).values({
@@ -191,7 +211,7 @@ async function seed() {
         eventHash: signedEvent.event_hash,
         signature: signedEvent.signature,
         publicKey: keyPair.publicKey,
-        idempotencyKey: signedEvent.idempotency_key,
+        idempotencyKey: metadata.idempotency_key,
       });
 
       // Publish to Kafka

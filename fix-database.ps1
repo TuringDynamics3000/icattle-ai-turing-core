@@ -61,6 +61,9 @@ $schemaSql | docker exec -i icattle-postgres psql -U postgres -d icattle 2>&1 | 
 
 Write-Host "[OK] Privileges granted`n" -ForegroundColor Green
 
+Write-Host "Waiting for PostgreSQL to fully initialize..." -ForegroundColor Yellow
+Start-Sleep -Seconds 5
+
 Write-Host "Testing connection as icattle user..." -ForegroundColor Yellow
 
 $testResult = docker exec icattle-postgres psql -U icattle -d icattle -c "SELECT version();" 2>&1
