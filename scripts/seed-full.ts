@@ -74,15 +74,30 @@ async function seed() {
 
     // Clear existing data (in reverse order of foreign key dependencies)
     console.log('🗑️  Clearing existing data...');
-    await pool.query('DELETE FROM cattle_events');
-    await pool.query('DELETE FROM fraud_alerts');
-    await pool.query('DELETE FROM financial_reports');
-    await pool.query('DELETE FROM market_data');
-    await pool.query('DELETE FROM valuations');
-    await pool.query('DELETE FROM lifecycle_events');
-    await pool.query('DELETE FROM cattle');
-    await pool.query('DELETE FROM clients');
-    await pool.query('DELETE FROM users');
+    const tablesToClear = [
+      'fraud_alerts',
+      'cattle_events',
+      'notifications',
+      'agriwebbSyncStatus',
+      'financialReports',
+      'marketData',
+      'valuations',
+      'lifecycleEvents',
+      'cattle',
+      'clients',
+      'users'
+    ];
+    
+    for (const table of tablesToClear) {
+      try {
+        await pool.query(`DELETE FROM "${table}"`);
+      } catch (error: any) {
+        // Ignore if table doesn't exist yet
+        if (error.code !== '42P01') {
+          throw error;
+        }
+      }
+    }
     console.log('   ✅ Database cleared\n');
 
     // Create admin user
