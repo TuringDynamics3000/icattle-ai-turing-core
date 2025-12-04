@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Shield, MapPin, TrendingUp, CheckCircle2, Database, Activity, Info, Eye } from "lucide-react";
+import { Shield, MapPin, TrendingUp, CheckCircle2, Database, Activity, Info, Eye, Building2 } from "lucide-react";
 import { Link } from "wouter";
 import { TuringProtocolBadge } from "@/components/TuringProtocolBadge";
 
@@ -73,6 +73,12 @@ export function DemoGoldenRecord() {
               <button className="bg-white text-blue-700 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2">
                 <Eye className="h-5 w-5" />
                 View Sample Golden Record
+              </button>
+            </Link>
+            <Link href="/bank">
+              <button className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                Bank & Investor View
               </button>
             </Link>
             <Link href="/cattle">
