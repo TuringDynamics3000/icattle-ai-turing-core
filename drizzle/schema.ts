@@ -487,3 +487,51 @@ export const fraudAlerts = pgTable("fraud_alerts", {
 
 export type FraudAlert = typeof fraudAlerts.$inferSelect;
 export type InsertFraudAlert = typeof fraudAlerts.$inferInsert;
+
+// ============================================================================
+// USER-CLIENT RELATIONSHIPS (RBAC)
+// ============================================================================
+
+/**
+ * Links farmers to their farms
+ * A farmer can own/manage multiple farms
+ */
+export const userClients = pgTable("user_clients", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  clientId: integer("client_id").notNull().references(() => clients.id, { onDelete: 'cascade' }),
+  role: varchar("role", { length: 50 }).notNull(), // 'owner', 'manager', 'viewer'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  userClientIdx: index("user_clients_user_id_idx").on(table.userId),
+  clientUserIdx: index("user_clients_client_id_idx").on(table.clientId),
+  uniqueUserClient: index("user_clients_unique_idx").on(table.userId, table.clientId),
+}));
+
+export type UserClient = typeof userClients.$inferSelect;
+export type InsertUserClient = typeof userClients.$inferInsert;
+
+/**
+ * Links financiers (banks/investors) to their portfolio of farms
+ * A financier can have multiple farms in their portfolio
+ */
+export const portfolios = pgTable("portfolios", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  clientId: integer("client_id").notNull().references(() => clients.id, { onDelete: 'cascade' }),
+  financierType: varchar("financier_type", { length: 50 }).notNull(), // 'bank', 'investor', 'lender'
+  loanAmount: integer("loan_amount"), // cents
+  equity: integer("equity"), // percentage (0-100)
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date"),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  userPortfolioIdx: index("portfolios_user_id_idx").on(table.userId),
+  clientPortfolioIdx: index("portfolios_client_id_idx").on(table.clientId),
+  activeIdx: index("portfolios_active_idx").on(table.active),
+}));
+
+export type Portfolio = typeof portfolios.$inferSelect;
+export type InsertPortfolio = typeof portfolios.$inferInsert;
