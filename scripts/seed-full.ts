@@ -106,16 +106,55 @@ async function seed() {
     }
     console.log('   ✅ Database cleared\n');
 
-    // Create admin user
-    console.log('👤 Creating admin user...');
-    const [user] = await db.insert(users).values({
+    // Create test users with different roles
+    console.log('👤 Creating test users...');
+    
+    const [adminUser] = await db.insert(users).values({
       openId: 'admin_001',
       name: 'System Administrator',
       email: 'admin@icattle.local',
       role: 'admin',
       loginMethod: 'local',
     }).returning();
-    console.log(`   ✅ Created user: ${user.name} (ID: ${user.id})\n`);
+    console.log(`   ✅ Admin: ${adminUser.name} (ID: ${adminUser.id})`);
+    
+    const [farmerUser1] = await db.insert(users).values({
+      openId: 'farmer_001',
+      name: 'John Smith',
+      email: 'john@riverside.com.au',
+      role: 'farmer',
+      loginMethod: 'local',
+    }).returning();
+    console.log(`   ✅ Farmer: ${farmerUser1.name} (ID: ${farmerUser1.id})`);
+    
+    const [farmerUser2] = await db.insert(users).values({
+      openId: 'farmer_002',
+      name: 'Sarah Johnson',
+      email: 'sarah@highland.com.au',
+      role: 'farmer',
+      loginMethod: 'local',
+    }).returning();
+    console.log(`   ✅ Farmer: ${farmerUser2.name} (ID: ${farmerUser2.id})`);
+    
+    const [bankUser] = await db.insert(users).values({
+      openId: 'bank_001',
+      name: 'ANZ Agribusiness',
+      email: 'agri@anz.com.au',
+      role: 'bank',
+      loginMethod: 'local',
+    }).returning();
+    console.log(`   ✅ Bank: ${bankUser.name} (ID: ${bankUser.id})`);
+    
+    const [investorUser] = await db.insert(users).values({
+      openId: 'investor_001',
+      name: 'Rural Funds Management',
+      email: 'invest@ruralfunds.com.au',
+      role: 'investor',
+      loginMethod: 'local',
+    }).returning();
+    console.log(`   ✅ Investor: ${investorUser.name} (ID: ${investorUser.id})\n`);
+    
+    const allUsers = [adminUser, farmerUser1, farmerUser2, bankUser, investorUser];
 
     // Create farms
     console.log('🏢 Creating farms...');
@@ -135,6 +174,77 @@ async function seed() {
       console.log(`   ✅ ${farm.name}`);
     }
     console.log(`\n   📊 Total farms: ${createdFarms.length}\n`);
+    
+    // Create user-farm relationships (farmers own their farms)
+    console.log('🔗 Creating user-farm relationships...');
+    const { userClients, portfolios } = await import('../drizzle/schema.js');
+    
+    // Farmer 1 owns Riverside Cattle Station (farm 0)
+    await db.insert(userClients).values({
+      userId: farmerUser1.id,
+      clientId: createdFarms[0].id,
+      role: 'owner',
+    });
+    console.log(`   ✅ ${farmerUser1.name} → ${createdFarms[0].name}`);
+    
+    // Farmer 2 owns Highland Breeding Farm (farm 1)
+    await db.insert(userClients).values({
+      userId: farmerUser2.id,
+      clientId: createdFarms[1].id,
+      role: 'owner',
+    });
+    console.log(`   ✅ ${farmerUser2.name} → ${createdFarms[1].name}`);
+    
+    console.log('\n💼 Creating financier portfolios...');
+    
+    // Bank portfolio: Riverside, Outback Beef, Southern Cross (farms 0, 2, 3)
+    await db.insert(portfolios).values({
+      userId: bankUser.id,
+      clientId: createdFarms[0].id,
+      financierType: 'bank',
+      loanAmount: 250000000, // $2.5M in cents
+      equity: 40,
+      startDate: new Date('2023-01-01'),
+      active: true,
+    });
+    await db.insert(portfolios).values({
+      userId: bankUser.id,
+      clientId: createdFarms[2].id,
+      financierType: 'bank',
+      loanAmount: 180000000, // $1.8M in cents
+      equity: 35,
+      startDate: new Date('2023-03-15'),
+      active: true,
+    });
+    await db.insert(portfolios).values({
+      userId: bankUser.id,
+      clientId: createdFarms[3].id,
+      financierType: 'bank',
+      loanAmount: 320000000, // $3.2M in cents
+      equity: 45,
+      startDate: new Date('2023-06-01'),
+      active: true,
+    });
+    console.log(`   ✅ ${bankUser.name} portfolio: 3 farms ($7.5M total loans)`);
+    
+    // Investor portfolio: Highland, Northern Territory (farms 1, 4)
+    await db.insert(portfolios).values({
+      userId: investorUser.id,
+      clientId: createdFarms[1].id,
+      financierType: 'investor',
+      equity: 25,
+      startDate: new Date('2023-02-01'),
+      active: true,
+    });
+    await db.insert(portfolios).values({
+      userId: investorUser.id,
+      clientId: createdFarms[4].id,
+      financierType: 'investor',
+      equity: 30,
+      startDate: new Date('2023-05-01'),
+      active: true,
+    });
+    console.log(`   ✅ ${investorUser.name} portfolio: 2 farms\n`);
 
     // Read cattle list
     const cattleListPath = process.platform === 'win32' 

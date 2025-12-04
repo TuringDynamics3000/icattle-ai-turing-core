@@ -2,6 +2,8 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { withAccessScope, requireAuth, requireRole, logMutation } from "./_core/rbac-middleware";
+import { getCattleWithRLS, getClientsWithRLS, getCattleByIdWithRLS } from "./_core/rbac-queries";
 import { z } from "zod";
 import * as db from "./db";
 import { calculateCertification } from "./_core/certificationScoring";
@@ -33,13 +35,20 @@ export const appRouter = router({
   // ============================================================================
   
   clients: router({
-    list: publicProcedure.query(async () => {
-      return await db.getAllClients();
-    }),
+    list: publicProcedure
+      .use(withAccessScope)
+      .query(async ({ ctx }) => {
+        // @ts-ignore - ctx has accessScope from middleware
+        return await getClientsWithRLS(ctx.accessScope);
+      }),
     
-    active: publicProcedure.query(async () => {
-      return await db.getActiveClients();
-    }),
+    active: publicProcedure
+      .use(withAccessScope)
+      .query(async ({ ctx }) => {
+        // @ts-ignore
+        const clients = await getClientsWithRLS(ctx.accessScope);
+        return clients.filter((c: any) => c.active !== false);
+      }),
     
     get: publicProcedure
       .input(z.object({ id: z.number() }))
@@ -54,6 +63,7 @@ export const appRouter = router({
   
   cattle: router({
     list: publicProcedure
+      .use(withAccessScope)
       .input(z.object({
         cursor: z.number().optional().default(0),
         limit: z.number().min(1).max(100).optional().default(50),
@@ -65,11 +75,19 @@ export const appRouter = router({
           searchQuery: z.string().optional(),
         }).optional(),
       }).optional())
-      .query(async ({ input }) => {
+      .query(async ({ ctx, input }) => {
         const { cursor = 0, limit = 50, filters } = input || {};
         
-        // Get cattle with pagination
-        const cattle = await db.getCattlePaginated(cursor, limit + 1, filters);
+        // @ts-ignore - ctx has accessScope from middleware
+        const { cattle, total } = await getCattleWithRLS(ctx.accessScope, {
+          clientId: filters?.clientId,
+          healthStatus: filters?.healthStatus,
+          breed: filters?.breed,
+          sex: filters?.sex,
+          search: filters?.searchQuery,
+          limit: limit + 1,
+          offset: cursor,
+        });
         
         // Check if there are more results
         const hasMore = cattle.length > limit;
@@ -85,17 +103,27 @@ export const appRouter = router({
           items: itemsWithCert,
           nextCursor: hasMore ? cursor + limit : undefined,
           hasMore,
+          total,
         };
       }),
     
-    active: publicProcedure.query(async () => {
-      return await db.getActiveCattle();
-    }),
+    active: publicProcedure
+      .use(withAccessScope)
+      .query(async ({ ctx }) => {
+        // @ts-ignore
+        const { cattle } = await getCattleWithRLS(ctx.accessScope, {
+          healthStatus: 'healthy',
+          limit: 1000,
+        });
+        return cattle;
+      }),
     
     get: publicProcedure
+      .use(withAccessScope)
       .input(z.object({ id: z.number() }))
-      .query(async ({ input }) => {
-        return await db.getCattleById(input.id);
+      .query(async ({ ctx, input }) => {
+        // @ts-ignore
+        return await getCattleByIdWithRLS(input.id, ctx.accessScope);
       }),
     
     byClient: publicProcedure
@@ -106,12 +134,27 @@ export const appRouter = router({
     
     // Batch operations
     batchHealthCheck: protectedProcedure
+      .use(withAccessScope)
+      .use(logMutation('cattle.batchHealthCheck'))
       .input(z.object({ 
         cattleIds: z.array(z.number()),
         healthStatus: z.enum(["healthy", "sick", "quarantine"]),
         notes: z.string().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
+        // @ts-ignore - Check permissions
+        const { hasPermission } = await import('./_core/permissions');
+        if (!hasPermission(ctx.accessScope?.role, 'cattle:update')) {
+          throw new Error('Permission denied: cattle:update required');
+        }
+        
+        // @ts-ignore - Verify user can access these cattle
+        const { canModifyBatchCattle } = await import('./_core/rbac-queries');
+        const { allowed, denied } = await canModifyBatchCattle(input.cattleIds, ctx.accessScope);
+        
+        if (denied.length > 0) {
+          throw new Error(`Access denied to ${denied.length} cattle: ${denied.join(', ')}`);
+        }
         const result = await db.batchHealthCheck(input.cattleIds, input.healthStatus, input.notes);
         
         // Publish Kafka events for each cattle health check
@@ -138,12 +181,27 @@ export const appRouter = router({
       }),
     
     batchMovement: protectedProcedure
+      .use(withAccessScope)
+      .use(logMutation('cattle.batchMovement'))
       .input(z.object({ 
         cattleIds: z.array(z.number()),
         toLocation: z.string(),
         notes: z.string().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
+        // @ts-ignore - Check permissions
+        const { hasPermission } = await import('./_core/permissions');
+        if (!hasPermission(ctx.accessScope?.role, 'cattle:update')) {
+          throw new Error('Permission denied: cattle:update required');
+        }
+        
+        // @ts-ignore - Verify user can access these cattle
+        const { canModifyBatchCattle } = await import('./_core/rbac-queries');
+        const { allowed, denied } = await canModifyBatchCattle(input.cattleIds, ctx.accessScope);
+        
+        if (denied.length > 0) {
+          throw new Error(`Access denied to ${denied.length} cattle: ${denied.join(', ')}`);
+        }
         const result = await db.batchMovement(input.cattleIds, input.toLocation, input.notes);
         
         // Publish Kafka events for each cattle movement
@@ -169,12 +227,27 @@ export const appRouter = router({
       }),
     
     batchValuation: protectedProcedure
+      .use(withAccessScope)
+      .use(logMutation('cattle.batchValuation'))
       .input(z.object({ 
         cattleIds: z.array(z.number()),
         valuationMethod: z.string(),
         notes: z.string().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
+        // @ts-ignore - Check permissions
+        const { hasPermission } = await import('./_core/permissions');
+        if (!hasPermission(ctx.accessScope?.role, 'valuation:update')) {
+          throw new Error('Permission denied: valuation:update required');
+        }
+        
+        // @ts-ignore - Verify user can access these cattle
+        const { canModifyBatchCattle } = await import('./_core/rbac-queries');
+        const { allowed, denied } = await canModifyBatchCattle(input.cattleIds, ctx.accessScope);
+        
+        if (denied.length > 0) {
+          throw new Error(`Access denied to ${denied.length} cattle: ${denied.join(', ')}`);
+        }
         const result = await db.batchValuation(input.cattleIds, input.valuationMethod, input.notes);
         
         // Publish Kafka events for each valuation update

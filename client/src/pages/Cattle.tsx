@@ -1,32 +1,54 @@
 import { trpc } from "@/lib/trpc";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { CattleDataTable } from "@/components/CattleDataTable";
 
 import { Link } from "wouter";
-import { ArrowLeft, Search, Filter, FileDown } from "lucide-react";
+import { ArrowLeft, Search, Filter, FileDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { exportCattleToCSV, type CattleExportData } from "@/lib/exportCSV";
+import { useRoleFeatures } from "@/hooks/useRoleFeatures";
 
 export function Cattle() {
-  const { data: cattle, isLoading } = trpc.cattle.active.useQuery();
-  const { data: clients } = trpc.clients.active.useQuery();
+  const { features, role } = useRoleFeatures();
   
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBreed, setFilterBreed] = useState<string>("all");
   const [filterClient, setFilterClient] = useState<string>("all");
   const [filterHealth, setFilterHealth] = useState<string>("all");
+  const [filterSex, setFilterSex] = useState<string>("all");
   const [selectedCattle, setSelectedCattle] = useState<Set<number>>(new Set());
+  const [cursor, setCursor] = useState(0);
+  const [limit] = useState(50); // Items per page
+
+  const { data: clients } = trpc.clients.active.useQuery();
+  
+  // Use paginated query with filters
+  const { data: paginatedData, isLoading } = trpc.cattle.list.useQuery({
+    cursor,
+    limit,
+    filters: {
+      clientId: filterClient !== "all" ? parseInt(filterClient) : undefined,
+      healthStatus: filterHealth !== "all" ? (filterHealth as any) : undefined,
+      breed: filterBreed !== "all" ? filterBreed : undefined,
+      sex: filterSex !== "all" ? (filterSex as any) : undefined,
+      searchQuery: searchTerm || undefined,
+    },
+  });
+
+  const cattle = paginatedData?.items || [];
+  const hasMore = paginatedData?.hasMore || false;
+  const total = paginatedData?.total || 0;
+
   const utils = trpc.useUtils();
   const batchHealthCheck = trpc.cattle.batchHealthCheck.useMutation({
     onSuccess: () => {
       console.log("Health checks recorded successfully");
       setSelectedCattle(new Set());
-      utils.cattle.active.invalidate();
+      utils.cattle.list.invalidate();
     },
   });
   
@@ -34,7 +56,7 @@ export function Cattle() {
     onSuccess: () => {
       console.log("Movements recorded successfully");
       setSelectedCattle(new Set());
-      utils.cattle.active.invalidate();
+      utils.cattle.list.invalidate();
     },
   });
   
@@ -42,15 +64,21 @@ export function Cattle() {
     onSuccess: () => {
       console.log("Valuations updated successfully");
       setSelectedCattle(new Set());
-      utils.cattle.active.invalidate();
+      utils.cattle.list.invalidate();
     },
   });
-  
+
+  // Reset cursor when filters change
+  useEffect(() => {
+    setCursor(0);
+    setSelectedCattle(new Set());
+  }, [searchTerm, filterBreed, filterClient, filterHealth, filterSex]);
+
   const handleSelectAll = () => {
-    if (selectedCattle.size === filteredCattle.length) {
+    if (selectedCattle.size === cattle.length) {
       setSelectedCattle(new Set());
     } else {
-      setSelectedCattle(new Set(filteredCattle.map(c => c.id)));
+      setSelectedCattle(new Set(cattle.map(c => c.id)));
     }
   };
   
@@ -71,61 +99,26 @@ export function Cattle() {
     return uniqueBreeds.sort();
   }, [cattle]);
 
-  // Filter cattle
-  const filteredCattle = useMemo(() => {
-    if (!cattle) return [];
-    
-    return cattle.filter(c => {
-      const matchesSearch = 
-        c.visualId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.nlisId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.breed?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesBreed = filterBreed === "all" || c.breed === filterBreed;
-      const matchesClient = filterClient === "all" || c.clientId.toString() === filterClient;
-      const matchesHealth = filterHealth === "all" || c.healthStatus === filterHealth;
-      
-      return matchesSearch && matchesBreed && matchesClient && matchesHealth;
-    });
-  }, [cattle, searchTerm, filterBreed, filterClient, filterHealth]);
-
-  const formatCurrency = (cents: number | null) => {
-    if (!cents) return "N/A";
-    return new Intl.NumberFormat('en-AU', {
-      style: 'currency',
-      currency: 'AUD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(cents / 100);
-  };
-
-  const getHealthBadge = (status: string) => {
-    switch (status) {
-      case 'healthy':
-        return <Badge className="bg-green-600">Healthy</Badge>;
-      case 'sick':
-        return <Badge className="bg-orange-600">Requires Attention</Badge>;
-      case 'quarantine':
-        return <Badge className="bg-red-600">Quarantine</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+  const handleNextPage = () => {
+    if (hasMore) {
+      setCursor(cursor + limit);
     }
   };
 
-  const getClientName = (clientId: number) => {
-    const client = clients?.find(c => c.id === clientId);
-    return client?.name || `Client ${clientId}`;
+  const handlePrevPage = () => {
+    if (cursor > 0) {
+      setCursor(Math.max(0, cursor - limit));
+    }
   };
 
-  if (isLoading) {
+  const currentPage = Math.floor(cursor / limit) + 1;
+  const totalPages = Math.ceil(total / limit);
+
+  if (isLoading && cattle.length === 0) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-12 w-64" />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[...Array(9)].map((_, i) => (
-            <Skeleton key={i} className="h-64" />
-          ))}
-        </div>
+        <Skeleton className="h-64" />
       </div>
     );
   }
@@ -144,11 +137,17 @@ export function Cattle() {
             <h1 className="text-4xl font-bold tracking-tight">Cattle Registry</h1>
           </div>
           <p className="text-muted-foreground mt-2">
-            Digital twin registry with biometric verification
+            Digital twin registry with biometric verification • {total.toLocaleString()} total cattle
+            {role && (
+              <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                Role: {role.toUpperCase()}
+              </span>
+            )}
           </p>
         </div>
-        <Button
-          onClick={() => {
+        {features.showExport && (
+          <Button
+            onClick={() => {
             if (cattle) {
               const exportData: CattleExportData[] = cattle.map(c => ({
                 id: c.id,
@@ -174,8 +173,9 @@ export function Cattle() {
           className="gap-2"
         >
           <FileDown className="h-4 w-4" />
-          Export CSV
-        </Button>
+            Export CSV
+          </Button>
+        )}
       </div>
 
       {/* Filters */}
@@ -187,7 +187,7 @@ export function Cattle() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className={`grid gap-4 ${features.showFarmFilter ? 'md:grid-cols-5' : 'md:grid-cols-4'}`}>
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
@@ -210,19 +210,35 @@ export function Cattle() {
               </SelectContent>
             </Select>
 
-            <Select value={filterClient} onValueChange={setFilterClient}>
+            <Select value={filterSex} onValueChange={setFilterSex}>
               <SelectTrigger>
-                <SelectValue placeholder="All Clients" />
+                <SelectValue placeholder="All Sex/Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Clients</SelectItem>
-                {clients?.map(client => (
-                  <SelectItem key={client.id} value={client.id.toString()}>
-                    {client.name}
-                  </SelectItem>
-                ))}
+                <SelectItem value="all">All Sex/Type</SelectItem>
+                <SelectItem value="bull">Bull</SelectItem>
+                <SelectItem value="steer">Steer</SelectItem>
+                <SelectItem value="cow">Cow</SelectItem>
+                <SelectItem value="heifer">Heifer</SelectItem>
+                <SelectItem value="calf">Calf</SelectItem>
               </SelectContent>
             </Select>
+
+            {features.showFarmFilter && (
+              <Select value={filterClient} onValueChange={setFilterClient}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All Clients" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Clients</SelectItem>
+                  {clients?.map(client => (
+                    <SelectItem key={client.id} value={client.id.toString()}>
+                      {client.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
 
             <Select value={filterHealth} onValueChange={setFilterHealth}>
               <SelectTrigger>
@@ -240,7 +256,7 @@ export function Cattle() {
       </Card>
 
       {/* Batch Operations Toolbar */}
-      {selectedCattle.size > 0 && (
+      {features.showBatchOperations && selectedCattle.size > 0 && (
         <Card className="bg-blue-50 border-blue-200">
           <CardContent className="py-4">
             <div className="flex items-center justify-between">
@@ -308,109 +324,44 @@ export function Cattle() {
         </Card>
       )}
 
-      {/* Select All */}
-      <div className="flex items-center gap-2">
-        <Checkbox
-          checked={selectedCattle.size === filteredCattle.length && filteredCattle.length > 0}
-          onCheckedChange={handleSelectAll}
-        />
-        <span className="text-sm text-muted-foreground">
-          Select All ({filteredCattle.length} cattle)
-        </span>
+      {/* Data Table */}
+      <CattleDataTable
+        cattle={cattle}
+        clients={clients}
+        selectedCattle={selectedCattle}
+        onToggleSelect={handleToggleSelect}
+        onSelectAll={handleSelectAll}
+      />
+
+      {/* Pagination */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          Showing {cursor + 1} to {Math.min(cursor + limit, total)} of {total.toLocaleString()} cattle
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePrevPage}
+            disabled={cursor === 0}
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Previous
+          </Button>
+          <div className="text-sm font-medium">
+            Page {currentPage} of {totalPages}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNextPage}
+            disabled={!hasMore}
+          >
+            Next
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
       </div>
-
-      {/* Cattle Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {filteredCattle.map((animal) => (
-          <Card key={animal.id} className={`hover:shadow-lg transition-shadow ${
-            selectedCattle.has(animal.id) ? 'ring-2 ring-blue-500' : ''
-          }`}>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <Checkbox
-                  checked={selectedCattle.has(animal.id)}
-                  onCheckedChange={() => handleToggleSelect(animal.id)}
-                  onClick={(e) => e.stopPropagation()}
-                  className="mt-1"
-                />
-                <div className="flex-1 ml-3">
-                  <div className="flex items-start gap-3">
-                    {animal.muzzleImageUrl && (
-                      <img 
-                        src={animal.muzzleImageUrl} 
-                        alt={`${animal.visualId} muzzle`}
-                        className="w-16 h-16 rounded-lg object-cover border-2 border-border"
-                      />
-                    )}
-                    <div className="flex-1">
-                      <CardTitle className="text-xl">{animal.visualId}</CardTitle>
-                      <CardDescription className="mt-1">
-                        {animal.breed} • {animal.sex}
-                      </CardDescription>
-                    </div>
-                  </div>
-                </div>
-                {getHealthBadge(animal.healthStatus)}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Link href={`/cattle/${animal.id}`}>
-                <div className="cursor-pointer">
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div>
-                      <div className="text-muted-foreground">NLIS ID</div>
-                      <div className="font-mono text-xs">{animal.nlisId}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Weight</div>
-                      <div className="font-semibold">{animal.currentWeight}kg</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Type</div>
-                      <div className="capitalize">{animal.cattleType}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Location</div>
-                      <div className="text-xs">{animal.currentLocation}</div>
-                    </div>
-                  </div>
-
-                  <div className="pt-3 border-t">
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm text-muted-foreground">Current Value</div>
-                      <div className="text-lg font-bold text-green-600">
-                        {formatCurrency(animal.currentValuation)}
-                      </div>
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Owner: {getClientName(animal.clientId)}
-                    </div>
-                  </div>
-
-                  {animal.biometricId && (
-                    <div className="pt-2 border-t">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
-                        <span className="text-xs text-muted-foreground">
-                          Biometric ID: {animal.biometricId.substring(0, 8)}...
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </Link>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {filteredCattle.length === 0 && (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">No cattle found matching your filters.</p>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
