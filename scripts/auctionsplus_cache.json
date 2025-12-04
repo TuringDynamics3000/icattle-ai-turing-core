@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2025-12-03T20:26:33.616Z",
+  "scraped_at": "2025-12-04T00:54:37.697Z",
   "price_discovery": [
     {
       "breed": "Angus",
@@ -9,9 +9,8 @@
       "price_range_min": 5.1,
       "price_range_max": 6.9,
       "sample_size": 39,
-      "last_updated": "2025-12-03T20:26:33.616Z",
-      "source": "AuctionsPlus Price Discovery (simulated)",
-      "note": "Requires authentication for live data"
+      "last_updated": "2025-12-04T00:54:37.697Z",
+      "source": "AuctionsPlus Price Discovery (simulated)"
     },
     {
       "breed": "Wagyu",
@@ -21,9 +20,8 @@
       "price_range_min": 7.15,
       "price_range_max": 9.67,
       "sample_size": 16,
-      "last_updated": "2025-12-03T20:26:33.616Z",
-      "source": "AuctionsPlus Price Discovery (simulated)",
-      "note": "Requires authentication for live data"
+      "last_updated": "2025-12-04T00:54:37.697Z",
+      "source": "AuctionsPlus Price Discovery (simulated)"
     },
     {
       "breed": "Hereford",
@@ -33,9 +31,8 @@
       "price_range_min": 3.93,
       "price_range_max": 5.31,
       "sample_size": 42,
-      "last_updated": "2025-12-03T20:26:33.616Z",
-      "source": "AuctionsPlus Price Discovery (simulated)",
-      "note": "Requires authentication for live data"
+      "last_updated": "2025-12-04T00:54:37.697Z",
+      "source": "AuctionsPlus Price Discovery (simulated)"
     }
   ],
   "recent_auctions": []
