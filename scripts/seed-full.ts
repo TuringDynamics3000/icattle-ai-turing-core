@@ -179,9 +179,8 @@ async function seed() {
       // Create cattle record
       const [cow] = await db.insert(cattle).values({
         clientId: farm.id,
-        nlis: `NLIS982${cattleNum.padStart(9, '0')}`,
+        nlisId: `NLIS982${cattleNum.padStart(9, '0')}`,
         visualId: `${farm.name.substring(0, 2).toUpperCase()}${cattleNum}`,
-        name: `Cattle ${cattleNum}`,
         breed,
         sex,
         cattleType,
@@ -201,7 +200,7 @@ async function seed() {
         event_type: 'CATTLE_CREATED',
         occurred_at: birthDate.toISOString(),
         payload: {
-          nlis: cow.nlis,
+          nlis: cow.nlisId,
           visual_id: cow.visualId,
           breed: cow.breed,
           sex: cow.sex,
@@ -271,7 +270,7 @@ async function seed() {
           await producer.send({
             topic: 'turing.cattle.events',
             messages: [{
-              key: cow.nlis,
+              key: cow.nlisId,
               value: JSON.stringify(signedEvent),
               headers: {
                 'event-type': 'CATTLE_CREATED',
@@ -312,19 +311,19 @@ async function seed() {
         cattleId: cow.id,
         eventType: 'vaccination' as const,
         eventDate: vaccinationDate,
-        description: '7-in-1 vaccine administered',
+        details: JSON.stringify({ vaccine: '7-in-1', notes: 'Routine vaccination' }),
         recordedBy: user.id,
       });
 
-      // Weight check
+      // Weight update
       const weightDate = new Date();
       weightDate.setMonth(weightDate.getMonth() - 1);
       lifecycleEventData.push({
         cattleId: cow.id,
-        eventType: 'weight_check' as const,
+        eventType: 'weight_update' as const,
         eventDate: weightDate,
         weight: cow.currentWeight,
-        description: 'Monthly weight check',
+        details: JSON.stringify({ weight: cow.currentWeight, notes: 'Monthly weight check' }),
         recordedBy: user.id,
       });
     }
@@ -341,8 +340,8 @@ async function seed() {
       valuationData.push({
         cattleId: cow.id,
         valuationDate: new Date(),
-        marketValue: Math.floor(baseValue * weightFactor),
-        method: 'market_comparison' as const,
+        valuationAmount: Math.floor(baseValue * weightFactor),
+        method: 'market' as const,
         calculatedBy: 'system',
         notes: 'Based on current market prices and weight',
       });
@@ -364,15 +363,8 @@ async function seed() {
     await db.insert(marketData).values(marketDataEntries);
     console.log(`   ✅ Created ${marketDataEntries.length} market data entries\n`);
 
-    // Update farm cattle counts
-    console.log('🔄 Updating farm cattle counts...');
-    for (const farm of createdFarms) {
-      const count = createdCattle.filter(c => c.clientId === farm.id && c.status === 'active').length;
-      await db.update(clients)
-        .set({ totalCattle: count })
-        .where(clients.id.eq(farm.id));
-    }
-    console.log('   ✅ Farm counts updated\n');
+    // Note: Farm cattle counts can be calculated via query when needed
+    // (totalCattle field doesn't exist in schema)
 
     // Summary
     console.log('========================================');
