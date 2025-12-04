@@ -216,9 +216,14 @@ async function seed() {
 
       // Create event metadata
       const metadata = createEventMetadata({
-        eventType: 'CATTLE_CREATED',
-        actorId: user.openId,
-        sourceSystem: 'icattle-seed',
+        event_type: 'CATTLE_CREATED',
+        event_ref: `cattle-${cow.id}-created`,
+        cattle_id: cow.id,
+        occurred_at: birthDate,
+        idempotency_key: `cattle-${cow.id}-birth-${Date.now()}`,
+        source_system: 'iCattle',
+        created_by: user.openId,
+        public_key: publicKeyHex,
       });
 
       // Calculate payload hash
