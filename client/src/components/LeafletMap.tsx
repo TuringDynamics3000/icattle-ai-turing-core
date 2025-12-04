@@ -1,6 +1,9 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
 // Fix for default marker icons in Leaflet with Vite
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -36,7 +39,7 @@ interface LeafletMapProps {
 export function LeafletMap({ cattle, height = '500px' }: LeafletMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<L.Map | null>(null);
-  const markersRef = useRef<L.Marker[]>([]);
+  const markerClusterRef = useRef<L.MarkerClusterGroup | null>(null);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -54,9 +57,53 @@ export function LeafletMap({ cattle, height = '500px' }: LeafletMapProps) {
 
     const map = mapInstance.current;
 
-    // Clear existing markers
-    markersRef.current.forEach(marker => marker.remove());
-    markersRef.current = [];
+    // Clear existing marker cluster
+    if (markerClusterRef.current) {
+      map.removeLayer(markerClusterRef.current);
+    }
+
+    // Create new marker cluster group
+    markerClusterRef.current = L.markerClusterGroup({
+      maxClusterRadius: 80,
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: true,
+      chunkedLoading: true,
+      chunkInterval: 200,
+      chunkDelay: 50,
+      iconCreateFunction: (cluster) => {
+        const count = cluster.getChildCount();
+        let size = 'small';
+        let color = '#10b981'; // green
+        
+        if (count > 100) {
+          size = 'large';
+          color = '#3b82f6'; // blue
+        } else if (count > 10) {
+          size = 'medium';
+          color = '#22c55e'; // lighter green
+        }
+        
+        return L.divIcon({
+          html: `<div style="
+            background-color: ${color};
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: ${size === 'large' ? '16px' : size === 'medium' ? '14px' : '12px'};
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+          ">${count}</div>`,
+          className: `marker-cluster marker-cluster-${size}`,
+          iconSize: L.point(
+            size === 'large' ? 50 : size === 'medium' ? 40 : 30,
+            size === 'large' ? 50 : size === 'medium' ? 40 : 30
+          ),
+        });
+      },
+    });
 
     // Filter cattle with valid GPS coordinates
     const cattleWithGps = cattle.filter(c => c.latitude && c.longitude);
@@ -94,7 +141,6 @@ export function LeafletMap({ cattle, height = '500px' }: LeafletMapProps) {
       });
 
       const marker = L.marker([lat, lng], { icon: customIcon })
-        .addTo(map)
         .bindPopup(`
           <div style="min-width: 200px;">
             <h3 style="font-weight: bold; font-size: 16px; margin-bottom: 8px;">
@@ -117,9 +163,12 @@ export function LeafletMap({ cattle, height = '500px' }: LeafletMapProps) {
           </div>
         `);
 
-      markersRef.current.push(marker);
+      markerClusterRef.current!.addLayer(marker);
       bounds.extend([lat, lng]);
     });
+
+    // Add marker cluster to map
+    map.addLayer(markerClusterRef.current!);
 
     // Fit map to show all markers
     if (cattleWithGps.length > 0) {
