@@ -5,7 +5,7 @@
  * Enforces RBAC at the database level
  */
 
-import { db } from '../db';
+import { getDb } from '../db';
 import { cattle, clients, userClients, portfolios, users } from '../../drizzle/schema';
 import { eq, and, inArray, or, sql, desc, asc } from 'drizzle-orm';
 import type { AccessScope } from './permissions';
@@ -15,6 +15,9 @@ import { getAccessibleClientIds } from './permissions';
  * Get user's access scope (which clients they can see)
  */
 export async function getUserAccessScope(userId: number): Promise<AccessScope | null> {
+  const db = await getDb();
+  if (!db) return null;
+  
   const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   
   if (!user || user.length === 0) return null;
@@ -71,6 +74,9 @@ export async function getCattleWithRLS(
   scope: AccessScope,
   filters: CattleFilters = {}
 ) {
+  const db = await getDb();
+  if (!db) return { cattle: [], total: 0 };
+  
   const accessibleClientIds = getAccessibleClientIds(scope);
   
   // Build where conditions
@@ -144,6 +150,9 @@ export async function getCattleByIdWithRLS(
   cattleId: number,
   scope: AccessScope
 ) {
+  const db = await getDb();
+  if (!db) return null;
+  
   const accessibleClientIds = getAccessibleClientIds(scope);
   
   const cattleRecord = await db
@@ -172,6 +181,9 @@ export async function getCattleByIdWithRLS(
  * Get clients (farms) with row-level security
  */
 export async function getClientsWithRLS(scope: AccessScope) {
+  const db = await getDb();
+  if (!db) return [];
+  
   const accessibleClientIds = getAccessibleClientIds(scope);
   
   if (accessibleClientIds === 'all') {
@@ -193,6 +205,16 @@ export async function getClientsWithRLS(scope: AccessScope) {
  * Get portfolio summary for financiers
  */
 export async function getPortfolioSummary(scope: AccessScope) {
+  const db = await getDb();
+  if (!db) {
+    return {
+      totalFarms: 0,
+      totalCattle: 0,
+      totalValue: 0,
+      farms: [],
+    };
+  }
+  
   if (scope.role !== 'bank' && scope.role !== 'investor') {
     throw new Error('Access denied: Portfolio summary is only available for financiers');
   }
@@ -264,6 +286,9 @@ export async function canModifyBatchCattle(
   cattleIds: number[],
   scope: AccessScope
 ): Promise<{ allowed: number[]; denied: number[] }> {
+  const db = await getDb();
+  if (!db) return { allowed: [], denied: cattleIds };
+  
   const accessibleClientIds = getAccessibleClientIds(scope);
   
   const cattleRecords = await db
