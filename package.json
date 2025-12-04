@@ -21,7 +21,8 @@
     "test:coverage": "vitest run --coverage",
     "test:generate": "tsx tests/eventGenerator.ts",
     "db:seed-full": "tsx scripts/seed-full.ts",
-    "db:sync-valuations": "tsx scripts/sync-valuations.ts"
+    "db:sync-valuations": "tsx scripts/sync-valuations.ts",
+    "db:add-gps": "tsx scripts/add-gps-coordinates.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.693.0",
