@@ -356,6 +356,7 @@ export async function getPortfolioSummary(clientId?: number) {
     totalValue: sql<number>`SUM(${cattle.currentValuation})`,
     avgValue: sql<number>`AVG(${cattle.currentValuation})`,
     totalWeight: sql<number>`SUM(${cattle.currentWeight})`,
+    sickCattle: sql<number>`SUM(CASE WHEN ${cattle.healthStatus} = 'sick' THEN 1 ELSE 0 END)`,
   }).from(cattle).where(conditions);
   
   return result[0];

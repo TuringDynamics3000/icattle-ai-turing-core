@@ -13,7 +13,13 @@ import {
 } from "lucide-react";
 
 export function FarmerView() {
-  const { data: cattle, isLoading: cattleLoading } = trpc.cattle.active.useQuery();
+  // Use paginated query instead of loading all cattle
+  const { data: cattleData, isLoading: cattleLoading } = trpc.cattle.list.useQuery({
+    limit: 100, // Show first 100 cattle
+    cursor: 0,
+  });
+  const cattle = cattleData?.items || [];
+  const { data: summary } = trpc.portfolio.summary.useQuery({});
   const { data: clients } = trpc.clients.active.useQuery();
   const { data: recentEvents } = trpc.events.recent.useQuery({ limit: 20 });
   

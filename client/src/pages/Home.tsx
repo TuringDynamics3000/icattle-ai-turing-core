@@ -13,7 +13,7 @@ export function Home() {
   const { data: marketVal, isLoading: marketLoading } = trpc.portfolio.marketValuation.useQuery({});
   const { data: recentEvents, isLoading: eventsLoading } = trpc.events.recent.useQuery({ limit: 10 });
   const { data: activeClients, isLoading: clientsLoading } = trpc.clients.active.useQuery();
-  const { data: activeCattle, isLoading: cattleLoading } = trpc.cattle.active.useQuery();
+  // Removed activeCattle query - use summary.sickCattle instead
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#FF6B9D'];
 
@@ -34,7 +34,7 @@ export function Home() {
   const totalCattle = summary?.totalCattle || 0;
   const avgValue = totalCattle > 0 ? totalValue / totalCattle : 0;
   const totalClients = activeClients?.length || 0;
-  const sickCattle = activeCattle?.filter(c => c.healthStatus === 'sick').length || 0;
+  const sickCattle = summary?.sickCattle || 0; // Use summary data instead of loading all cattle
 
   // Format currency (cents to dollars)
   const formatCurrency = (cents: number) => {

@@ -14,7 +14,9 @@ import { calculateCertification } from "@/../../server/_core/certificationScorin
 
 export function BankView() {
   const { data: summary, isLoading: summaryLoading } = trpc.portfolio.summary.useQuery({});
-  const { data: cattle, isLoading: cattleLoading } = trpc.cattle.active.useQuery();
+  // Load sample of 1000 cattle for detailed calculations (not all 5M)
+  const { data: cattleData } = trpc.cattle.list.useQuery({ limit: 1000, cursor: 0 });
+  const cattle = cattleData?.items || [];
   const { data: clients, isLoading: clientsLoading } = trpc.clients.active.useQuery();
   const { data: breedDist } = trpc.portfolio.breedDistribution.useQuery({});
 
@@ -32,7 +34,7 @@ export function BankView() {
     return `${value.toFixed(1)}%`;
   };
 
-  if (summaryLoading || cattleLoading || clientsLoading) {
+  if (summaryLoading || clientsLoading) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-12 w-64" />
@@ -54,8 +56,8 @@ export function BankView() {
   const unrealizedGain = totalValue - totalAcquisitionCost;
   const unrealizedGainPercent = totalAcquisitionCost > 0 ? (unrealizedGain / totalAcquisitionCost) * 100 : 0;
 
-  // Risk metrics
-  const sickCattle = cattle?.filter(c => c.healthStatus === 'sick').length || 0;
+  // Risk metrics (use summary data)
+  const sickCattle = summary?.sickCattle || 0;
   const healthRiskPercent = totalCattle > 0 ? (sickCattle / totalCattle) * 100 : 0;
 
   // Concentration risk (largest client as % of portfolio)
