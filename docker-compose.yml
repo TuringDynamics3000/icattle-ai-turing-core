@@ -58,26 +58,45 @@ services:
     networks:
       - icattle-network
 
-  # PostgreSQL - Golden Record database for event sourcing
+  # PostgreSQL - Main database for iCattle Dashboard
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: icattle-postgres
+    restart: unless-stopped
     environment:
       POSTGRES_USER: icattle
       POSTGRES_PASSWORD: icattle_dev_password
-      POSTGRES_DB: icattle_golden_record
+      POSTGRES_DB: icattle
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     networks:
       - icattle-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U icattle"]
+      test: ["CMD-SHELL", "pg_isready -U icattle -d icattle"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # pgAdmin - PostgreSQL management UI
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: icattle-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@icattle.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    networks:
+      - icattle-network
+    depends_on:
+      - postgres
 
 networks:
   icattle-network:
@@ -85,4 +104,6 @@ networks:
 
 volumes:
   postgres-data:
+    driver: local
+  pgadmin-data:
     driver: local
