@@ -3,6 +3,7 @@
  * Test database connection
  */
 
+import 'dotenv/config';
 import { getDb } from '../server/db';
 import { users, clients, cattle } from '../drizzle/schema';
 import { sql } from 'drizzle-orm';

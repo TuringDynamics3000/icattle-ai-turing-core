@@ -4,6 +4,7 @@
  * Creates test data for iCattle Dashboard
  */
 
+import 'dotenv/config';
 import { getDb } from '../server/db';
 import { clients, cattle, users, lifecycleEvents, valuations } from '../drizzle/schema';
 
