@@ -20,11 +20,11 @@ const SEXES = ['male', 'female'] as const;
 
 // Farm names for distribution
 const FARMS = [
-  { name: 'Riverside Cattle Station', location: 'Wagga Wagga, NSW 2650', contact: 'John Smith', email: 'john@riverside.com.au', phone: '+61 2 9876 5432', abn: '12 345 678 901' },
-  { name: 'Highland Breeding Farm', location: 'Armidale, NSW 2350', contact: 'Sarah Johnson', email: 'sarah@highland.com.au', phone: '+61 3 5432 1098', abn: '98 765 432 109' },
-  { name: 'Outback Beef Co', location: 'Longreach, QLD 4730', contact: 'Mike Williams', email: 'mike@outbackbeef.com.au', phone: '+61 7 4658 1234', abn: '45 678 901 234' },
-  { name: 'Southern Cross Pastoral', location: 'Mount Gambier, SA 5290', contact: 'Emma Davis', email: 'emma@southerncross.com.au', phone: '+61 8 8725 3456', abn: '78 901 234 567' },
-  { name: 'Northern Territory Cattle Co', location: 'Katherine, NT 0850', contact: 'Tom Anderson', email: 'tom@ntcattle.com.au', phone: '+61 8 8972 4567', abn: '23 456 789 012' },
+  { name: 'Riverside Cattle Station', location: 'Wagga Wagga, NSW 2650', contact: 'John Smith', email: 'john@riverside.com.au', phone: '+61 2 9876 5432', abn: '12 345 678 901', clientType: 'producer' as const },
+  { name: 'Highland Breeding Farm', location: 'Armidale, NSW 2350', contact: 'Sarah Johnson', email: 'sarah@highland.com.au', phone: '+61 3 5432 1098', abn: '98 765 432 109', clientType: 'breeder' as const },
+  { name: 'Outback Beef Co', location: 'Longreach, QLD 4730', contact: 'Mike Williams', email: 'mike@outbackbeef.com.au', phone: '+61 7 4658 1234', abn: '45 678 901 234', clientType: 'producer' as const },
+  { name: 'Southern Cross Pastoral', location: 'Mount Gambier, SA 5290', contact: 'Emma Davis', email: 'emma@southerncross.com.au', phone: '+61 8 8725 3456', abn: '78 901 234 567', clientType: 'feedlot' as const },
+  { name: 'Northern Territory Cattle Co', location: 'Katherine, NT 0850', contact: 'Tom Anderson', email: 'tom@ntcattle.com.au', phone: '+61 8 8972 4567', abn: '23 456 789 012', clientType: 'producer' as const },
 ];
 
 async function seed() {
@@ -118,12 +118,12 @@ async function seed() {
       const [created] = await db.insert(clients).values({
         name: farm.name,
         contactName: farm.contact,
-        email: farm.email,
-        phone: farm.phone,
+        contactEmail: farm.email,
+        contactPhone: farm.phone,
         address: farm.location,
         abn: farm.abn,
+        clientType: farm.clientType,
         status: 'active',
-        totalCattle: 0,
       }).returning();
       createdFarms.push(created);
       console.log(`   ✅ ${farm.name}`);
