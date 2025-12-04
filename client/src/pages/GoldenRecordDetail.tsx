@@ -13,14 +13,17 @@ export function GoldenRecordDetail() {
   const params = useParams();
   const cattleId = params.id ? parseInt(params.id) : undefined;
 
-  const { data: cattle, isLoading: cattleLoading } = trpc.cattle.active.useQuery();
+  const { data: cattle, isLoading: cattleLoading } = trpc.cattle.get.useQuery(
+    { id: cattleId! },
+    { enabled: !!cattleId }
+  );
   const { data: events, isLoading: eventsLoading } = trpc.events.forCattle.useQuery(
     { cattleId: cattleId! },
     { enabled: !!cattleId }
   );
   const { data: clients } = trpc.clients.active.useQuery();
 
-  const animal = cattle?.find(c => c.id === cattleId);
+  const animal = cattle;
   const client = clients?.find(c => c.id === animal?.clientId);
 
   const formatCurrency = (cents: number) => {
