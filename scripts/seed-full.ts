@@ -37,9 +37,11 @@ async function seed() {
 
   // Initialize Turing Protocol
   const keyPair = await generateKeyPair();
+  const publicKeyHex = toHex(keyPair.publicKey);
+  const privateKeyHex = toHex(keyPair.privateKey);
   console.log('🔐 Generated cryptographic key pair for Turing Protocol');
-  console.log(`   Public Key: ${keyPair.publicKey.substring(0, 32)}...`);
-  console.log(`   Private Key: ${keyPair.privateKey.substring(0, 32)}...\n`);
+  console.log(`   Public Key: ${publicKeyHex.substring(0, 32)}...`);
+  console.log(`   Private Key: ${privateKeyHex.substring(0, 32)}...\n`);
 
   // Initialize Kafka
   let kafka: Kafka | null = null;
@@ -197,7 +199,7 @@ async function seed() {
         payload: birthEventData.payload,
         event_hash: payloadHash,
         signature: toHex(signature),
-        public_key: keyPair.publicKey,
+        public_key: publicKeyHex,
       };
 
       // Store in cattle_events table
@@ -210,7 +212,7 @@ async function seed() {
         sourceSystem: 'icattle-seed',
         eventHash: signedEvent.event_hash,
         signature: signedEvent.signature,
-        publicKey: keyPair.publicKey,
+        publicKey: publicKeyHex,
         idempotencyKey: metadata.idempotency_key,
       });
 
@@ -225,7 +227,7 @@ async function seed() {
               headers: {
                 'event-type': 'CATTLE_CREATED',
                 'signature': signedEvent.signature,
-                'public-key': keyPair.publicKey,
+                'public-key': publicKeyHex,
               },
             }],
           });
