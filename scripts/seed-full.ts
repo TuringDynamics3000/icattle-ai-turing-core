@@ -5,8 +5,8 @@
  */
 
 import 'dotenv/config';
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 import { Kafka } from 'kafkajs';
 import { clients, cattle, users, lifecycleEvents, valuations, marketData, cattleEvents } from '../drizzle/schema';
 import { generateKeyPair, createEventMetadata, signEvent, calculatePayloadHash, toHex } from '../server/_core/turingProtocolV2';
@@ -61,13 +61,15 @@ async function seed() {
     }
   }
 
-  // Create direct connection for seeding
-  const client = postgres(process.env.DATABASE_URL, { max: 1 });
-  const db = drizzle(client);
+  // Create direct connection for seeding using node-postgres (pg)
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+  });
+  const db = drizzle(pool);
 
   try {
     // Test connection
-    await client`SELECT 1`;
+    await pool.query('SELECT 1');
     console.log('✅ Database connection established\n');
 
     // Create admin user
@@ -352,7 +354,7 @@ async function seed() {
     if (producer) {
       await producer.disconnect();
     }
-    await client.end();
+    await pool.end();
   }
 }
 
