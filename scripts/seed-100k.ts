@@ -149,9 +149,8 @@ async function seed() {
         const gps = generateGPS(client.region.lat, client.region.lng);
         
         cattleBatch.push({
-          id: cattleId,
           clientId: client.id,
-          nlisId: generateNLIS(cattleId),
+          nlisId: generateNLIS(START_ID + cattleIndex),
           visualId: generateVisualId(client.prefix, cattleIndex),
           breed,
           sex,
@@ -165,7 +164,7 @@ async function seed() {
           currentLocation: `${client.region.name} ${client.region.state}`,
           latitude: gps.lat,
           longitude: gps.lng,
-          biometricId: `BIO${String(cattleId).padStart(16, '0')}`,
+          biometricId: `BIO${String(START_ID + cattleIndex).padStart(16, '0')}`,
         });
       }
       
