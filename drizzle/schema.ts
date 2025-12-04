@@ -414,7 +414,7 @@ export const cattleEvents = pgTable("cattle_events", {
   publicKey: varchar("public_key", { length: 64 }).notNull(),
   payload: text("payload").notNull(), // JSON
   payloadHash: varchar("payload_hash", { length: 64 }).notNull(),
-  signature: varchar("signature", { length: 128 }).notNull(),
+  signature: varchar("signature", { length: 256 }).notNull(), // Ed25519 signatures can be up to 128 hex chars, doubled for safety
   previousHash: varchar("previous_hash", { length: 64 }),
   merkleRoot: varchar("merkle_root", { length: 64 }),
   
