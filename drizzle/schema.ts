@@ -378,3 +378,110 @@ export const notifications = pgTable("notifications", {
 
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
+
+// ============================================================================
+// CATTLE EVENTS (Immutable Event Log from TuringCore-v3)
+// ============================================================================
+
+export const riskLevelEnum = pgEnum("riskLevel", ["LOW", "MEDIUM", "HIGH", "CRITICAL"]);
+
+export const cattleEvents = pgTable("cattle_events", {
+  // Event Identity
+  eventId: varchar("event_id", { length: 64 }).primaryKey(),
+  eventType: varchar("event_type", { length: 50 }).notNull(),
+  eventRef: varchar("event_ref", { length: 255 }).notNull(),
+  
+  // Subject
+  cattleId: integer("cattle_id").notNull(),
+  
+  // Timestamps
+  occurredAt: timestamp("occurred_at").notNull(),
+  recordedAt: timestamp("recorded_at").notNull(),
+  
+  // Idempotency
+  idempotencyKey: varchar("idempotency_key", { length: 64 }).unique().notNull(),
+  
+  // Event Chain
+  correlationId: varchar("correlation_id", { length: 64 }),
+  causationId: varchar("causation_id", { length: 64 }),
+  
+  // Source
+  sourceSystem: varchar("source_system", { length: 50 }).notNull(),
+  schemaVersion: integer("schema_version").notNull(),
+  createdBy: varchar("created_by", { length: 100 }),
+  
+  // Cryptography (Turing Protocol V2)
+  publicKey: varchar("public_key", { length: 64 }).notNull(),
+  payload: text("payload").notNull(), // JSON
+  payloadHash: varchar("payload_hash", { length: 64 }).notNull(),
+  signature: varchar("signature", { length: 128 }).notNull(),
+  previousHash: varchar("previous_hash", { length: 64 }),
+  merkleRoot: varchar("merkle_root", { length: 64 }),
+  
+  // Provenance
+  confidenceScore: integer("confidence_score"),
+  riskLevel: riskLevelEnum("risk_level"),
+  
+}, (table) => ({
+  cattleIdIdx: index("cattle_id_idx").on(table.cattleId),
+  occurredAtIdx: index("occurred_at_idx").on(table.occurredAt),
+  eventTypeIdx: index("event_type_idx").on(table.eventType),
+  idempotencyIdx: index("idempotency_idx").on(table.idempotencyKey),
+}));
+
+export type CattleEvent = typeof cattleEvents.$inferSelect;
+export type InsertCattleEvent = typeof cattleEvents.$inferInsert;
+
+// ============================================================================
+// FRAUD ALERTS (Materialized View from Fraud Detection)
+// ============================================================================
+
+export const suspicionTypeEnum = pgEnum("suspicionType", [
+  "TAG_SWAP",
+  "RAPID_MOVEMENT",
+  "PRICE_ANOMALY",
+  "MISSING_DOCUMENTATION",
+  "DUPLICATE_TAG",
+  "CROSS_STATE_NO_PAPERWORK",
+  "BELOW_MARKET_PRICE",
+  "ABOVE_MARKET_PRICE",
+  "GENETIC_MISMATCH",
+  "PHOTO_MISMATCH",
+  "GPS_ANOMALY",
+  "MANUAL_FLAG"
+]);
+
+export const severityEnum = pgEnum("severity", ["LOW", "MEDIUM", "HIGH", "CRITICAL"]);
+
+export const fraudAlerts = pgTable("fraud_alerts", {
+  id: serial("id").primaryKey(),
+  
+  // Subject
+  cattleId: integer("cattle_id").notNull().references(() => cattle.id),
+  eventId: varchar("event_id", { length: 64 }),
+  
+  // Alert Details
+  suspicionType: suspicionTypeEnum("suspicion_type").notNull(),
+  severity: severityEnum("severity").notNull(),
+  description: text("description"),
+  evidence: text("evidence"), // JSON
+  
+  // Detection
+  detectedAt: timestamp("detected_at").notNull(),
+  detectedBy: varchar("detected_by", { length: 100 }),
+  
+  // Resolution
+  resolved: boolean("resolved").default(false).notNull(),
+  resolvedAt: timestamp("resolved_at"),
+  resolvedBy: varchar("resolved_by", { length: 100 }),
+  resolutionNotes: text("resolution_notes"),
+  
+}, (table) => ({
+  cattleIdIdx: index("cattle_id_idx").on(table.cattleId),
+  detectedAtIdx: index("detected_at_idx").on(table.detectedAt),
+  resolvedIdx: index("resolved_idx").on(table.resolved),
+  severityIdx: index("severity_idx").on(table.severity),
+}));
+
+export type FraudAlert = typeof fraudAlerts.$inferSelect;
+export type InsertFraudAlert = typeof fraudAlerts.$inferInsert;
