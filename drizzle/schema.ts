@@ -160,9 +160,9 @@ export const cattle = pgTable("cattle", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 }, (table) => ({
-  clientIdx: index("client_idx").on(table.clientId),
-  statusIdx: index("status_idx").on(table.status),
-  breedIdx: index("breed_idx").on(table.breed),
+  clientIdx: index("cattle_client_idx").on(table.clientId),
+  statusIdx: index("cattle_status_idx").on(table.status),
+  breedIdx: index("cattle_breed_idx").on(table.breed),
 }));
 
 export type Cattle = typeof cattle.$inferSelect;
@@ -202,9 +202,9 @@ export const lifecycleEvents = pgTable("lifecycleEvents", {
   notes: text("notes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 }, (table) => ({
-  cattleIdx: index("cattle_idx").on(table.cattleId),
-  eventTypeIdx: index("event_type_idx").on(table.eventType),
-  eventDateIdx: index("event_date_idx").on(table.eventDate),
+  cattleIdx: index("lifecycle_cattle_idx").on(table.cattleId),
+  eventTypeIdx: index("lifecycle_event_type_idx").on(table.eventType),
+  eventDateIdx: index("lifecycle_event_date_idx").on(table.eventDate),
 }));
 
 export type LifecycleEvent = typeof lifecycleEvents.$inferSelect;
@@ -244,8 +244,8 @@ export const valuations = pgTable("valuations", {
   notes: text("notes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 }, (table) => ({
-  cattleIdx: index("cattle_idx").on(table.cattleId),
-  dateIdx: index("date_idx").on(table.valuationDate),
+  cattleIdx: index("valuations_cattle_idx").on(table.cattleId),
+  dateIdx: index("valuations_date_idx").on(table.valuationDate),
 }));
 
 export type Valuation = typeof valuations.$inferSelect;
@@ -276,8 +276,8 @@ export const marketData = pgTable("marketData", {
   
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 }, (table) => ({
-  dateIdx: index("date_idx").on(table.date),
-  categoryIdx: index("category_idx").on(table.category),
+  dateIdx: index("market_data_date_idx").on(table.date),
+  categoryIdx: index("market_data_category_idx").on(table.category),
 }));
 
 export type MarketData = typeof marketData.$inferSelect;
@@ -304,9 +304,9 @@ export const financialReports = pgTable("financialReports", {
   
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 }, (table) => ({
-  clientIdx: index("client_idx").on(table.clientId),
-  reportTypeIdx: index("report_type_idx").on(table.reportType),
-  reportDateIdx: index("report_date_idx").on(table.reportDate),
+  clientIdx: index("financial_reports_client_idx").on(table.clientId),
+  reportTypeIdx: index("financial_reports_report_type_idx").on(table.reportType),
+  reportDateIdx: index("financial_reports_report_date_idx").on(table.reportDate),
 }));
 
 export type FinancialReport = typeof financialReports.$inferSelect;
@@ -339,8 +339,8 @@ export const agriwebbSyncStatus = pgTable("agriwebbSyncStatus", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 }, (table) => ({
-  clientIdx: index("client_idx").on(table.clientId),
-  statusIdx: index("status_idx").on(table.syncStatus),
+  clientIdx: index("agriwebb_sync_client_idx").on(table.clientId),
+  statusIdx: index("agriwebb_sync_status_idx").on(table.syncStatus),
 }));
 
 export type AgriwebbSyncStatus = typeof agriwebbSyncStatus.$inferSelect;
@@ -371,9 +371,9 @@ export const notifications = pgTable("notifications", {
   
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 }, (table) => ({
-  userIdx: index("user_idx").on(table.userId),
-  typeIdx: index("type_idx").on(table.type),
-  isReadIdx: index("is_read_idx").on(table.isRead),
+  userIdx: index("notifications_user_idx").on(table.userId),
+  typeIdx: index("notifications_type_idx").on(table.type),
+  isReadIdx: index("notifications_is_read_idx").on(table.isRead),
 }));
 
 export type Notification = typeof notifications.$inferSelect;
@@ -423,10 +423,10 @@ export const cattleEvents = pgTable("cattle_events", {
   riskLevel: riskLevelEnum("risk_level"),
   
 }, (table) => ({
-  cattleIdIdx: index("cattle_id_idx").on(table.cattleId),
-  occurredAtIdx: index("occurred_at_idx").on(table.occurredAt),
-  eventTypeIdx: index("event_type_idx").on(table.eventType),
-  idempotencyIdx: index("idempotency_idx").on(table.idempotencyKey),
+  cattleIdIdx: index("cattle_events_cattle_id_idx").on(table.cattleId),
+  occurredAtIdx: index("cattle_events_occurred_at_idx").on(table.occurredAt),
+  eventTypeIdx: index("cattle_events_event_type_idx").on(table.eventType),
+  idempotencyIdx: index("cattle_events_idempotency_idx").on(table.idempotencyKey),
 }));
 
 export type CattleEvent = typeof cattleEvents.$inferSelect;
@@ -477,10 +477,10 @@ export const fraudAlerts = pgTable("fraud_alerts", {
   resolutionNotes: text("resolution_notes"),
   
 }, (table) => ({
-  cattleIdIdx: index("cattle_id_idx").on(table.cattleId),
-  detectedAtIdx: index("detected_at_idx").on(table.detectedAt),
-  resolvedIdx: index("resolved_idx").on(table.resolved),
-  severityIdx: index("severity_idx").on(table.severity),
+  cattleIdIdx: index("fraud_alerts_cattle_id_idx").on(table.cattleId),
+  detectedAtIdx: index("fraud_alerts_detected_at_idx").on(table.detectedAt),
+  resolvedIdx: index("fraud_alerts_resolved_idx").on(table.resolved),
+  severityIdx: index("fraud_alerts_severity_idx").on(table.severity),
 }));
 
 export type FraudAlert = typeof fraudAlerts.$inferSelect;
