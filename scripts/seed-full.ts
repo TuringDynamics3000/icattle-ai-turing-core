@@ -247,16 +247,22 @@ async function seed() {
 
       // Store in cattle_events table
       await db.insert(cattleEvents).values({
-        cattleId: cow.id,
-        eventType: 'CATTLE_CREATED',
-        occurredAt: new Date(birthDate),
-        payload: birthEventData.payload,
-        actorId: user.openId,
-        sourceSystem: 'icattle-seed',
-        eventHash: signedEvent.event_hash,
-        signature: signedEvent.signature,
-        publicKey: publicKeyHex,
+        eventId: metadata.event_id,
+        eventType: metadata.event_type,
+        eventRef: metadata.event_ref,
+        cattleId: metadata.cattle_id,
+        occurredAt: new Date(metadata.occurred_at),
+        recordedAt: new Date(metadata.recorded_at),
         idempotencyKey: metadata.idempotency_key,
+        correlationId: metadata.correlation_id,
+        causationId: metadata.causation_id,
+        sourceSystem: metadata.source_system,
+        schemaVersion: metadata.schema_version,
+        createdBy: metadata.created_by,
+        publicKey: metadata.public_key,
+        payload: JSON.stringify(birthEventData.payload),
+        payloadHash: payloadHash,
+        signature: signature,
       });
 
       // Publish to Kafka
