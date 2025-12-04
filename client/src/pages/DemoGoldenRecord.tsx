@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Shield, MapPin, TrendingUp, CheckCircle2, Database, Activity, Info, Eye, Building2 } from "lucide-react";
+import { Shield, MapPin, TrendingUp, CheckCircle2, Database, Activity, Info, Eye, Building2, Brain, Link as LinkIcon } from "lucide-react";
 import { Link } from "wouter";
 import { TuringProtocolBadge } from "@/components/TuringProtocolBadge";
 
@@ -386,6 +386,48 @@ export function DemoGoldenRecord() {
               </CardTitle>
               <CardDescription>
                 Portfolio analysis and collateral verification tools
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+
+        <Link href="/recommendations">
+          <Card className="hover:bg-accent cursor-pointer transition-colors border-2 hover:border-indigo-400">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="h-5 w-5 text-indigo-600" />
+                AI Recommendations
+              </CardTitle>
+              <CardDescription>
+                Portfolio optimization with machine learning insights
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+
+        <Link href="/forecast">
+          <Card className="hover:bg-accent cursor-pointer transition-colors border-2 hover:border-cyan-400">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-cyan-600" />
+                Price Forecast
+              </CardTitle>
+              <CardDescription>
+                7-day cattle price predictions using ML models
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+
+        <Link href="/provenance">
+          <Card className="hover:bg-accent cursor-pointer transition-colors border-2 hover:border-amber-400">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <LinkIcon className="h-5 w-5 text-amber-600" />
+                Provenance Tracking
+              </CardTitle>
+              <CardDescription>
+                Blockchain verification and fraud detection dashboard
               </CardDescription>
             </CardHeader>
           </Card>
