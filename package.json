@@ -19,7 +19,8 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:generate": "tsx tests/eventGenerator.ts"
+    "test:generate": "tsx tests/eventGenerator.ts",
+    "db:seed-full": "tsx scripts/seed-full.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.693.0",
