@@ -12,8 +12,8 @@
  */
 
 import 'dotenv/config';
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import { clients, cattle, users, userClients, portfolios } from '../drizzle/schema';
 import { generateKeyPair, signEvent, toHex } from '../server/_core/turingProtocolV2';
 
@@ -303,13 +303,13 @@ async function seed() {
     throw new Error('DATABASE_URL not found in environment variables');
   }
 
-  const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+  const sql = postgres(process.env.DATABASE_URL, {
+    max: 10,
   });
-  const db = drizzle(pool);
+  const db = drizzle(sql);
 
   try {
-    await pool.query('SELECT 1');
+    await sql`SELECT 1`;
     console.log('✅ Database connection established\n');
 
     // Initialize Turing Protocol
@@ -334,7 +334,7 @@ async function seed() {
     
     for (const table of tablesToClear) {
       try {
-        await pool.query(`DELETE FROM "${table}"`);
+        await sql.unsafe(`DELETE FROM "${table}"`);
       } catch (error: any) {
         if (error.code !== '42P01') throw error;
       }
@@ -532,7 +532,7 @@ async function seed() {
     console.error('❌ Seed failed:', error);
     throw error;
   } finally {
-    await pool.end();
+    await sql.end();
   }
 }
 
