@@ -2,8 +2,9 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
-import { withAccessScope, requireAuth, requireRole, logMutation } from "./_core/rbac-middleware";
-import { getCattleWithRLS, getClientsWithRLS, getCattleByIdWithRLS } from "./_core/rbac-queries";
+// RBAC helper functions available but not yet integrated
+// import { getAccessScopeForUser, requireAuthentication, requirePermission } from "./_core/rbac-middleware";
+// import { getCattleWithRLS, getClientsWithRLS, getCattleByIdWithRLS } from "./_core/rbac-queries";
 import { z } from "zod";
 import * as db from "./db";
 import { calculateCertification } from "./_core/certificationScoring";
