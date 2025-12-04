@@ -718,7 +718,8 @@ export const appRouter = router({
   // ============================================================================
   
   notifications: router({
-    list: protectedProcedure.query(async ({ ctx }) => {
+    list: publicProcedure.query(async ({ ctx }) => {
+      if (!ctx.user) return [];
       return await db.getUserNotifications(ctx.user.id);
     }),
     
