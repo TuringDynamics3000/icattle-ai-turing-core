@@ -79,7 +79,7 @@ export type InsertUser = typeof users.$inferInsert;
 export const clients = pgTable("clients", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
-  abn: varchar("abn", { length: 11 }),
+  abn: varchar("abn", { length: 20 }),
   contactName: varchar("contactName", { length: 255 }),
   contactEmail: varchar("contactEmail", { length: 320 }),
   contactPhone: varchar("contactPhone", { length: 20 }),
