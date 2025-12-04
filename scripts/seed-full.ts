@@ -21,7 +21,8 @@ const __dirname = path.dirname(__filename);
 // Cattle breeds for variety
 const BREEDS = ['Angus', 'Hereford', 'Wagyu', 'Brahman', 'Charolais', 'Simmental', 'Limousin', 'Murray Grey'];
 const CATTLE_TYPES = ['beef', 'breeding', 'dairy'] as const;
-const SEXES = ['male', 'female'] as const;
+// Sex categories: bull (intact male), steer (castrated male), cow (mature female), heifer (young female), calf (young)
+const SEXES = ['bull', 'steer', 'cow', 'heifer'] as const; // Exclude 'calf' as it's age-based
 
 // Farm names for distribution
 const FARMS = [
