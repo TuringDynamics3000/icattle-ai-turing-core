@@ -23,7 +23,8 @@
     "db:seed-full": "tsx scripts/seed-full.ts",
     "db:sync-valuations": "tsx scripts/sync-valuations.ts",
     "db:add-gps": "tsx scripts/add-gps-coordinates.ts",
-    "db:indexes": "tsx scripts/apply-indexes.ts"
+    "db:indexes": "tsx scripts/apply-indexes.ts",
+    "db:seed:1m": "tsx scripts/seed-1million.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.693.0",
