@@ -36,7 +36,7 @@ export function Navigation() {
         {/* Logo */}
         <Link href="/">
           <div className="flex items-center gap-3 cursor-pointer">
-            <img src="/icattle-logo.png" alt="iCattle" className="h-10 w-10" />
+            <img src="/icattle-logo.png" alt="iCattle" className="h-20 w-20" />
             <span className="text-xl font-bold">iCattle</span>
           </div>
         </Link>
