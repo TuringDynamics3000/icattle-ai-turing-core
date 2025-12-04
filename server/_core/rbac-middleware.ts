@@ -6,7 +6,7 @@
  */
 
 import { TRPCError } from '@trpc/server';
-import { middleware } from '../trpc';
+import { middleware } from './trpc';
 import { getUserAccessScope } from './rbac-queries';
 import type { AccessScope } from './permissions';
 import { signEvent } from './turingProtocolV2';
