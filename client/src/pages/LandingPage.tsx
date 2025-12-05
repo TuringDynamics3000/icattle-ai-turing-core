@@ -1,5 +1,5 @@
 import { Link } from 'wouter';
-import { ArrowRight, Shield, TrendingUp, Users, Database } from 'lucide-react';
+import { ArrowRight, Shield, Sparkles } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 
 export function LandingPage() {
@@ -8,38 +8,49 @@ export function LandingPage() {
 
   const totalCattle = summary?.totalCattle || 100000;
   const totalClients = activeClients?.length || 25;
-  const totalValue = summary?.totalValue || 35000000000; // $350M in cents
+  const totalValue = summary?.totalValue || 35000000000;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cream-50 via-lavender-50 to-mauve-50">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-purple-coral opacity-5" />
+    <div className="min-h-screen bg-lavender-50">
+      {/* Hero Section with 3D Geometric Shapes */}
+      <section className="relative overflow-hidden bg-gradient-purple-deep">
+        {/* Decorative 3D shapes */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-20 right-10 w-64 h-64 bg-gradient-purple-pink opacity-30 shape-blob blur-3xl"></div>
+          <div className="absolute bottom-20 left-10 w-96 h-96 bg-gradient-coral-cream opacity-20 shape-circle blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-plum-coral opacity-10 shape-blob blur-3xl"></div>
+        </div>
         
-        <div className="container mx-auto px-6 py-24 relative">
+        <div className="container mx-auto px-6 py-32 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="font-serif font-light text-6xl md:text-7xl mb-6 leading-tight">
-              <span className="text-mauve-600">Livestock</span>
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card-dark text-white mb-8">
+              <Sparkles className="w-4 h-4 text-coral-400" />
+              <span className="text-sm font-medium">Turing Protocol Verified</span>
+            </div>
+            
+            <h1 className="font-serif font-bold text-6xl md:text-7xl mb-6 leading-tight text-white">
+              Livestock.
               <br />
-              <span className="text-gray-900">management.</span>
-              <br />
-              <span className="text-mauve-600">Simplified.</span>
+              <span className="text-gradient-purple-coral bg-gradient-to-r from-coral-300 to-cream-300 bg-clip-text text-transparent">
+                Simplified.
+              </span>
             </h1>
             
-            <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-lavender-100 mb-12 max-w-2xl mx-auto leading-relaxed">
               Cryptographically verified, biometrically secured, blockchain-audited proof of ownership for every animal's entire lifecycle.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/dashboard">
-                <a className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-mauve-600 text-white rounded-full font-medium hover:bg-mauve-700 transition-all shadow-soft-lg hover:shadow-soft-xl">
+                <a className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-plum-800 rounded-full font-semibold hover:bg-lavender-50 transition-all shadow-3d-coral">
                   View Dashboard
                   <ArrowRight className="w-5 h-5" />
                 </a>
               </Link>
               
               <Link href="/golden-record">
-                <a className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-mauve-600 rounded-full font-medium hover:bg-lavender-50 transition-all shadow-soft-md border border-mauve-200">
+                <a className="inline-flex items-center justify-center gap-2 px-8 py-4 glass-card-dark text-white rounded-full font-semibold hover:bg-white/20 transition-all">
                   <Shield className="w-5 h-5" />
                   Golden Record Demo
                 </a>
@@ -47,51 +58,58 @@ export function LandingPage() {
             </div>
           </div>
         </div>
+        
+        {/* Wave divider */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
+            <path d="M0 0L60 10C120 20 240 40 360 46.7C480 53 600 47 720 43.3C840 40 960 40 1080 46.7C1200 53 1320 67 1380 73.3L1440 80V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0V0Z" fill="#FAFAFC"/>
+          </svg>
+        </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-20 bg-white">
+      {/* Stats Section with Glassmorphism */}
+      <section className="py-20 relative">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
             <StatCard
               number={totalCattle.toLocaleString()}
               label="Cattle Records"
-              icon={<Database className="w-8 h-8" />}
-              gradient="from-mauve-400 to-mauve-600"
+              gradient="from-plum-500 to-plum-700"
             />
             <StatCard
               number={totalClients.toString()}
               label="Active Farms"
-              icon={<Users className="w-8 h-8" />}
-              gradient="from-coral-400 to-coral-600"
+              gradient="from-coral-500 to-coral-700"
             />
             <StatCard
               number={`$${(totalValue / 100 / 1000000).toFixed(0)}M`}
               label="Portfolio Value"
-              icon={<TrendingUp className="w-8 h-8" />}
-              gradient="from-mauve-500 to-coral-500"
+              gradient="from-plum-600 to-coral-500"
             />
             <StatCard
               number="100%"
               label="Verified"
-              icon={<Shield className="w-8 h-8" />}
-              gradient="from-lavender-500 to-mauve-500"
+              gradient="from-coral-400 to-cream-500"
             />
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-24 bg-lavender-50">
-        <div className="container mx-auto px-6">
+      {/* Features Section with 3D Cards */}
+      <section className="py-24 bg-white relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-purple-pink opacity-5 shape-blob blur-3xl"></div>
+        
+        <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-3xl mx-auto text-center mb-16">
-            <h2 className="font-serif font-light text-5xl mb-6 text-gray-900 leading-tight">
-              <span className="text-mauve-600">Raise</span> capital.
+            <h2 className="font-serif font-bold text-5xl mb-6 text-plum-900">
+              Everything you need.
               <br />
-              <span className="text-mauve-600">Attract</span> investors.
-              <br />
-              <span className="text-mauve-600">Build</span> smarter.
+              <span className="text-gradient-purple-coral">Nothing you don't.</span>
             </h2>
+            <p className="text-xl text-gray-600">
+              Powerful tools designed for modern livestock management
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -99,53 +117,67 @@ export function LandingPage() {
               title="Golden Record"
               description="Complete lifecycle tracking with cryptographic verification and biometric identification."
               icon="🔐"
+              gradient="from-plum-500 to-plum-700"
               href="/golden-record"
             />
             <FeatureCard
               title="Bank & Investor View"
               description="Real-time portfolio analytics and risk assessment for financial institutions."
               icon="📊"
+              gradient="from-coral-500 to-coral-700"
               href="/bank-view"
             />
             <FeatureCard
               title="AI Intelligence"
               description="Predictive analytics, health forecasting, and automated compliance monitoring."
               icon="🤖"
+              gradient="from-plum-600 to-coral-500"
               href="/price-forecast"
             />
             <FeatureCard
               title="Provenance Tracking"
               description="Immutable ownership history and transfer records on distributed ledger."
               icon="📜"
+              gradient="from-lavender-600 to-plum-600"
               href="/provenance"
             />
             <FeatureCard
               title="Health Monitoring"
               description="Automated health checks, vaccination tracking, and veterinary integration."
               icon="🏥"
+              gradient="from-coral-400 to-cream-500"
               href="/cattle"
             />
             <FeatureCard
               title="Financial Analytics"
               description="Portfolio optimization, market insights, and valuation forecasting."
               icon="💰"
+              gradient="from-plum-500 to-coral-600"
               href="/financial"
             />
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-br from-mauve-600 to-coral-500 text-white">
-        <div className="container mx-auto px-6 text-center">
-          <h2 className="font-serif font-light text-5xl mb-6">
-            Ready to transform your livestock management?
+      {/* CTA Section with Gradient */}
+      <section className="py-32 bg-gradient-plum-coral text-white relative overflow-hidden">
+        {/* Decorative shapes */}
+        <div className="absolute inset-0 overflow-hidden opacity-20">
+          <div className="absolute top-10 right-20 w-64 h-64 bg-white shape-circle blur-2xl"></div>
+          <div className="absolute bottom-10 left-20 w-96 h-96 bg-white shape-blob blur-3xl"></div>
+        </div>
+        
+        <div className="container mx-auto px-6 text-center relative z-10">
+          <h2 className="font-serif font-bold text-5xl md:text-6xl mb-6">
+            Ready to transform your
+            <br />
+            livestock management?
           </h2>
           <p className="text-xl mb-12 opacity-90 max-w-2xl mx-auto">
             Join the future of agricultural technology with iCattle's comprehensive platform.
           </p>
           <Link href="/dashboard">
-            <a className="inline-flex items-center gap-2 px-10 py-5 bg-white text-mauve-600 rounded-full font-semibold hover:bg-cream-50 transition-all shadow-soft-xl text-lg">
+            <a className="inline-flex items-center gap-3 px-10 py-5 bg-white text-plum-800 rounded-full font-bold hover:bg-lavender-50 transition-all shadow-3d-coral text-lg">
               Explore the Platform
               <ArrowRight className="w-6 h-6" />
             </a>
@@ -156,35 +188,39 @@ export function LandingPage() {
   );
 }
 
-function StatCard({ number, label, icon, gradient }: {
+function StatCard({ number, label, gradient }: {
   number: string;
   label: string;
-  icon: React.ReactNode;
   gradient: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-soft-md hover:shadow-soft-lg transition-all">
-      <div className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${gradient} text-white mb-4`}>
-        {icon}
-      </div>
-      <div className="text-4xl font-bold text-gray-900 mb-2">{number}</div>
+    <div className="glass-card rounded-3xl p-8 shadow-soft-lg hover:shadow-3d-purple transition-all group">
+      <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${gradient} mb-4 group-hover:scale-110 transition-transform`}></div>
+      <div className="text-4xl font-bold text-plum-900 mb-2">{number}</div>
       <div className="text-gray-600">{label}</div>
     </div>
   );
 }
 
-function FeatureCard({ title, description, icon, href }: {
+function FeatureCard({ title, description, icon, gradient, href }: {
   title: string;
   description: string;
   icon: string;
+  gradient: string;
   href: string;
 }) {
   return (
     <Link href={href}>
-      <a className="bg-white rounded-2xl p-8 shadow-soft-md hover:shadow-soft-lg transition-all block">
-        <div className="text-5xl mb-4">{icon}</div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-3">{title}</h3>
-        <p className="text-gray-600 leading-relaxed">{description}</p>
+      <a className="block bg-white rounded-3xl p-8 shadow-soft-md hover:shadow-3d-purple transition-all group border border-lavender-200">
+        <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform`}>
+          {icon}
+        </div>
+        <h3 className="text-2xl font-bold text-plum-900 mb-3 group-hover:text-gradient-purple-coral transition-colors">
+          {title}
+        </h3>
+        <p className="text-gray-600 leading-relaxed">
+          {description}
+        </p>
       </a>
     </Link>
   );

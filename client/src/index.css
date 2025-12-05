@@ -1,73 +1,141 @@
 @import "tailwindcss";
 
 @theme {
-  --color-mauve-50: #FAF8FC;
-  --color-mauve-100: #F3EEF7;
-  --color-mauve-200: #E8DFF0;
-  --color-mauve-300: #D4C1E3;
-  --color-mauve-400: #B491C8;
-  --color-mauve-500: #9B6FB4;
-  --color-mauve-600: #8B5A9F;
-  --color-mauve-700: #6F4780;
-  --color-mauve-800: #5A3966;
-  --color-mauve-900: #4A2F54;
+  /* Deep Purple/Plum - Primary Brand */
+  --color-plum-50: #FAF5F9;
+  --color-plum-100: #F3E8F1;
+  --color-plum-200: #E8D1E4;
+  --color-plum-300: #D4A8CA;
+  --color-plum-400: #B87BA8;
+  --color-plum-500: #9B5089;
+  --color-plum-600: #7A3468;
+  --color-plum-700: #5C2550;
+  --color-plum-800: #4A1942;
+  --color-plum-900: #3A1435;
   
-  --color-coral-50: #FFF5F5;
-  --color-coral-100: #FFE5E7;
-  --color-coral-200: #FFD1D5;
-  --color-coral-300: #FFB4B4;
-  --color-coral-400: #FF8B94;
+  /* Coral/Pink - Accent Gradients */
+  --color-coral-50: #FFF5F7;
+  --color-coral-100: #FFE5EA;
+  --color-coral-200: #FFD1D9;
+  --color-coral-300: #FFB4C1;
+  --color-coral-400: #FF8B9E;
   --color-coral-500: #FF6B7A;
   --color-coral-600: #F04556;
   --color-coral-700: #D92D3E;
   --color-coral-800: #B82333;
   --color-coral-900: #9A1E2F;
   
-  --color-cream-50: #FFFCF7;
-  --color-cream-100: #FFF4E6;
-  --color-cream-200: #FFE8CC;
-  --color-cream-300: #FFD9A8;
-  --color-cream-400: #FFC77A;
-  --color-cream-500: #FFB44D;
-  --color-cream-600: #F59E20;
-  --color-cream-700: #CC7F0A;
-  --color-cream-800: #A36408;
-  --color-cream-900: #7A4B06;
-  
+  /* Soft Lavender - Backgrounds */
   --color-lavender-50: #FAFAFC;
   --color-lavender-100: #F5F4F8;
-  --color-lavender-200: #E8E4F3;
-  --color-lavender-300: #D6CEE6;
-  --color-lavender-400: #C0B5D6;
-  --color-lavender-500: #A89BC4;
-  --color-lavender-600: #8B7CA8;
-  --color-lavender-700: #6F5F8A;
-  --color-lavender-800: #584C6E;
-  --color-lavender-900: #463D57;
+  --color-lavender-200: #EBE8F3;
+  --color-lavender-300: #DDD8EA;
+  --color-lavender-400: #C8BFDC;
+  --color-lavender-500: #AFA3CC;
+  --color-lavender-600: #9084B8;
+  --color-lavender-700: #72679A;
+  --color-lavender-800: #5A527C;
+  --color-lavender-900: #474163;
   
-  --font-family-serif: Canela, Playfair Display, Georgia, serif;
+  /* Cream/Peach - Warm Accents */
+  --color-cream-50: #FFFCF9;
+  --color-cream-100: #FFF5ED;
+  --color-cream-200: #FFE8D5;
+  --color-cream-300: #FFD4B3;
+  --color-cream-400: #FFBA85;
+  --color-cream-500: #FFA05C;
+  --color-cream-600: #F58538;
+  --color-cream-700: #D96B1F;
+  --color-cream-800: #B35517;
+  --color-cream-900: #8D4312;
+  
+  /* Typography */
+  --font-family-serif: "Playfair Display", Georgia, serif;
   --font-family-sans: Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   
-  --shadow-soft: 0 1px 2px rgba(139, 90, 159, 0.05);
-  --shadow-soft-md: 0 4px 6px rgba(139, 90, 159, 0.1);
-  --shadow-soft-lg: 0 10px 15px rgba(139, 90, 159, 0.15);
-  --shadow-soft-xl: 0 20px 25px rgba(139, 90, 159, 0.2);
+  /* Glassmorphism & Shadows */
+  --shadow-glow-purple: 0 8px 32px rgba(122, 52, 104, 0.15);
+  --shadow-glow-coral: 0 8px 32px rgba(255, 107, 122, 0.15);
+  --shadow-soft: 0 2px 8px rgba(74, 25, 66, 0.08);
+  --shadow-soft-md: 0 4px 16px rgba(74, 25, 66, 0.12);
+  --shadow-soft-lg: 0 8px 24px rgba(74, 25, 66, 0.16);
+  --shadow-soft-xl: 0 16px 48px rgba(74, 25, 66, 0.2);
 }
 
 @layer base {
   body {
-    @apply bg-cream-50 text-gray-900 font-sans antialiased;
+    @apply bg-lavender-50 text-gray-900 font-sans antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
   }
 }
 
 @layer utilities {
-  .bg-gradient-purple-coral {
-    background-image: linear-gradient(135deg, #B491C8 0%, #FF6B7A 100%);
+  /* Gradient Backgrounds - matching the design references */
+  .bg-gradient-purple-pink {
+    background: linear-gradient(135deg, #7A3468 0%, #FF6B7A 100%);
   }
-  .bg-gradient-pink-cream {
-    background-image: linear-gradient(135deg, #FFB4B4 0%, #FFF4E6 100%);
+  
+  .bg-gradient-plum-coral {
+    background: linear-gradient(135deg, #4A1942 0%, #FF8B9E 50%, #FFB4C1 100%);
   }
-  .bg-gradient-purple {
-    background-image: linear-gradient(135deg, #8B5A9F 0%, #B491C8 100%);
+  
+  .bg-gradient-coral-cream {
+    background: linear-gradient(135deg, #FF6B7A 0%, #FFA05C 100%);
+  }
+  
+  .bg-gradient-purple-deep {
+    background: linear-gradient(180deg, #3A1435 0%, #5C2550 100%);
+  }
+  
+  .bg-gradient-lavender-light {
+    background: linear-gradient(135deg, #F5F4F8 0%, #FAFAFC 100%);
+  }
+  
+  /* Glassmorphism effects */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  .glass-card-dark {
+    background: rgba(74, 25, 66, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* 3D effect shadows */
+  .shadow-3d-purple {
+    box-shadow: 
+      0 4px 8px rgba(122, 52, 104, 0.1),
+      0 8px 16px rgba(122, 52, 104, 0.15),
+      0 16px 32px rgba(122, 52, 104, 0.1);
+  }
+  
+  .shadow-3d-coral {
+    box-shadow: 
+      0 4px 8px rgba(255, 107, 122, 0.1),
+      0 8px 16px rgba(255, 107, 122, 0.15),
+      0 16px 32px rgba(255, 107, 122, 0.1);
+  }
+  
+  /* Gradient text */
+  .text-gradient-purple-coral {
+    background: linear-gradient(135deg, #7A3468 0%, #FF6B7A 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* Geometric shape helpers */
+  .shape-circle {
+    border-radius: 50%;
+  }
+  
+  .shape-blob {
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
   }
 }
