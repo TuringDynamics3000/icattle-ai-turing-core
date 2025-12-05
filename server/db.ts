@@ -126,13 +126,40 @@ export async function getClientById(id: number): Promise<Client | undefined> {
   return result[0];
 }
 
-export async function getActiveClients(): Promise<Client[]> {
+export async function getActiveClients(): Promise<(Client & { cattle_count: number; total_value: number })[]> {
   const db = await getDb();
   if (!db) return [];
   
-  return await db.select().from(clients)
+  // Get all active clients with aggregated cattle data
+  const result = await db
+    .select({
+      id: clients.id,
+      name: clients.name,
+      contactName: clients.contactName,
+      contactEmail: clients.contactEmail,
+      contactPhone: clients.contactPhone,
+      abn: clients.abn,
+      address: clients.address,
+      city: clients.city,
+      state: clients.state,
+      postcode: clients.postcode,
+      status: clients.status,
+      agriwebbId: clients.agriwebbId,
+      createdAt: clients.createdAt,
+      updatedAt: clients.updatedAt,
+      cattle_count: sql<number>`cast(count(${cattle.id}) as integer)`,
+      total_value: sql<number>`cast(coalesce(sum(${cattle.currentValuation}), 0) as integer)`,
+    })
+    .from(clients)
+    .leftJoin(cattle, and(
+      eq(cattle.clientId, clients.id),
+      eq(cattle.status, 'active')
+    ))
     .where(eq(clients.status, 'active'))
-    .orderBy(clients.name);
+    .groupBy(clients.id)
+    .orderBy(sql`cast(coalesce(sum(${cattle.currentValuation}), 0) as integer) desc`);
+  
+  return result;
 }
 
 // ============================================================================

@@ -680,3 +680,6 @@
 
 ## 🐛 DemoGoldenRecord Page Bug Fix
 - [x] Fix ReferenceError: Shield is not defined on DemoGoldenRecord page
+
+## 🔗 Top Performing Farms Table Links
+- [x] Add clickable links to farm names in Top Performing Farms table (links were already there, fixed data aggregation)
