@@ -1,6 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Eye, Building2, Database, Sparkles, CheckCircle2, MapPin, Activity, Shield } from "lucide-react";
+import { Eye, Building2, Database, Sparkles, CheckCircle2, MapPin, Activity, Shield, Tractor } from "lucide-react";
 import { Link } from "wouter";
 
 export function DemoGoldenRecord() {
@@ -78,6 +78,13 @@ export function DemoGoldenRecord() {
                 <a className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-plum-800 rounded-full font-semibold hover:bg-lavender-50 transition-all shadow-3d-coral">
                   <Eye className="w-5 h-5" />
                   View Sample Golden Record
+                </a>
+              </Link>
+              
+              <Link href="/farmer">
+                <a className="inline-flex items-center justify-center gap-2 px-8 py-4 glass-card-dark text-white rounded-full font-semibold hover:bg-white/20 transition-all">
+                  <Tractor className="w-5 h-5" />
+                  Farmer View
                 </a>
               </Link>
               

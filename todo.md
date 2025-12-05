@@ -696,3 +696,6 @@
 
 ## 🐛 View Sample Golden Record Button - Invalid Cattle ID
 - [x] Update button to dynamically fetch and link to first available cattle record
+
+## 🔘 Add Farmer View Button to Demo Page
+- [x] Add Farmer View button to DemoGoldenRecord hero section
