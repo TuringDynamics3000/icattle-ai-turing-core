@@ -269,9 +269,9 @@ async function seed100kCattle() {
     const stats = await sql`
       SELECT 
         COUNT(*) as total_cattle,
-        SUM(current_valuation) as total_value,
-        AVG(current_valuation) as avg_value,
-        AVG(current_weight) as avg_weight
+        SUM("currentValuation") as total_value,
+        AVG("currentValuation") as avg_value,
+        AVG("currentWeight") as avg_weight
       FROM cattle
       WHERE status = 'active'
     `;
