@@ -397,10 +397,18 @@ export function BankView() {
                 </tr>
               </thead>
               <tbody>
-                {clientPortfolios
-                  .sort((a, b) => b.value - a.value)
-                  .slice(0, 10)
-                  .map((portfolio) => {
+                {clientPortfolios.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="py-8 px-4 text-center text-gray-500">
+                      No client data available
+                    </td>
+                  </tr>
+                ) : (
+                  clientPortfolios
+                    .filter(p => p.count > 0) // Only show clients with cattle
+                    .sort((a, b) => b.value - a.value)
+                    .slice(0, 10)
+                    .map((portfolio) => {
                     const percentage = totalValue > 0 ? (portfolio.value / totalValue) * 100 : 0;
                     return (
                       <tr key={portfolio.client.id} className="border-b border-lavender-100 hover:bg-lavender-50 transition-colors">
@@ -422,7 +430,8 @@ export function BankView() {
                         </td>
                       </tr>
                     );
-                  })}
+                  })
+                )}
               </tbody>
             </table>
           </div>
