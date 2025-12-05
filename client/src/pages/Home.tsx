@@ -66,7 +66,7 @@ export function Home() {
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(totalValue)}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Across {totalCattle} head of cattle
+              Across {totalCattle.toLocaleString()} head of cattle
             </p>
           </CardContent>
         </Card>

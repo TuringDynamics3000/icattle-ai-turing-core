@@ -707,3 +707,9 @@
 - [x] Apply purple/coral gradient design system
 - [x] Add clickable client list table with links to detail pages
 - [x] Style to match overall site aesthetic
+
+## 🐛 Client Accounts Data Showing Zero
+- [ ] Fix getActiveClients query to properly aggregate cattle_count and total_value
+
+## 🔢 Dashboard Number Formatting
+- [x] Add comma separators to large numbers (260,000 instead of 260000)
