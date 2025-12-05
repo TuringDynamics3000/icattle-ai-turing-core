@@ -713,3 +713,7 @@
 
 ## 🔢 Dashboard Number Formatting
 - [x] Add comma separators to large numbers (260,000 instead of 260000)
+
+## 🔄 DemoGoldenRecord UI Changes
+- [x] Remove "Browse All 260,000 Cattle" button
+- [x] Make "Total Cattle Records" card clickable to link to cattle registry

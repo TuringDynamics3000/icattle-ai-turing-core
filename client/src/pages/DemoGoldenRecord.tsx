@@ -96,22 +96,7 @@ export function DemoGoldenRecord() {
                 </a>
               </Link>
               
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Link href="/cattle">
-                      <a className="inline-flex items-center justify-center gap-2 px-8 py-4 glass-card-dark text-white rounded-full font-semibold hover:bg-white/20 transition-all">
-                        <Database className="w-5 h-5" />
-                        Browse All {formatNumber(totalCattle)} Cattle
-                      </a>
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="bg-white text-plum-900 border-plum-200 max-w-xs">
-                    <p className="font-semibold mb-1">Full Cattle Registry</p>
-                    <p className="text-sm">Search, filter by breed/location/health, view details, and export data</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+
             </div>
 
             {/* How It Works */}
@@ -144,25 +129,22 @@ export function DemoGoldenRecord() {
         <div className="container mx-auto px-6">
           <div className="max-w-6xl mx-auto">
             <div className="glass-card rounded-3xl p-8 shadow-soft-lg mb-12">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="font-serif font-bold text-3xl text-plum-900 mb-2">Current System Scale</h2>
-                  <p className="text-gray-600">Real-time management of cattle records across the platform</p>
-                </div>
-                <div className="px-6 py-3 bg-gradient-to-br from-plum-500 to-plum-700 text-white rounded-full font-bold text-xl">
-                  {formatNumber(totalCattle)} Head
-                </div>
+              <div className="mb-6">
+                <h2 className="font-serif font-bold text-3xl text-plum-900 mb-2">Current System Scale</h2>
+                <p className="text-gray-600">Real-time management of cattle records across the platform</p>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white rounded-2xl p-6 shadow-soft-md">
-                  <div className="text-4xl font-bold text-plum-900 mb-2">{formatNumber(totalCattle)}</div>
-                  <div className="text-gray-600 mb-3">Total Cattle Records</div>
-                  <div className="flex items-center gap-2 text-sm text-plum-600">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Each with full lifecycle history</span>
-                  </div>
-                </div>
+                <Link href="/cattle">
+                  <a className="block bg-white rounded-2xl p-6 shadow-soft-md hover:shadow-3d-purple transition-all cursor-pointer group">
+                    <div className="text-4xl font-bold text-plum-900 mb-2 group-hover:text-plum-700 transition-colors">{formatNumber(totalCattle)}</div>
+                    <div className="text-gray-600 mb-3">Total Cattle Records</div>
+                    <div className="flex items-center gap-2 text-sm text-plum-600">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Each with full lifecycle history</span>
+                    </div>
+                  </a>
+                </Link>
                 
                 <div className="bg-white rounded-2xl p-6 shadow-soft-md">
                   <div className="text-4xl font-bold text-coral-600 mb-2">{formatCurrency(totalValue)}</div>
