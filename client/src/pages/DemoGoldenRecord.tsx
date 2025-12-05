@@ -1,6 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Shield, Eye, Building2, Database, Sparkles, CheckCircle2, MapPin, Activity } from "lucide-react";
+import { Eye, Building2, Database, Sparkles, CheckCircle2, MapPin, Activity } from "lucide-react";
 import { Link } from "wouter";
 
 export function DemoGoldenRecord() {
@@ -58,7 +58,7 @@ export function DemoGoldenRecord() {
             </div>
             
             <div className="flex items-center gap-4 mb-6">
-              <Shield className="w-16 h-16 text-white" />
+              <img src="/icattle-logo.png" alt="iCattle Logo" className="w-20 h-20" />
               <div>
                 <h1 className="font-serif font-bold text-5xl text-white">iCattle</h1>
                 <p className="text-lavender-100 text-xl mt-1">The Golden Record of Ownership</p>

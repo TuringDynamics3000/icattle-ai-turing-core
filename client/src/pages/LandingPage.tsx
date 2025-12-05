@@ -1,5 +1,5 @@
 import { Link } from 'wouter';
-import { ArrowRight, Shield, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 
 export function LandingPage() {
@@ -51,7 +51,7 @@ export function LandingPage() {
               
               <Link href="/golden-record">
                 <a className="inline-flex items-center justify-center gap-2 px-8 py-4 glass-card-dark text-white rounded-full font-semibold hover:bg-white/20 transition-all">
-                  <Shield className="w-5 h-5" />
+                  <img src="/icattle-logo.png" alt="iCattle" className="w-5 h-5" />
                   Golden Record Demo
                 </a>
               </Link>
