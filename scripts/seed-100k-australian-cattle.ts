@@ -170,9 +170,9 @@ async function seed100kCattle() {
       const farm = AUSTRALIAN_FARMS[i];
       const [client] = await sql`
         INSERT INTO clients (
-          name, contact_name, contact_email, contact_phone,
-          address, state, postcode, property_size, client_type, status,
-          latitude, longitude, created_at, updated_at
+          name, "contactName", "contactEmail", "contactPhone",
+          address, state, postcode, "propertySize", "clientType", status,
+          latitude, longitude, "createdAt", "updatedAt"
         )
         VALUES (
           ${farm.name},
@@ -242,8 +242,8 @@ async function seed100kCattle() {
             acquisitionCost: Math.floor(valuation * (0.75 + Math.random() * 0.35)),
             acquisitionDate: randomDateWithinYears(4),
             status: 'active',
-            gpsLat: farm.lat + (Math.random() - 0.5) * 0.2,
-            gpsLng: farm.lng + (Math.random() - 0.5) * 0.2,
+            latitude: (farm.lat + (Math.random() - 0.5) * 0.2).toString(),
+            longitude: (farm.lng + (Math.random() - 0.5) * 0.2).toString(),
           });
         }
         
@@ -252,7 +252,7 @@ async function seed100kCattle() {
             'nlisId', 'visualId', 'breed', 'sex', 'dateOfBirth', 'clientId',
             'currentLocation', 'currentWeight', 'lastWeighDate', 'cattleType',
             'healthStatus', 'lastHealthCheck', 'currentValuation', 'lastValuationDate',
-            'acquisitionCost', 'acquisitionDate', 'status', 'gpsLat', 'gpsLng'
+            'acquisitionCost', 'acquisitionDate', 'status', 'latitude', 'longitude'
           )}
         `;
         
