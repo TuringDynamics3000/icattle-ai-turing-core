@@ -38,13 +38,12 @@ export const appRouter = router({
   clients: router({
     list: publicProcedure
       .query(async () => {
-        return await db.getClients();
+        return await db.getAllClients();
       }),
     
     active: publicProcedure
       .query(async () => {
-        const clients = await db.getClients();
-        return clients.filter((c: any) => c.status === 'active');
+        return await db.getActiveClients();
       }),
     
     get: publicProcedure
