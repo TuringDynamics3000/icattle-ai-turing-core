@@ -643,7 +643,17 @@
 - [x] Rebuild BankView with new design
 - [x] Rebuild Cattle list page with new design
 - [ ] Rebuild CattleDetail page with new design
-- [ ] Update all remaining pages to match new design system
+- [ ] Rebuild ClientDetail page with new design
+- [ ] Rebuild Clients page with new design
+- [ ] Rebuild FarmerView page with new design
+- [ ] Rebuild FinancialDashboard page with new design
+- [ ] Rebuild GoldenRecordDetail page with new design
+- [ ] Rebuild MarketData page with new design
+- [ ] Rebuild PortfolioRecommendations page with new design
+- [ ] Rebuild PriceForecast page with new design
+- [ ] Rebuild Provenance page with new design
+- [ ] Rebuild Reports page with new design
+- [ ] Update NotFound page with new design
 - [ ] Add loading states with skeleton components
 - [ ] Implement error states with gradient backgrounds
 - [ ] Polish navigation with new design
