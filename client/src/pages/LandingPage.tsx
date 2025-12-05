@@ -72,7 +72,7 @@ export function LandingPage() {
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
             <StatCard
-              number={totalCattle.toLocaleString()}
+              number={totalCattle.toLocaleString('en-US')}
               label="Cattle Records"
               gradient="from-plum-500 to-plum-700"
             />
