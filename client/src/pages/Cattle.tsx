@@ -1,14 +1,12 @@
 import { trpc } from "@/lib/trpc";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CattleDataTable } from "@/components/CattleDataTable";
-
 import { Link } from "wouter";
-import { ArrowLeft, Search, Filter, FileDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Search, Filter, FileDown, ChevronLeft, ChevronRight, Database, Activity } from "lucide-react";
 import { exportCattleToCSV, type CattleExportData } from "@/lib/exportCSV";
 import { useRoleFeatures } from "@/hooks/useRoleFeatures";
 
@@ -22,11 +20,10 @@ export function Cattle() {
   const [filterSex, setFilterSex] = useState<string>("all");
   const [selectedCattle, setSelectedCattle] = useState<Set<number>>(new Set());
   const [cursor, setCursor] = useState(0);
-  const [limit] = useState(50); // Items per page
+  const [limit] = useState(50);
 
   const { data: clients } = trpc.clients.active.useQuery();
   
-  // Use paginated query with filters
   const { data: paginatedData, isLoading } = trpc.cattle.list.useQuery({
     cursor,
     limit,
@@ -68,7 +65,6 @@ export function Cattle() {
     },
   });
 
-  // Reset cursor when filters change
   useEffect(() => {
     setCursor(0);
     setSelectedCattle(new Set());
@@ -92,7 +88,6 @@ export function Cattle() {
     setSelectedCattle(newSelected);
   };
 
-  // Get unique breeds for filter
   const breeds = useMemo(() => {
     if (!cattle) return [];
     const uniqueBreeds = Array.from(new Set(cattle.map(c => c.breed).filter(Boolean)));
@@ -116,90 +111,101 @@ export function Cattle() {
 
   if (isLoading && cattle.length === 0) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-12 w-64" />
-        <Skeleton className="h-64" />
+      <div className="min-h-screen bg-lavender-50">
+        <div className="container mx-auto px-6 py-12">
+          <Skeleton className="h-12 w-64 mb-12" />
+          <Skeleton className="h-96" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <Link href="/">
-              <button className="p-2 hover:bg-accent rounded-md">
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-            </Link>
-            <h1 className="text-4xl font-bold tracking-tight">Cattle Registry</h1>
-          </div>
-          <p className="text-muted-foreground mt-2">
-            Digital twin registry with biometric verification • {total.toLocaleString()} total cattle
-            {role && (
-              <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                Role: {role.toUpperCase()}
-              </span>
-            )}
-          </p>
+    <div className="min-h-screen bg-lavender-50">
+      {/* Header with gradient */}
+      <div className="bg-gradient-purple-deep relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-10 right-20 w-64 h-64 bg-gradient-purple-pink opacity-30 shape-blob blur-3xl"></div>
+          <div className="absolute bottom-10 left-20 w-96 h-96 bg-gradient-coral-cream opacity-20 shape-circle blur-3xl"></div>
         </div>
-        {features.showExport && (
-          <Button
-            onClick={() => {
-            if (cattle) {
-              const exportData: CattleExportData[] = cattle.map(c => ({
-                id: c.id,
-                nlisId: c.nlisId || '',
-                biometricId: c.biometricId,
-                breed: c.breed,
-                color: c.color || '',
-                cattleType: c.cattleType,
-                birthDate: c.dateOfBirth ? c.dateOfBirth.toISOString().split('T')[0] : '',
-                currentWeight: c.currentWeight || 0,
-                currentLocation: c.currentLocation || '',
-                healthStatus: c.healthStatus,
-                currentValuation: c.currentValuation || 0,
-                acquisitionCost: c.acquisitionCost || 0,
-                clientId: c.clientId,
-                gpsLatitude: c.latitude,
-                gpsLongitude: c.longitude,
-              }));
-              exportCattleToCSV(exportData);
-            }
-          }}
-          variant="outline"
-          className="gap-2"
-        >
-          <FileDown className="h-4 w-4" />
-            Export CSV
-          </Button>
-        )}
+        
+        <div className="container mx-auto px-6 py-16 relative z-10">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <Link href="/">
+                  <a className="p-2 rounded-xl hover:bg-white/10 transition-colors">
+                    <ArrowLeft className="h-6 w-6 text-white" />
+                  </a>
+                </Link>
+                <Database className="w-8 h-8 text-coral-400" />
+              </div>
+              <h1 className="font-serif font-bold text-5xl text-white mb-3">Cattle Registry</h1>
+              <p className="text-lavender-100 text-xl">
+                Digital twin registry with biometric verification • {total.toLocaleString()} total cattle
+                {role && (
+                  <span className="ml-3 px-3 py-1 rounded-full bg-white/20 text-white text-sm font-semibold">
+                    {role.toUpperCase()}
+                  </span>
+                )}
+              </p>
+            </div>
+            {features.showExport && (
+              <Button
+                onClick={() => {
+                  if (cattle) {
+                    const exportData: CattleExportData[] = cattle.map(c => ({
+                      id: c.id,
+                      nlisId: c.nlisId || '',
+                      biometricId: c.biometricId,
+                      breed: c.breed,
+                      color: c.color || '',
+                      cattleType: c.cattleType,
+                      birthDate: c.dateOfBirth ? c.dateOfBirth.toISOString().split('T')[0] : '',
+                      currentWeight: c.currentWeight || 0,
+                      currentLocation: c.currentLocation || '',
+                      healthStatus: c.healthStatus,
+                      currentValuation: c.currentValuation || 0,
+                      acquisitionCost: c.acquisitionCost || 0,
+                      clientId: c.clientId,
+                      gpsLatitude: c.latitude,
+                      gpsLongitude: c.longitude,
+                    }));
+                    exportCattleToCSV(exportData);
+                  }
+                }}
+                className="bg-white text-plum-900 hover:bg-lavender-50 px-6 py-3 rounded-full font-semibold flex items-center gap-2"
+              >
+                <FileDown className="h-5 w-5" />
+                Export CSV
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filters
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="container mx-auto px-6 py-12">
+        {/* Filters */}
+        <div className="bg-white rounded-3xl p-8 shadow-soft-md mb-8 -mt-20 relative z-20">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-plum-500 to-plum-700">
+              <Filter className="w-5 h-5 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-plum-900">Filters</h2>
+          </div>
           <div className={`grid gap-4 ${features.showFarmFilter ? 'md:grid-cols-5' : 'md:grid-cols-4'}`}>
             <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Search by ID, NLIS, breed..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
+                className="pl-9 border-lavender-200 focus:border-plum-500 focus:ring-plum-500"
               />
             </div>
             
             <Select value={filterBreed} onValueChange={setFilterBreed}>
-              <SelectTrigger>
+              <SelectTrigger className="border-lavender-200 focus:border-plum-500 focus:ring-plum-500">
                 <SelectValue placeholder="All Breeds" />
               </SelectTrigger>
               <SelectContent>
@@ -211,7 +217,7 @@ export function Cattle() {
             </Select>
 
             <Select value={filterSex} onValueChange={setFilterSex}>
-              <SelectTrigger>
+              <SelectTrigger className="border-lavender-200 focus:border-plum-500 focus:ring-plum-500">
                 <SelectValue placeholder="All Sex/Type" />
               </SelectTrigger>
               <SelectContent>
@@ -226,7 +232,7 @@ export function Cattle() {
 
             {features.showFarmFilter && (
               <Select value={filterClient} onValueChange={setFilterClient}>
-                <SelectTrigger>
+                <SelectTrigger className="border-lavender-200 focus:border-plum-500 focus:ring-plum-500">
                   <SelectValue placeholder="All Clients" />
                 </SelectTrigger>
                 <SelectContent>
@@ -241,7 +247,7 @@ export function Cattle() {
             )}
 
             <Select value={filterHealth} onValueChange={setFilterHealth}>
-              <SelectTrigger>
+              <SelectTrigger className="border-lavender-200 focus:border-plum-500 focus:ring-plum-500">
                 <SelectValue placeholder="All Health Status" />
               </SelectTrigger>
               <SelectContent>
@@ -252,22 +258,24 @@ export function Cattle() {
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Batch Operations Toolbar */}
-      {features.showBatchOperations && selectedCattle.size > 0 && (
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="py-4">
+        {/* Batch Operations Toolbar */}
+        {features.showBatchOperations && selectedCattle.size > 0 && (
+          <div className="bg-gradient-to-br from-plum-100 to-lavender-100 rounded-3xl p-6 shadow-soft-md mb-8 border-2 border-plum-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <span className="font-semibold">
+                <div className="p-2 rounded-xl bg-gradient-to-br from-plum-500 to-plum-700">
+                  <Activity className="w-5 h-5 text-white" />
+                </div>
+                <span className="font-bold text-plum-900 text-lg">
                   {selectedCattle.size} cattle selected
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setSelectedCattle(new Set())}
+                  className="border-plum-300 text-plum-700 hover:bg-white"
                 >
                   Clear Selection
                 </Button>
@@ -284,12 +292,12 @@ export function Cattle() {
                     }
                   }}
                   disabled={batchHealthCheck.isPending}
+                  className="bg-gradient-to-br from-green-500 to-green-700 text-white hover:from-green-600 hover:to-green-800"
                 >
                   Mark Healthy
                 </Button>
                 <Button
                   size="sm"
-                  variant="outline"
                   onClick={() => {
                     const location = prompt("Enter new location:");
                     if (location) {
@@ -300,12 +308,12 @@ export function Cattle() {
                     }
                   }}
                   disabled={batchMovement.isPending}
+                  className="bg-gradient-to-br from-plum-500 to-plum-700 text-white hover:from-plum-600 hover:to-plum-800"
                 >
                   Move Cattle
                 </Button>
                 <Button
                   size="sm"
-                  variant="outline"
                   onClick={() => {
                     if (confirm(`Update valuations for ${selectedCattle.size} cattle?`)) {
                       batchValuation.mutate({
@@ -315,51 +323,56 @@ export function Cattle() {
                     }
                   }}
                   disabled={batchValuation.isPending}
+                  className="bg-gradient-to-br from-coral-500 to-coral-700 text-white hover:from-coral-600 hover:to-coral-800"
                 >
                   Update Valuations
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Data Table */}
-      <CattleDataTable
-        cattle={cattle}
-        clients={clients}
-        selectedCattle={selectedCattle}
-        onToggleSelect={handleToggleSelect}
-        onSelectAll={handleSelectAll}
-      />
-
-      {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
-          Showing {cursor + 1} to {Math.min(cursor + limit, total)} of {total.toLocaleString()} cattle
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePrevPage}
-            disabled={cursor === 0}
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous
-          </Button>
-          <div className="text-sm font-medium">
-            Page {currentPage} of {totalPages}
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleNextPage}
-            disabled={!hasMore}
-          >
-            Next
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
+        )}
+
+        {/* Data Table */}
+        <div className="bg-white rounded-3xl shadow-soft-md overflow-hidden mb-8">
+          <CattleDataTable
+            cattle={cattle}
+            clients={clients}
+            selectedCattle={selectedCattle}
+            onToggleSelect={handleToggleSelect}
+            onSelectAll={handleSelectAll}
+          />
+        </div>
+
+        {/* Pagination */}
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-600 font-medium">
+            Showing {cursor + 1} to {Math.min(cursor + limit, total)} of {total.toLocaleString()} cattle
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePrevPage}
+              disabled={cursor === 0}
+              className="border-lavender-200 text-plum-700 hover:bg-lavender-50 disabled:opacity-50"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
+            </Button>
+            <div className="px-4 py-2 rounded-full bg-gradient-to-br from-plum-500 to-plum-700 text-white font-bold text-sm">
+              Page {currentPage} of {totalPages}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNextPage}
+              disabled={!hasMore}
+              className="border-lavender-200 text-plum-700 hover:bg-lavender-50 disabled:opacity-50"
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

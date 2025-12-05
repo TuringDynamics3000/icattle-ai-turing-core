@@ -639,8 +639,8 @@
 - [x] Add Google Fonts (Inter + Playfair Display)
 - [x] Fix database seeding (100,000 cattle + 25 farms)
 - [x] Rebuild Golden Record Demo to match purple/coral gradient design theme
-- [ ] Rebuild HomeDashboard with new design
-- [ ] Rebuild BankView with new design
+- [x] Rebuild HomeDashboard with new design
+- [x] Rebuild BankView with new design
 - [ ] Rebuild Cattle list page with new design
 - [ ] Rebuild CattleDetail page with new design
 - [ ] Update all remaining pages to match new design system
