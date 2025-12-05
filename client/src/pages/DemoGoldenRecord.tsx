@@ -1,5 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Eye, Building2, Database, Sparkles, CheckCircle2, MapPin, Activity, Shield, Tractor } from "lucide-react";
 import { Link } from "wouter";
 
@@ -95,12 +96,22 @@ export function DemoGoldenRecord() {
                 </a>
               </Link>
               
-              <Link href="/cattle">
-                <a className="inline-flex items-center justify-center gap-2 px-8 py-4 glass-card-dark text-white rounded-full font-semibold hover:bg-white/20 transition-all">
-                  <Database className="w-5 h-5" />
-                  Browse All {formatNumber(totalCattle)} Cattle
-                </a>
-              </Link>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link href="/cattle">
+                      <a className="inline-flex items-center justify-center gap-2 px-8 py-4 glass-card-dark text-white rounded-full font-semibold hover:bg-white/20 transition-all">
+                        <Database className="w-5 h-5" />
+                        Browse All {formatNumber(totalCattle)} Cattle
+                      </a>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="bg-white text-plum-900 border-plum-200 max-w-xs">
+                    <p className="font-semibold mb-1">Full Cattle Registry</p>
+                    <p className="text-sm">Search, filter by breed/location/health, view details, and export data</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
 
             {/* How It Works */}

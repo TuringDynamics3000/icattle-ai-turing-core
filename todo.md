@@ -699,3 +699,6 @@
 
 ## 🔘 Add Farmer View Button to Demo Page
 - [x] Add Farmer View button to DemoGoldenRecord hero section
+
+## 💬 Add Tooltip to Browse All Cattle Button
+- [x] Add hover tooltip explaining functionality (search, filter, export, etc.)
