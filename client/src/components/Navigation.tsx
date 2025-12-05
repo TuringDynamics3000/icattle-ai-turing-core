@@ -17,7 +17,9 @@ import {
   Shield, 
   DollarSign,
   Brain,
-  Activity
+  Activity,
+  MapPin,
+  Building2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NotificationBell } from './NotificationBell';
@@ -44,38 +46,41 @@ export function Navigation() {
         {/* Main Navigation */}
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
-            {/* Dashboard */}
+            {/* Home */}
             <NavigationMenuItem>
-              <Link href="/dashboard">
+              <Link href="/demo">
                 <a>
                   <NavigationMenuLink
                     className={cn(
                       "group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors text-white hover:bg-white/10 focus:bg-white/10 focus:outline-none",
-                      isActive('/dashboard') && "bg-white/20"
+                      isActive('/demo') && "bg-white/20"
                     )}
                   >
                     <Home className="mr-2 h-4 w-4" />
-                    Dashboard
+                    Home
                   </NavigationMenuLink>
                 </a>
               </Link>
             </NavigationMenuItem>
 
-            {/* Assets */}
+            {/* Livestock */}
             <NavigationMenuItem>
               <NavigationMenuTrigger className={cn(
                 "text-white hover:bg-white/10 data-[state=open]:bg-white/20",
-                (isActive('/cattle') || isActive('/clients')) && "bg-white/20"
+                (isActive('/cattle') || isActive('/farmer') || isActive('/clients')) && "bg-white/20"
               )}>
                 <Beef className="mr-2 h-4 w-4" />
-                Assets
+                Livestock
               </NavigationMenuTrigger>
               <NavigationMenuContent>
                 <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 bg-white">
                   <li>
                     <Link href="/cattle">
                       <a className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-lavender-100 focus:bg-lavender-100">
-                        <div className="text-sm font-medium leading-none text-plum-900">Cattle Registry</div>
+                        <div className="text-sm font-medium leading-none flex items-center gap-2 text-plum-900">
+                          <Beef className="h-4 w-4" />
+                          Cattle Registry
+                        </div>
                         <p className="line-clamp-2 text-sm leading-snug text-gray-600">
                           Browse all livestock digital twins
                         </p>
@@ -83,9 +88,25 @@ export function Navigation() {
                     </Link>
                   </li>
                   <li>
+                    <Link href="/farmer">
+                      <a className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-lavender-100 focus:bg-lavender-100">
+                        <div className="text-sm font-medium leading-none flex items-center gap-2 text-plum-900">
+                          <MapPin className="h-4 w-4" />
+                          Farmer View
+                        </div>
+                        <p className="line-clamp-2 text-sm leading-snug text-gray-600">
+                          GPS tracking & herd operations
+                        </p>
+                      </a>
+                    </Link>
+                  </li>
+                  <li>
                     <Link href="/clients">
                       <a className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-lavender-100 focus:bg-lavender-100">
-                        <div className="text-sm font-medium leading-none text-plum-900">Client Accounts</div>
+                        <div className="text-sm font-medium leading-none flex items-center gap-2 text-plum-900">
+                          <Users className="h-4 w-4" />
+                          Client Accounts
+                        </div>
                         <p className="line-clamp-2 text-sm leading-snug text-gray-600">
                           Manage producer portfolios
                         </p>
@@ -96,49 +117,14 @@ export function Navigation() {
               </NavigationMenuContent>
             </NavigationMenuItem>
 
-            {/* Views */}
-            <NavigationMenuItem>
-              <NavigationMenuTrigger className={cn(
-                "text-white hover:bg-white/10 data-[state=open]:bg-white/20",
-                (isActive('/farmer') || isActive('/bank')) && "bg-white/20"
-              )}>
-                <Users className="mr-2 h-4 w-4" />
-                Views
-              </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 bg-white">
-                  <li>
-                    <Link href="/farmer">
-                      <a className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-lavender-100 focus:bg-lavender-100">
-                        <div className="text-sm font-medium leading-none text-plum-900">Farmer View</div>
-                        <p className="line-clamp-2 text-sm leading-snug text-gray-600">
-                          GPS tracking & herd operations
-                        </p>
-                      </a>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/bank">
-                      <a className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-lavender-100 focus:bg-lavender-100">
-                        <div className="text-sm font-medium leading-none text-plum-900">Bank View</div>
-                        <p className="line-clamp-2 text-sm leading-snug text-gray-600">
-                          Risk metrics & iCattle Certified
-                        </p>
-                      </a>
-                    </Link>
-                  </li>
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-
-            {/* Intelligence */}
+            {/* Market Intelligence */}
             <NavigationMenuItem>
               <NavigationMenuTrigger className={cn(
                 "text-white hover:bg-white/10 data-[state=open]:bg-white/20",
                 (isActive('/market') || isActive('/forecast') || isActive('/recommendations') || isActive('/provenance')) && "bg-white/20"
               )}>
                 <Brain className="mr-2 h-4 w-4" />
-                Intelligence
+                Market Intelligence
               </NavigationMenuTrigger>
               <NavigationMenuContent>
                 <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 bg-white">
@@ -147,23 +133,10 @@ export function Navigation() {
                       <a className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-lavender-100 focus:bg-lavender-100">
                         <div className="text-sm font-medium leading-none flex items-center gap-2 text-plum-900">
                           <Activity className="h-4 w-4" />
-                          Market Data
+                          Live Prices & Forecasts
                         </div>
                         <p className="line-clamp-2 text-sm leading-snug text-gray-600">
-                          Live MLA NLRS pricing
-                        </p>
-                      </a>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/forecast">
-                      <a className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-lavender-100 focus:bg-lavender-100">
-                        <div className="text-sm font-medium leading-none flex items-center gap-2 text-plum-900">
-                          <TrendingUp className="h-4 w-4" />
-                          Price Forecast
-                        </div>
-                        <p className="line-clamp-2 text-sm leading-snug text-gray-600">
-                          ML 7-day predictions
+                          MLA NLRS data + ML predictions
                         </p>
                       </a>
                     </Link>
@@ -186,7 +159,7 @@ export function Navigation() {
                       <a className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-lavender-100 focus:bg-lavender-100">
                         <div className="text-sm font-medium leading-none flex items-center gap-2 text-plum-900">
                           <Shield className="h-4 w-4" />
-                          Provenance
+                          Provenance Verification
                         </div>
                         <p className="line-clamp-2 text-sm leading-snug text-gray-600">
                           Turing Protocol & fraud detection
@@ -202,7 +175,7 @@ export function Navigation() {
             <NavigationMenuItem>
               <NavigationMenuTrigger className={cn(
                 "text-white hover:bg-white/10 data-[state=open]:bg-white/20",
-                (isActive('/financial') || isActive('/reports')) && "bg-white/20"
+                (isActive('/bank') || isActive('/financial') || isActive('/reports')) && "bg-white/20"
               )}>
                 <DollarSign className="mr-2 h-4 w-4" />
                 Financial
@@ -210,14 +183,27 @@ export function Navigation() {
               <NavigationMenuContent>
                 <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 bg-white">
                   <li>
+                    <Link href="/bank">
+                      <a className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-lavender-100 focus:bg-lavender-100">
+                        <div className="text-sm font-medium leading-none flex items-center gap-2 text-plum-900">
+                          <Building2 className="h-4 w-4" />
+                          Bank View
+                        </div>
+                        <p className="line-clamp-2 text-sm leading-snug text-gray-600">
+                          Risk metrics & iCattle Certified
+                        </p>
+                      </a>
+                    </Link>
+                  </li>
+                  <li>
                     <Link href="/financial">
                       <a className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-lavender-100 focus:bg-lavender-100">
                         <div className="text-sm font-medium leading-none flex items-center gap-2 text-plum-900">
                           <DollarSign className="h-4 w-4" />
-                          Financial Dashboard
+                          Xero Integration
                         </div>
                         <p className="line-clamp-2 text-sm leading-snug text-gray-600">
-                          Xero integration & AASB 141
+                          AASB 141 compliance dashboard
                         </p>
                       </a>
                     </Link>
@@ -238,23 +224,6 @@ export function Navigation() {
                 </ul>
               </NavigationMenuContent>
             </NavigationMenuItem>
-
-            {/* Demo */}
-            <NavigationMenuItem>
-              <Link href="/demo">
-                <a>
-                  <NavigationMenuLink
-                    className={cn(
-                      "group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors text-white hover:bg-white/10 focus:bg-white/10 focus:outline-none",
-                      isActive('/demo') && "bg-white/20"
-                    )}
-                  >
-                    <Shield className="mr-2 h-4 w-4" />
-                    Golden Record Demo
-                  </NavigationMenuLink>
-                </a>
-              </Link>
-            </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
 
@@ -267,52 +236,49 @@ export function Navigation() {
       {/* Mobile Navigation */}
       <div className="md:hidden border-t border-white/10">
         <div className="container flex items-center gap-2 py-2 overflow-x-auto">
-          <Link href="/dashboard">
-            <a>
-              <Button 
-                variant={isActive('/dashboard') ? "secondary" : "ghost"} 
-                size="sm"
-                className={isActive('/dashboard') ? "bg-white/20 text-white hover:bg-white/30" : "text-white hover:bg-white/10"}
-              >
-                <Home className="h-4 w-4 mr-2" />
-                Home
-              </Button>
+          <Link href="/demo">
+            <a className={cn(
+              "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors",
+              isActive('/demo') ? "bg-white/20 text-white" : "text-white/80 hover:bg-white/10"
+            )}>
+              <Home className="h-4 w-4" />
+              Home
             </a>
           </Link>
           <Link href="/cattle">
-            <a>
-              <Button 
-                variant={isActive('/cattle') ? "secondary" : "ghost"} 
-                size="sm"
-                className={isActive('/cattle') ? "bg-white/20 text-white hover:bg-white/30" : "text-white hover:bg-white/10"}
-              >
-                <Beef className="h-4 w-4 mr-2" />
-                Cattle
-              </Button>
+            <a className={cn(
+              "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors",
+              isActive('/cattle') ? "bg-white/20 text-white" : "text-white/80 hover:bg-white/10"
+            )}>
+              <Beef className="h-4 w-4" />
+              Cattle
             </a>
           </Link>
-          <Link href="/clients">
-            <a>
-              <Button 
-                variant={isActive('/clients') ? "secondary" : "ghost"} 
-                size="sm"
-                className={isActive('/clients') ? "bg-white/20 text-white hover:bg-white/30" : "text-white hover:bg-white/10"}
-              >
-                <Users className="h-4 w-4 mr-2" />
-                Clients
-              </Button>
+          <Link href="/farmer">
+            <a className={cn(
+              "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors",
+              isActive('/farmer') ? "bg-white/20 text-white" : "text-white/80 hover:bg-white/10"
+            )}>
+              <MapPin className="h-4 w-4" />
+              Farmer
             </a>
           </Link>
-          <Link href="/financial">
-            <a>
-              <Button 
-                variant={isActive('/financial') ? "secondary" : "ghost"} 
-                size="sm"
-                className={isActive('/financial') ? "bg-white/20 text-white hover:bg-white/30" : "text-white hover:bg-white/10"}
-              >
-                <DollarSign className="h-4 w-4 mr-2" />
-                Financial
-              </Button>
+          <Link href="/market">
+            <a className={cn(
+              "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors",
+              isActive('/market') ? "bg-white/20 text-white" : "text-white/80 hover:bg-white/10"
+            )}>
+              <Activity className="h-4 w-4" />
+              Market
+            </a>
+          </Link>
+          <Link href="/bank">
+            <a className={cn(
+              "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors",
+              isActive('/bank') ? "bg-white/20 text-white" : "text-white/80 hover:bg-white/10"
+            )}>
+              <Building2 className="h-4 w-4" />
+              Bank
             </a>
           </Link>
         </div>
