@@ -535,3 +535,36 @@ export const portfolios = pgTable("portfolios", {
 
 export type Portfolio = typeof portfolios.$inferSelect;
 export type InsertPortfolio = typeof portfolios.$inferInsert;
+
+// ============================================================================
+// PORTFOLIO SNAPSHOTS (Historical Portfolio Values)
+// ============================================================================
+
+/**
+ * Tracks daily portfolio value snapshots for trend analysis
+ * Used to calculate portfolio changes and display up/down indicators
+ */
+export const portfolioSnapshots = pgTable("portfolio_snapshots", {
+  id: serial("id").primaryKey(),
+  
+  // Snapshot Date
+  snapshotDate: timestamp("snapshot_date").notNull(),
+  
+  // Portfolio Metrics
+  totalValue: integer("total_value").notNull(), // AUD cents
+  cattleCount: integer("cattle_count").notNull(),
+  activeClients: integer("active_clients").notNull(),
+  
+  // Change Metrics (compared to previous snapshot)
+  valueChange: integer("value_change"), // AUD cents
+  valueChangePercent: integer("value_change_percent"), // basis points (1% = 100)
+  cattleChange: integer("cattle_change"),
+  clientChange: integer("client_change"),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  snapshotDateIdx: index("portfolio_snapshots_date_idx").on(table.snapshotDate),
+}));
+
+export type PortfolioSnapshot = typeof portfolioSnapshots.$inferSelect;
+export type InsertPortfolioSnapshot = typeof portfolioSnapshots.$inferInsert;

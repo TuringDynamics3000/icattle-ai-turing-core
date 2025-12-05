@@ -4,6 +4,7 @@ import postgres from "postgres";
 import { 
   InsertUser, users, clients, cattle, lifecycleEvents, 
   valuations, marketData, financialReports, notifications,
+  portfolioSnapshots,
   Client, Cattle, LifecycleEvent, Valuation, MarketData, Notification
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -651,4 +652,103 @@ export async function deleteXeroTokens(userId: number) {
       xeroTokenExpiresAt: null,
     })
     .where(eq(users.id, userId));
+}
+
+// ============================================================================
+// PORTFOLIO SNAPSHOTS
+// ============================================================================
+
+/**
+ * Create a new portfolio snapshot
+ */
+export async function createPortfolioSnapshot(snapshot: {
+  snapshotDate: Date;
+  totalValue: number;
+  cattleCount: number;
+  activeClients: number;
+  valueChange?: number;
+  valueChangePercent?: number;
+  cattleChange?: number;
+  clientChange?: number;
+}) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const [result] = await db
+    .insert(portfolioSnapshots)
+    .values(snapshot)
+    .returning();
+
+  return result;
+}
+
+/**
+ * Get the latest portfolio snapshot
+ */
+export async function getLatestPortfolioSnapshot() {
+  const db = await getDb();
+  if (!db) return null;
+
+  const [snapshot] = await db
+    .select()
+    .from(portfolioSnapshots)
+    .orderBy(desc(portfolioSnapshots.snapshotDate))
+    .limit(1);
+
+  return snapshot || null;
+}
+
+/**
+ * Get portfolio snapshot by date
+ */
+export async function getPortfolioSnapshotByDate(date: Date) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const [snapshot] = await db
+    .select()
+    .from(portfolioSnapshots)
+    .where(eq(portfolioSnapshots.snapshotDate, date))
+    .limit(1);
+
+  return snapshot || null;
+}
+
+/**
+ * Calculate and create a portfolio snapshot with change metrics
+ */
+export async function calculateAndCreatePortfolioSnapshot() {
+  const db = await getDb();
+  if (!db) return null;
+
+  // Get current portfolio metrics
+  const [stats] = await db
+    .select({
+      totalValue: sql<number>`COALESCE(SUM(${cattle.currentValuation}), 0)`,
+      totalCattle: sql<number>`COUNT(${cattle.id})`,
+      activeClients: sql<number>`COUNT(DISTINCT ${cattle.clientId})`,
+    })
+    .from(cattle)
+    .where(eq(cattle.status, 'active'));
+
+  if (!stats) return null;
+
+  // Get the previous snapshot
+  const previousSnapshot = await getLatestPortfolioSnapshot();
+
+  const now = new Date();
+  const snapshot = {
+    snapshotDate: now,
+    totalValue: Number(stats.totalValue),
+    cattleCount: Number(stats.totalCattle),
+    activeClients: Number(stats.activeClients),
+    valueChange: previousSnapshot ? Number(stats.totalValue) - previousSnapshot.totalValue : 0,
+    valueChangePercent: previousSnapshot && previousSnapshot.totalValue > 0
+      ? Math.round(((Number(stats.totalValue) - previousSnapshot.totalValue) / previousSnapshot.totalValue) * 10000) // basis points
+      : 0,
+    cattleChange: previousSnapshot ? Number(stats.totalCattle) - previousSnapshot.cattleCount : 0,
+    clientChange: previousSnapshot ? Number(stats.activeClients) - previousSnapshot.activeClients : 0,
+  };
+
+  return createPortfolioSnapshot(snapshot);
 }

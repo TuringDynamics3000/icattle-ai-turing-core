@@ -8,8 +8,19 @@ export function DemoGoldenRecord() {
   const { data: summary, isLoading: summaryLoading } = trpc.portfolio.summary.useQuery({});
   const { data: recentEvents, isLoading: eventsLoading } = trpc.events.recent.useQuery({ limit: 5 });
   const { data: cattleData } = trpc.cattle.list.useQuery({ limit: 1 });
+  const { data: snapshot } = trpc.portfolio.getLatestSnapshot.useQuery();
   
   const firstCattleId = cattleData?.items?.[0]?.id;
+  
+  // Calculate portfolio change
+  const valueChange = snapshot?.valueChange || 0;
+  const valueChangePercent = snapshot?.valueChangePercent || 0;
+  const isPositive = valueChange >= 0;
+  const changeColor = isPositive ? 'text-green-600' : 'text-red-600';
+  const changeBgColor = isPositive ? 'bg-green-50' : 'bg-red-50';
+  const changeIcon = isPositive ? '↑' : '↓';
+  const changeText = isPositive ? 'Up' : 'Down';
+  const percentDisplay = Math.abs(valueChangePercent / 100).toFixed(2); // Convert from basis points
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat('en-AU', {
@@ -147,12 +158,20 @@ export function DemoGoldenRecord() {
                 </Link>
                 
                 <div className="bg-white rounded-2xl p-6 shadow-soft-md">
-                  <div className="text-4xl font-bold text-coral-600 mb-2">{formatCurrency(totalValue)}</div>
+                  <div className={`text-4xl font-bold mb-2 ${changeColor}`}>{formatCurrency(totalValue)}</div>
                   <div className="text-gray-600 mb-3">Portfolio Value</div>
-                  <div className="flex items-center gap-2 text-sm text-coral-600">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Calculated from current records</span>
-                  </div>
+                  {snapshot && valueChange !== 0 ? (
+                    <div className={`flex items-center gap-2 text-sm ${changeColor} ${changeBgColor} px-3 py-1.5 rounded-full w-fit`}>
+                      <span className="font-semibold">{changeIcon} {changeText} {percentDisplay}%</span>
+                      <span className="text-gray-500">·</span>
+                      <span>{formatCurrency(Math.abs(valueChange))} from yesterday</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm text-coral-600">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Calculated from current records</span>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="bg-white rounded-2xl p-6 shadow-soft-md">

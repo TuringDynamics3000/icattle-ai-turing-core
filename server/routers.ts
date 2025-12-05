@@ -413,6 +413,15 @@ export const appRouter = router({
           totalCattle: filteredCattle.length,
         };
       }),
+    
+    // Portfolio Snapshots
+    getLatestSnapshot: publicProcedure.query(async () => {
+      return await db.getLatestPortfolioSnapshot();
+    }),
+    
+    createSnapshot: publicProcedure.mutation(async () => {
+      return await db.calculateAndCreatePortfolioSnapshot();
+    }),
   }),
   
   // ============================================================================

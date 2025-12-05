@@ -717,3 +717,16 @@
 ## 🔄 DemoGoldenRecord UI Changes
 - [x] Remove "Browse All 260,000 Cattle" button
 - [x] Make "Total Cattle Records" card clickable to link to cattle registry
+
+## 📈 Portfolio Value Change Tracking
+- [ ] Add database schema for historical portfolio snapshots
+- [ ] Create backend procedure to calculate portfolio changes
+- [ ] Update DemoGoldenRecord UI with conditional colors (green up, red down)
+- [ ] Add clear trend indicators (↑ Up / ↓ Down with percentage)
+
+
+## 📈 Portfolio Value Change Tracking ✅
+- [x] Add database schema for historical portfolio snapshots
+- [x] Create backend procedure to calculate portfolio changes
+- [x] Update DemoGoldenRecord UI with conditional colors (green up, red down)
+- [x] Add clear trend indicators (↑ Up / ↓ Down with percentage)
