@@ -16,7 +16,7 @@ export function CattleDetail() {
   const params = useParams();
   const cattleId = params.id ? parseInt(params.id) : undefined;
 
-  const { data: cattle, isLoading: cattleLoading } = trpc.cattle.active.useQuery();
+  const { data: cattleData, isLoading: cattleLoading } = trpc.cattle.list.useQuery();
   const { data: events, isLoading: eventsLoading } = trpc.events.forCattle.useQuery(
     { cattleId: cattleId! },
     { enabled: !!cattleId }
@@ -27,7 +27,8 @@ export function CattleDetail() {
   );
   const { data: clients } = trpc.clients.active.useQuery();
 
-  const animal = cattle?.find(c => c.id === cattleId);
+  const cattle = cattleData?.items || [];
+  const animal = cattle.find(c => c.id === cattleId);
   const { data: marketPrice } = trpc.market.getMarketPrice.useQuery(
     {
       breed: animal?.breed || '',
