@@ -16,23 +16,24 @@ import { CertificationBadge } from "@/components/CertificationBadge";
 
 export default function Provenance() {
   const [searchTag, setSearchTag] = useState('');
-  const { data: cattle, isLoading } = trpc.cattle.list.useQuery();
+  const { data: cattleData, isLoading } = trpc.cattle.list.useQuery();
+  const cattle = cattleData?.items || [];
 
   // Filter cattle by search
-  const filteredCattle = cattle?.filter(c => 
+  const filteredCattle = cattle.filter(c => 
     searchTag === '' || c.nlisId?.toLowerCase().includes(searchTag.toLowerCase()) || c.id.toString().includes(searchTag)
-  ) || [];
+  );
 
   // Calculate provenance statistics
   const stats = {
-    total: cattle?.length || 0,
-    highConfidence: cattle?.filter(c => getConfidenceScore(c) >= 80).length || 0,
-    mediumConfidence: cattle?.filter(c => {
+    total: cattle.length,
+    highConfidence: cattle.filter(c => getConfidenceScore(c) >= 80).length,
+    mediumConfidence: cattle.filter(c => {
       const score = getConfidenceScore(c);
       return score >= 50 && score < 80;
-    }).length || 0,
-    lowConfidence: cattle?.filter(c => getConfidenceScore(c) < 50).length || 0,
-    suspicious: cattle?.filter(c => getSuspiciousFlags(c).length > 0).length || 0,
+    }).length,
+    lowConfidence: cattle.filter(c => getConfidenceScore(c) < 50).length,
+    suspicious: cattle.filter(c => getSuspiciousFlags(c).length > 0).length,
   };
 
   return (

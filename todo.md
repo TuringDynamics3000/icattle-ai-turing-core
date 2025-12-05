@@ -668,3 +668,6 @@
 - [x] Fix Provenance Tracking card link (currently 404)
 - [x] Fix Health Monitoring card link (currently 404)
 - [x] Fix Financial Analytics card link (currently 404)
+
+## 🐛 Provenance Page Bug Fix
+- [x] Fix TypeError: cattle?.filter is not a function on Provenance page
