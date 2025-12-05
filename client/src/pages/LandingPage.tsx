@@ -49,7 +49,7 @@ export function LandingPage() {
                 </a>
               </Link>
               
-              <Link href="/golden-record">
+              <Link href="/demo">
                 <a className="inline-flex items-center justify-center gap-2 px-8 py-4 glass-card-dark text-white rounded-full font-semibold hover:bg-white/20 transition-all">
                   <img src="/icattle-logo.png" alt="iCattle" className="w-5 h-5" />
                   Golden Record Demo
@@ -118,21 +118,21 @@ export function LandingPage() {
               description="Complete lifecycle tracking with cryptographic verification and biometric identification."
               icon="🔐"
               gradient="from-plum-500 to-plum-700"
-              href="/golden-record"
+              href="/demo"
             />
             <FeatureCard
               title="Bank & Investor View"
               description="Real-time portfolio analytics and risk assessment for financial institutions."
               icon="📊"
               gradient="from-coral-500 to-coral-700"
-              href="/bank-view"
+              href="/bank"
             />
             <FeatureCard
               title="AI Intelligence"
               description="Predictive analytics, health forecasting, and automated compliance monitoring."
               icon="🤖"
               gradient="from-plum-600 to-coral-500"
-              href="/price-forecast"
+              href="/forecast"
             />
             <FeatureCard
               title="Provenance Tracking"
