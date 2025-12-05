@@ -3,13 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
-import { ArrowLeft, Building2, MapPin, Phone, Mail, TrendingUp, FileDown } from "lucide-react";
+import { ArrowLeft, Building2, MapPin, Phone, Mail, TrendingUp, FileDown, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { exportClientsToCSV, type ClientExportData } from "@/lib/exportCSV";
 
 export function Clients() {
   const { data: clients, isLoading } = trpc.clients.active.useQuery();
-  const { data: allCattle } = trpc.cattle.active.useQuery();
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat('en-AU', {
@@ -20,36 +19,10 @@ export function Clients() {
     }).format(cents / 100);
   };
 
-  const getClientStats = (clientId: number) => {
-    if (!allCattle) return { count: 0, totalValue: 0 };
-    
-    const clientCattle = allCattle.filter(c => c.clientId === clientId);
-    const totalValue = clientCattle.reduce((sum, c) => sum + (c.currentValuation || 0), 0);
-    
-    return {
-      count: clientCattle.length,
-      totalValue,
-      avgValue: clientCattle.length > 0 ? totalValue / clientCattle.length : 0,
-    };
-  };
-
-  const getClientTypeBadge = (type: string) => {
-    switch (type) {
-      case 'producer':
-        return <Badge className="bg-blue-600">Producer</Badge>;
-      case 'feedlot':
-        return <Badge className="bg-purple-600">Feedlot</Badge>;
-      case 'breeder':
-        return <Badge className="bg-green-600">Breeder</Badge>;
-      default:
-        return <Badge variant="outline">{type}</Badge>;
-    }
-  };
-
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-12 w-64" />
+      <div className="min-h-screen bg-lavender-50 p-6">
+        <Skeleton className="h-12 w-64 mb-6" />
         <div className="grid gap-4">
           {[...Array(3)].map((_, i) => (
             <Skeleton key={i} className="h-48" />
@@ -59,169 +32,182 @@ export function Clients() {
     );
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <Link href="/">
-              <button className="p-2 hover:bg-accent rounded-md">
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-            </Link>
-            <h1 className="text-4xl font-bold tracking-tight">Client Accounts</h1>
-          </div>
-          <p className="text-muted-foreground mt-2">
-            Producer and feedlot portfolio management
-          </p>
-        </div>
-        <Button
-          onClick={() => {
-            if (clients && allCattle) {
-              const exportData: ClientExportData[] = clients.map(client => {
-                const stats = getClientStats(client.id);
-                return {
-                  id: client.id,
-                  name: client.name,
-                  contactEmail: client.contactEmail || '',
-                  contactPhone: client.contactPhone || '',
-                  abn: client.abn || '',
-                  address: client.address || '',
-                  cattleCount: stats.count,
-                  totalValue: stats.totalValue,
-                };
-              });
-              exportClientsToCSV(exportData);
-            }
-          }}
-          variant="outline"
-          className="gap-2"
-        >
-          <FileDown className="h-4 w-4" />
-          Export CSV
-        </Button>
-      </div>
+  const totalCattle = clients?.reduce((sum, c) => sum + (c.cattle_count || 0), 0) || 0;
+  const totalValue = clients?.reduce((sum, c) => sum + (c.total_value || 0), 0) || 0;
 
-      {/* Client Cards */}
-      <div className="grid gap-6">
-        {clients?.map((client) => {
-          const stats = getClientStats(client.id);
+  return (
+    <div className="min-h-screen bg-lavender-50">
+      {/* Hero Header with Gradient */}
+      <section className="relative overflow-hidden bg-gradient-purple-deep">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-20 right-10 w-64 h-64 bg-gradient-purple-pink opacity-30 shape-blob blur-3xl"></div>
+          <div className="absolute bottom-20 left-10 w-96 h-96 bg-gradient-coral-cream opacity-20 shape-circle blur-3xl"></div>
+        </div>
+        
+        <div className="container mx-auto px-6 py-16 relative z-10">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <Link href="/">
+                  <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                    <ArrowLeft className="h-5 w-5 text-white" />
+                  </button>
+                </Link>
+                <h1 className="font-serif font-bold text-5xl text-white">Client Accounts</h1>
+              </div>
+              <p className="text-lavender-100 text-xl">
+                Producer and feedlot portfolio management
+              </p>
+            </div>
+            <Button
+              onClick={() => {
+                if (clients) {
+                  const exportData: ClientExportData[] = clients.map(client => ({
+                    id: client.id,
+                    name: client.name,
+                    contactEmail: client.contactEmail || '',
+                    contactPhone: client.contactPhone || '',
+                    abn: client.abn || '',
+                    address: client.address || '',
+                    cattleCount: client.cattle_count || 0,
+                    totalValue: client.total_value || 0,
+                  }));
+                  exportClientsToCSV(exportData);
+                }
+              }}
+              className="bg-white text-plum-800 hover:bg-lavender-50 gap-2"
+            >
+              <FileDown className="h-4 w-4" />
+              Export CSV
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <div className="container mx-auto px-6 py-12">
+        {/* Portfolio Summary */}
+        <div className="bg-white rounded-3xl p-8 shadow-soft-md mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-plum-600 to-coral-500">
+              <Users className="w-5 h-5 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-plum-900">Portfolio Summary</h2>
+          </div>
+          <p className="text-gray-600 mb-6">Aggregate statistics across all clients</p>
           
-          return (
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="p-6 bg-gradient-to-br from-lavender-50 to-lavender-100 rounded-2xl">
+              <div className="text-sm text-plum-600 font-medium mb-2">Total Clients</div>
+              <div className="text-4xl font-bold text-plum-900">{clients?.length || 0}</div>
+            </div>
+            <div className="p-6 bg-gradient-to-br from-coral-50 to-coral-100 rounded-2xl">
+              <div className="text-sm text-coral-700 font-medium mb-2">Total Cattle</div>
+              <div className="text-4xl font-bold text-coral-900">{totalCattle.toLocaleString()}</div>
+            </div>
+            <div className="p-6 bg-gradient-to-br from-plum-50 to-plum-100 rounded-2xl">
+              <div className="text-sm text-plum-600 font-medium mb-2">Combined Portfolio Value</div>
+              <div className="text-4xl font-bold text-plum-900">
+                {formatCurrency(totalValue)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Client List */}
+        <div className="space-y-6">
+          {clients?.map((client) => (
             <Link key={client.id} href={`/clients/${client.id}`}>
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      <Building2 className="h-6 w-6 text-blue-600" />
-                      <CardTitle className="text-2xl">{client.name}</CardTitle>
-                      {getClientTypeBadge(client.clientType)}
+              <div className="bg-white rounded-3xl p-8 shadow-soft-md hover:shadow-3d-purple transition-all cursor-pointer group">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-2xl bg-gradient-to-br from-plum-600 to-coral-500 group-hover:scale-110 transition-transform">
+                      <Building2 className="h-6 w-6 text-white" />
                     </div>
-                    <CardDescription>ABN: {client.abn}</CardDescription>
+                    <div>
+                      <h3 className="text-2xl font-bold text-plum-900 group-hover:text-plum-700 transition-colors">
+                        {client.name}
+                      </h3>
+                      <p className="text-gray-600">ABN: {client.abn}</p>
+                    </div>
                   </div>
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+                  <Badge className="bg-green-100 text-green-700 border-green-300">
                     Active
                   </Badge>
                 </div>
-              </CardHeader>
-              <CardContent>
+
                 <div className="grid gap-6 md:grid-cols-2">
                   {/* Contact Information */}
                   <div className="space-y-3">
-                    <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                    <h4 className="font-semibold text-sm text-plum-600 uppercase tracking-wide">
                       Contact Information
-                    </h3>
+                    </h4>
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-2 text-gray-700">
+                        <Mail className="h-4 w-4 text-coral-500" />
                         <span>{client.contactEmail}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-2 text-gray-700">
+                        <Phone className="h-4 w-4 text-coral-500" />
                         <span>{client.contactPhone}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-2 text-gray-700">
+                        <MapPin className="h-4 w-4 text-coral-500" />
                         <span>{client.address}, {client.state} {client.postcode}</span>
                       </div>
                     </div>
-                    {client.propertySize && (
-                      <div className="pt-2 border-t">
-                        <div className="text-sm text-muted-foreground">Property Size</div>
-                        <div className="text-lg font-semibold">
-                          {client.propertySize.toLocaleString()} hectares
-                        </div>
-                      </div>
-                    )}
                   </div>
 
                   {/* Portfolio Statistics */}
                   <div className="space-y-3">
-                    <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                    <h4 className="font-semibold text-sm text-plum-600 uppercase tracking-wide">
                       Portfolio Statistics
-                    </h3>
+                    </h4>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="p-4 bg-blue-50 rounded-lg">
-                        <div className="text-sm text-blue-600 font-medium">Total Cattle</div>
-                        <div className="text-2xl font-bold text-blue-900">{stats.count}</div>
+                      <div className="p-4 bg-lavender-50 rounded-xl border-2 border-lavender-200">
+                        <div className="text-sm text-plum-600 font-medium mb-1">Total Cattle</div>
+                        <div className="text-2xl font-bold text-plum-900">
+                          {(client.cattle_count || 0).toLocaleString()}
+                        </div>
                       </div>
-                      <div className="p-4 bg-green-50 rounded-lg">
-                        <div className="text-sm text-green-600 font-medium">Portfolio Value</div>
-                        <div className="text-2xl font-bold text-green-900">
-                          {formatCurrency(stats.totalValue)}
+                      <div className="p-4 bg-coral-50 rounded-xl border-2 border-coral-200">
+                        <div className="text-sm text-coral-700 font-medium mb-1">Portfolio Value</div>
+                        <div className="text-2xl font-bold text-coral-900">
+                          {formatCurrency(client.total_value || 0)}
                         </div>
                       </div>
                     </div>
-                    <div className="pt-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Average Value per Head</span>
-                        <span className="font-semibold">{formatCurrency(stats.avgValue || 0)}</span>
-                      </div>
+                    <div className="pt-2 flex items-center justify-between">
+                      <span className="text-gray-600">Average Value per Head</span>
+                      <span className="font-semibold text-plum-900">
+                        {formatCurrency(
+                          client.cattle_count && client.cattle_count > 0
+                            ? (client.total_value || 0) / client.cattle_count
+                            : 0
+                        )}
+                      </span>
                     </div>
-                    <Link href={`/clients/${client.id}`}>
-                      <button className="w-full mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-                        <TrendingUp className="h-4 w-4" />
-                        View Detailed Portfolio
-                      </button>
-                    </Link>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-            </Link>
-          );
-        })}
-      </div>
 
-      {/* Summary Card */}
-      <Card className="bg-gradient-to-r from-blue-50 to-green-50">
-        <CardHeader>
-          <CardTitle>Portfolio Summary</CardTitle>
-          <CardDescription>Aggregate statistics across all clients</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div>
-              <div className="text-sm text-muted-foreground">Total Clients</div>
-              <div className="text-3xl font-bold">{clients?.length || 0}</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">Total Cattle</div>
-              <div className="text-3xl font-bold">{allCattle?.length || 0}</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">Combined Portfolio Value</div>
-              <div className="text-3xl font-bold">
-                {formatCurrency(
-                  allCattle?.reduce((sum, c) => sum + (c.currentValuation || 0), 0) || 0
-                )}
+                <div className="mt-6 pt-6 border-t border-lavender-200">
+                  <div className="flex items-center justify-end gap-2 text-plum-600 group-hover:text-plum-700 font-semibold">
+                    <TrendingUp className="h-4 w-4" />
+                    <span>View Detailed Portfolio</span>
+                  </div>
+                </div>
               </div>
-            </div>
+            </Link>
+          ))}
+        </div>
+
+        {clients?.length === 0 && (
+          <div className="bg-white rounded-3xl p-12 text-center shadow-soft-md">
+            <Building2 className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">No Clients Found</h3>
+            <p className="text-gray-500">Start by adding your first client account.</p>
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
     </div>
   );
 }
