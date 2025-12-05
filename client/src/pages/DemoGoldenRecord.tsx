@@ -71,7 +71,7 @@ export function DemoGoldenRecord() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
-              <Link href="/golden-record/6000223">
+              <Link href="/cattle/1">
                 <a className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-plum-800 rounded-full font-semibold hover:bg-lavender-50 transition-all shadow-3d-coral">
                   <Eye className="w-5 h-5" />
                   View Sample Golden Record

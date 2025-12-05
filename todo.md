@@ -683,3 +683,6 @@
 
 ## 🔗 Top Performing Farms Table Links
 - [x] Add clickable links to farm names in Top Performing Farms table (links were already there, fixed data aggregation)
+
+## 🔗 View Sample Golden Record Button Fix
+- [x] Fix "View Sample Golden Record" button to link to valid cattle ID (now links to /cattle/1)
