@@ -295,7 +295,42 @@ export const marketLiveRouter = router({
         };
       } catch (error) {
         console.error("Failed to get market price:", error);
-        return null;
+        
+        // Fallback: Use generic market pricing based on weight and category
+        // Average Australian cattle prices: Steer ~$5.50/kg, Heifer ~$5.00/kg, Cow ~$4.50/kg
+        let fallbackPricePerKg = 5.0;
+        const cat = input.category.toLowerCase();
+        if (cat.includes("steer")) {
+          fallbackPricePerKg = 5.5;
+        } else if (cat.includes("heifer")) {
+          fallbackPricePerKg = 5.0;
+        } else if (cat.includes("cow")) {
+          fallbackPricePerKg = 4.5;
+        }
+        
+        // Apply breed premium to fallback price
+        const adjustedPricePerKg = BreedPremiums.calculateAdjustedPrice(
+          fallbackPricePerKg,
+          input.breed,
+          input.category as any
+        );
+        
+        const estimatedValue = adjustedPricePerKg * input.weight;
+        const breedPremium = BreedPremiums.getBreedPremium(input.breed);
+        
+        return {
+          price_per_kg: adjustedPricePerKg,
+          price_range_min: adjustedPricePerKg * 0.9,
+          price_range_max: adjustedPricePerKg * 1.1,
+          base_price_per_kg: fallbackPricePerKg,
+          breed_premium_pct: breedPremium,
+          estimated_value: Math.round(estimatedValue),
+          value_range_min: Math.round(estimatedValue * 0.9),
+          value_range_max: Math.round(estimatedValue * 1.1),
+          sample_size: 0,
+          last_updated: new Date().toISOString().split('T')[0],
+          source: `Estimated Market Price (${input.breed} Premium)`,
+        };
       }
     }),
 
