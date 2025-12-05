@@ -6,6 +6,9 @@ import { Link } from "wouter";
 export function DemoGoldenRecord() {
   const { data: summary, isLoading: summaryLoading } = trpc.portfolio.summary.useQuery({});
   const { data: recentEvents, isLoading: eventsLoading } = trpc.events.recent.useQuery({ limit: 5 });
+  const { data: cattleData } = trpc.cattle.list.useQuery({ limit: 1 });
+  
+  const firstCattleId = cattleData?.items?.[0]?.id;
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat('en-AU', {
@@ -71,7 +74,7 @@ export function DemoGoldenRecord() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
-              <Link href="/cattle/1">
+              <Link href={firstCattleId ? `/cattle/${firstCattleId}` : "/cattle"}>
                 <a className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-plum-800 rounded-full font-semibold hover:bg-lavender-50 transition-all shadow-3d-coral">
                   <Eye className="w-5 h-5" />
                   View Sample Golden Record

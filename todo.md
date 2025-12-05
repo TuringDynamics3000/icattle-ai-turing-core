@@ -689,3 +689,10 @@
 
 ## 🐛 Cattle Detail Page Not Displaying
 - [x] Fix cattle detail page (/cattle/1) showing blank/no content (fixed paginated data handling)
+
+## 🐛 Cattle Sex Classification Bug
+- [ ] Fix cattle sex classification logic (calves cannot be 66 months old)
+- [ ] Update seeding script to properly classify by age (calf <12mo, heifer/steer 12-24mo, cow/bull >24mo)
+
+## 🐛 View Sample Golden Record Button - Invalid Cattle ID
+- [x] Update button to dynamically fetch and link to first available cattle record
