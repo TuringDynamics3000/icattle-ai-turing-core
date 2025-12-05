@@ -677,3 +677,6 @@
 - [x] Change text to white for better contrast
 - [x] Fix non-working dropdown menu links
 - [x] Match overall site design system
+
+## 🐛 DemoGoldenRecord Page Bug Fix
+- [x] Fix ReferenceError: Shield is not defined on DemoGoldenRecord page

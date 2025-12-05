@@ -1,6 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Eye, Building2, Database, Sparkles, CheckCircle2, MapPin, Activity } from "lucide-react";
+import { Eye, Building2, Database, Sparkles, CheckCircle2, MapPin, Activity, Shield } from "lucide-react";
 import { Link } from "wouter";
 
 export function DemoGoldenRecord() {
