@@ -1,12 +1,11 @@
 import { useParams, Link } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  ArrowLeft, Calendar, MapPin, Activity, DollarSign, Shield,
-  CheckCircle2, AlertCircle, TrendingUp, Syringe, Scale, FileText
+  ArrowLeft, Calendar, MapPin, Activity, DollarSign,
+  CheckCircle2, AlertCircle, TrendingUp, Syringe, Scale, FileText, Shield, Sparkles
 } from "lucide-react";
 import { AuditTrailViewer } from "@/components/AuditTrailViewer";
 import { EventReplayViewer } from "@/components/EventReplayViewer";
@@ -28,12 +27,11 @@ export function CattleDetail() {
   );
   const { data: clients } = trpc.clients.active.useQuery();
 
-  // Get market price for this cattle
   const animal = cattle?.find(c => c.id === cattleId);
   const { data: marketPrice } = trpc.market.getMarketPrice.useQuery(
     {
       breed: animal?.breed || '',
-      category: animal?.sex || '', // Using sex (Steer/Heifer/Bull/Cow) for market category
+      category: animal?.sex || '',
       weight: animal?.currentWeight || 0,
     },
     { enabled: !!animal?.breed && !!animal?.sex && !!animal?.currentWeight }
@@ -61,8 +59,8 @@ export function CattleDetail() {
 
   if (cattleLoading || eventsLoading || valuationsLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-12 w-64" />
+      <div className="min-h-screen bg-lavender-50 p-6">
+        <Skeleton className="h-12 w-64 mb-6" />
         <div className="grid gap-4 md:grid-cols-3">
           {[...Array(3)].map((_, i) => (
             <Skeleton key={i} className="h-32" />
@@ -74,42 +72,37 @@ export function CattleDetail() {
 
   if (!animal) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-3">
+      <div className="min-h-screen bg-lavender-50 p-6">
+        <div className="flex items-center gap-3 mb-6">
           <Link href="/cattle">
-            <button className="hover:bg-accent p-2 rounded-lg transition-colors">
-              <ArrowLeft className="h-5 w-5" />
+            <button className="p-2 rounded-full hover:bg-plum-100 transition-colors">
+              <ArrowLeft className="h-5 w-5 text-plum-700" />
             </button>
           </Link>
-          <h1 className="text-4xl font-bold tracking-tight">Cattle Not Found</h1>
+          <h1 className="text-4xl font-serif font-bold text-plum-900">Cattle Not Found</h1>
         </div>
-        <p className="text-muted-foreground">The requested cattle record could not be found.</p>
+        <p className="text-gray-600">The requested cattle record could not be found.</p>
       </div>
     );
   }
 
-  // Calculate age
   const ageInMonths = animal.dateOfBirth 
     ? Math.floor((Date.now() - new Date(animal.dateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 30))
     : null;
 
-  // Prepare timeline events
   const timelineEvents = events?.sort((a: any, b: any) => 
     new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
   ) || [];
 
-  // Prepare valuation chart data
   const valuationChartData = valuations?.map((v: any) => ({
     date: formatDate(v.valuationDate),
     value: v.amount / 100,
   })).reverse() || [];
 
-  // Health events
   const healthEvents = timelineEvents.filter((e: any) => 
     ['health_check', 'vaccination', 'treatment'].includes(e.eventType)
   );
 
-  // Weight history
   const weightHistory = timelineEvents
     .filter((e: any) => e.weight !== null)
     .map((e: any) => ({
@@ -117,525 +110,285 @@ export function CattleDetail() {
       weight: e.weight,
     }));
 
-  // Blockchain verification status
   const isBlockchainVerified = !!animal.biometricId;
   const isNLISRegistered = !!animal.nlisId;
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <Link href="/cattle">
-            <button className="hover:bg-accent p-2 rounded-lg transition-colors">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-          </Link>
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight">{animal.visualId || `Cattle #${animal.id}`}</h1>
-            <p className="text-muted-foreground mt-1">
-              {animal.breed} • {animal.sex} • {ageInMonths ? `${ageInMonths} months old` : 'Age unknown'}
-            </p>
+    <div className="min-h-screen bg-lavender-50">
+      {/* Header with Gradient */}
+      <section className="relative overflow-hidden bg-gradient-purple-deep">
+        <div className="absolute inset-0 overflow-hidden opacity-20">
+          <div className="absolute top-10 right-20 w-64 h-64 bg-gradient-coral-cream shape-blob blur-3xl"></div>
+        </div>
+        
+        <div className="container mx-auto px-6 py-12 relative z-10">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-4">
+              <Link href="/cattle">
+                <button className="p-3 rounded-full glass-card-dark text-white hover:bg-white/20 transition-colors">
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+              </Link>
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="font-serif font-bold text-4xl text-white">
+                    {animal.visualId || `Cattle #${animal.id}`}
+                  </h1>
+                  <Badge className={`${
+                    animal.healthStatus === 'healthy' ? 'bg-green-500' : 'bg-red-500'
+                  } text-white`}>
+                    {animal.healthStatus}
+                  </Badge>
+                  <Badge className="glass-card-dark text-white border-white/20">
+                    {animal.status}
+                  </Badge>
+                </div>
+                <p className="text-lavender-100 text-lg">
+                  {animal.breed} • {animal.sex} • {ageInMonths ? `${ageInMonths} months old` : 'Age unknown'}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Badge variant={animal.healthStatus === 'healthy' ? 'default' : 'destructive'}>
-            {animal.healthStatus}
-          </Badge>
-          <Badge variant="outline">{animal.status}</Badge>
+      </section>
+
+      <div className="container mx-auto px-6 py-12">
+        {/* Key Metrics */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-12">
+          <MetricCard
+            title="Book Value"
+            value={formatCurrency(animal.currentValuation || 0)}
+            subtitle={`Last updated ${formatDate(animal.lastValuationDate)}`}
+            icon={<DollarSign className="w-6 h-6" />}
+            gradient="from-plum-500 to-plum-700"
+          />
+          
+          <MetricCard
+            title="Market Value"
+            value={marketPrice ? `$${marketPrice.estimated_value.toLocaleString()}` : 'N/A'}
+            subtitle={marketPrice ? `$${marketPrice.price_per_kg}/kg × ${animal.currentWeight}kg` : 'No market data'}
+            icon={<TrendingUp className="w-6 h-6" />}
+            gradient="from-coral-500 to-coral-700"
+          />
+          
+          <MetricCard
+            title="Current Weight"
+            value={`${animal.currentWeight || 'N/A'}kg`}
+            subtitle={`Last weighed ${formatDate(animal.lastWeighDate)}`}
+            icon={<Scale className="w-6 h-6" />}
+            gradient="from-plum-600 to-coral-500"
+          />
+          
+          <MetricCard
+            title="Location"
+            value={animal.currentLocation || 'Unknown'}
+            subtitle={animal.latitude && animal.longitude ? `${animal.latitude}, ${animal.longitude}` : 'No GPS data'}
+            icon={<MapPin className="w-6 h-6" />}
+            gradient="from-lavender-600 to-plum-600"
+          />
         </div>
-      </div>
 
-      {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Book Value</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(animal.currentValuation || 0)}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Last updated {formatDate(animal.lastValuationDate)}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-blue-200 bg-blue-50/30">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Market Value</CardTitle>
-            <TrendingUp className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            {marketPrice ? (
-              <>
-                <div className="text-2xl font-bold text-blue-900">
-                  ${marketPrice.estimated_value.toLocaleString()}
-                </div>
-                <div className="flex items-center gap-2 mt-1">
-                  <p className="text-xs text-muted-foreground">
-                    ${marketPrice.price_per_kg}/kg × {animal.currentWeight}kg
-                  </p>
-                  {(() => {
-                    const bookValue = (animal.currentValuation || 0) / 100;
-                    const difference = marketPrice.estimated_value - bookValue;
-                    const percentDiff = bookValue > 0 ? (difference / bookValue) * 100 : 0;
-                    const isPositive = difference > 0;
-                    return (
-                      <Badge 
-                        variant={isPositive ? "default" : "destructive"}
-                        className="text-xs"
-                      >
-                        {isPositive ? '+' : ''}{percentDiff.toFixed(1)}%
-                      </Badge>
-                    );
-                  })()}
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="text-2xl font-bold text-muted-foreground">N/A</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  No market data available
-                </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Current Weight</CardTitle>
-            <Scale className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{animal.currentWeight || 'N/A'}kg</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Last weighed {formatDate(animal.lastWeighDate)}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Location</CardTitle>
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{animal.currentLocation || 'Unknown'}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {animal.latitude && animal.longitude ? `${animal.latitude}, ${animal.longitude}` : 'No GPS data'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Owner</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold">{client?.name || 'Unknown'}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Since {formatDate(animal.acquisitionDate)}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Verification Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Verification & Compliance Status
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {animal.muzzleImageUrl && (
-            <div className="mb-6">
-              <div className="flex items-center gap-4">
+        {/* Verification Status */}
+        <div className="glass-card rounded-3xl p-8 shadow-soft-lg mb-12">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-plum-500 to-plum-700 flex items-center justify-center">
+              <Shield className="w-6 h-6 text-white" />
+            </div>
+            <h2 className="text-2xl font-serif font-bold text-plum-900">Verification & Compliance</h2>
+          </div>
+          
+          <div className="grid gap-6 md:grid-cols-2">
+            {animal.muzzleImageUrl && (
+              <div className="flex items-start gap-4">
                 <img 
                   src={animal.muzzleImageUrl} 
-                  alt={`${animal.visualId} muzzle biometric`}
-                  className="w-32 h-32 rounded-lg object-cover border-2 border-border shadow-md"
+                  alt="Muzzle biometric"
+                  className="w-24 h-24 rounded-2xl object-cover shadow-soft-md"
                 />
                 <div>
-                  <h4 className="font-semibold text-lg">Biometric Muzzle Pattern</h4>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Unique muzzle pattern used for visual identification and fraud prevention.
-                    Each cattle's muzzle pattern is as unique as a human fingerprint.
+                  <h4 className="font-semibold text-lg text-plum-900">Biometric Muzzle Pattern</h4>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Unique identification verified
                   </p>
                 </div>
               </div>
-            </div>
-          )}
-          <div className="grid gap-6 md:grid-cols-3">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">NLIS Registration</span>
-                {isNLISRegistered ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
-                ) : (
-                  <AlertCircle className="h-5 w-5 text-yellow-600" />
-                )}
-              </div>
-              <div className="text-lg font-bold">{animal.nlisId || 'Not Registered'}</div>
-              <p className="text-xs text-muted-foreground">
-                National Livestock Identification System
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Blockchain Verified</span>
-                {isBlockchainVerified ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
-                ) : (
-                  <AlertCircle className="h-5 w-5 text-yellow-600" />
-                )}
-              </div>
-              <div className="text-lg font-bold">{animal.biometricId || 'Not Verified'}</div>
-              <p className="text-xs text-muted-foreground">
-                Biometric identity on iCattle blockchain
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Visual ID</span>
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
-              </div>
-              <div className="text-lg font-bold">{animal.visualId || `#${animal.id}`}</div>
-              <p className="text-xs text-muted-foreground">
-                Farm visual identification tag
-              </p>
+            )}
+            
+            <div className="space-y-3">
+              <VerificationBadge
+                label="Blockchain Verified"
+                verified={isBlockchainVerified}
+                details={animal.biometricId || 'Not verified'}
+              />
+              <VerificationBadge
+                label="NLIS Registered"
+                verified={isNLISRegistered}
+                details={animal.nlisId || 'Not registered'}
+              />
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Detailed Information Tabs */}
-      <Tabs defaultValue="timeline" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="timeline">Lifecycle Timeline</TabsTrigger>
-          <TabsTrigger value="health">Health Records</TabsTrigger>
-          <TabsTrigger value="valuation">Valuation History</TabsTrigger>
-          <TabsTrigger value="audit">Audit Trail</TabsTrigger>
-          <TabsTrigger value="replay">Event Replay</TabsTrigger>
-          <TabsTrigger value="fraud">Fraud Detection</TabsTrigger>
-          <TabsTrigger value="details">Details</TabsTrigger>
-        </TabsList>
+        {/* Tabs for Details */}
+        <Tabs defaultValue="details" className="space-y-6">
+          <TabsList className="glass-card p-2 rounded-2xl">
+            <TabsTrigger value="details" className="rounded-xl data-[state=active]:bg-gradient-to-br data-[state=active]:from-plum-500 data-[state=active]:to-plum-700 data-[state=active]:text-white">
+              Details
+            </TabsTrigger>
+            <TabsTrigger value="health" className="rounded-xl data-[state=active]:bg-gradient-to-br data-[state=active]:from-coral-500 data-[state=active]:to-coral-700 data-[state=active]:text-white">
+              Health History
+            </TabsTrigger>
+            <TabsTrigger value="valuation" className="rounded-xl data-[state=active]:bg-gradient-to-br data-[state=active]:from-plum-600 data-[state=active]:to-coral-500 data-[state=active]:text-white">
+              Valuation
+            </TabsTrigger>
+            <TabsTrigger value="audit" className="rounded-xl data-[state=active]:bg-gradient-to-br data-[state=active]:from-lavender-600 data-[state=active]:to-plum-600 data-[state=active]:text-white">
+              Audit Trail
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Timeline Tab */}
-        <TabsContent value="timeline" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Lifecycle Timeline</CardTitle>
-              <CardDescription>Complete history from birth/acquisition to present</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {timelineEvents.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">No events recorded</p>
-                ) : (
-                  <div className="relative border-l-2 border-muted pl-6 space-y-6">
-                    {timelineEvents.map((event: any, index: number) => (
-                      <div key={index} className="relative">
-                        <div className="absolute -left-[1.6rem] top-0 w-4 h-4 rounded-full bg-primary border-4 border-background" />
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold capitalize">{event.eventType.replace('_', ' ')}</span>
-                            <Badge variant="outline" className="text-xs">
-                              {formatDate(event.eventDate)}
-                            </Badge>
-                          </div>
-                          {event.weight && (
-                            <p className="text-sm text-muted-foreground">Weight: {event.weight}kg</p>
-                          )}
-                          {event.fromLocation && event.toLocation && (
-                            <p className="text-sm text-muted-foreground">
-                              Moved from {event.fromLocation} to {event.toLocation}
-                            </p>
-                          )}
-                          {event.veterinarian && (
-                            <p className="text-sm text-muted-foreground">Veterinarian: {event.veterinarian}</p>
-                          )}
-                          {event.amount && (
-                            <p className="text-sm text-muted-foreground">Amount: {formatCurrency(event.amount)}</p>
-                          )}
-                          {event.notes && (
-                            <p className="text-sm text-muted-foreground italic">{event.notes}</p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+          <TabsContent value="details" className="space-y-6">
+            <div className="glass-card rounded-3xl p-8 shadow-soft-lg">
+              <h3 className="text-xl font-serif font-bold text-plum-900 mb-6">Animal Information</h3>
+              <div className="grid gap-4 md:grid-cols-2">
+                <DetailRow label="NLIS ID" value={animal.nlisId || 'N/A'} />
+                <DetailRow label="Visual ID" value={animal.visualId || 'N/A'} />
+                <DetailRow label="Breed" value={animal.breed} />
+                <DetailRow label="Sex" value={animal.sex} />
+                <DetailRow label="Date of Birth" value={formatDate(animal.dateOfBirth)} />
+                <DetailRow label="Color" value={animal.color || 'N/A'} />
+                <DetailRow label="Type" value={animal.cattleType} />
+                <DetailRow label="Grade" value={animal.grade || 'N/A'} />
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Weight History Chart */}
-          {weightHistory.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Weight Progression</CardTitle>
-                <CardDescription>Growth tracking over time</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={weightHistory}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line 
-                      type="monotone" 
-                      dataKey="weight" 
-                      stroke="#0088FE" 
-                      strokeWidth={2}
-                      name="Weight (kg)"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
+            <div className="glass-card rounded-3xl p-8 shadow-soft-lg">
+              <h3 className="text-xl font-serif font-bold text-plum-900 mb-6">Ownership</h3>
+              <div className="grid gap-4 md:grid-cols-2">
+                <DetailRow label="Owner" value={client?.name || 'Unknown'} />
+                <DetailRow label="Acquisition Date" value={formatDate(animal.acquisitionDate)} />
+                <DetailRow label="Acquisition Cost" value={formatCurrency(animal.acquisitionCost || 0)} />
+              </div>
+            </div>
+          </TabsContent>
 
-        {/* Health Records Tab */}
-        <TabsContent value="health" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Syringe className="h-5 w-5" />
-                Health Records
-              </CardTitle>
-              <CardDescription>Vaccinations, treatments, and health checks</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {healthEvents.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">No health records available</p>
-              ) : (
+          <TabsContent value="health">
+            <div className="glass-card rounded-3xl p-8 shadow-soft-lg">
+              <h3 className="text-xl font-serif font-bold text-plum-900 mb-6">Health Events</h3>
+              {healthEvents.length > 0 ? (
                 <div className="space-y-4">
-                  {healthEvents.map((event: any, index: number) => (
-                    <div key={index} className="border rounded-lg p-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h4 className="font-semibold capitalize">{event.eventType.replace('_', ' ')}</h4>
-                          <p className="text-sm text-muted-foreground">{formatDate(event.eventDate)}</p>
-                        </div>
-                        <Badge variant={event.healthStatus === 'healthy' ? 'default' : 'destructive'}>
-                          {event.healthStatus || 'N/A'}
-                        </Badge>
+                  {healthEvents.map((event: any) => (
+                    <div key={event.id} className="flex items-start gap-4 p-4 bg-lavender-50 rounded-2xl">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-coral-500 to-coral-700 flex items-center justify-center flex-shrink-0">
+                        <Syringe className="w-5 h-5 text-white" />
                       </div>
-                      {event.veterinarian && (
-                        <p className="text-sm"><strong>Veterinarian:</strong> {event.veterinarian}</p>
-                      )}
-                      {event.notes && (
-                        <p className="text-sm text-muted-foreground mt-2">{event.notes}</p>
-                      )}
+                      <div className="flex-1">
+                        <div className="font-semibold text-plum-900">{event.eventType.replace('_', ' ').toUpperCase()}</div>
+                        <div className="text-sm text-gray-600 mt-1">{formatDate(event.eventDate)}</div>
+                        {event.notes && <div className="text-sm text-gray-700 mt-2">{event.notes}</div>}
+                      </div>
                     </div>
                   ))}
                 </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Current Health Status</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <span className="text-sm text-muted-foreground">Status</span>
-                  <p className="text-lg font-semibold capitalize">{animal.healthStatus}</p>
-                </div>
-                <div>
-                  <span className="text-sm text-muted-foreground">Last Health Check</span>
-                  <p className="text-lg font-semibold">{formatDate(animal.lastHealthCheck)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Valuation History Tab */}
-        <TabsContent value="valuation" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Valuation History
-              </CardTitle>
-              <CardDescription>Market value progression over time</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {valuationChartData.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">No valuation history available</p>
               ) : (
+                <p className="text-gray-600">No health events recorded</p>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="valuation">
+            <div className="glass-card rounded-3xl p-8 shadow-soft-lg">
+              <h3 className="text-xl font-serif font-bold text-plum-900 mb-6">Valuation History</h3>
+              {valuationChartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
                   <LineChart data={valuationChartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis tickFormatter={(value) => `$${value.toLocaleString()}`} />
-                    <Tooltip formatter={(value: number) => `$${value.toLocaleString()}`} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E9D5FF" />
+                    <XAxis dataKey="date" stroke="#6B21A8" />
+                    <YAxis stroke="#6B21A8" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#FAFAFC', 
+                        border: '1px solid #E9D5FF',
+                        borderRadius: '12px'
+                      }} 
+                    />
                     <Legend />
                     <Line 
                       type="monotone" 
                       dataKey="value" 
-                      stroke="#00C49F" 
-                      strokeWidth={2}
-                      name="Value (AUD)"
+                      stroke="url(#colorGradient)" 
+                      strokeWidth={3}
+                      dot={{ fill: '#EC4899', r: 4 }}
                     />
+                    <defs>
+                      <linearGradient id="colorGradient" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#6B21A8" />
+                        <stop offset="100%" stopColor="#EC4899" />
+                      </linearGradient>
+                    </defs>
                   </LineChart>
                 </ResponsiveContainer>
+              ) : (
+                <p className="text-gray-600">No valuation history available</p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </TabsContent>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Financial Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-3">
-                <div>
-                  <span className="text-sm text-muted-foreground">Acquisition Cost</span>
-                  <p className="text-lg font-semibold">{formatCurrency(animal.acquisitionCost || 0)}</p>
-                </div>
-                <div>
-                  <span className="text-sm text-muted-foreground">Current Value</span>
-                  <p className="text-lg font-semibold">{formatCurrency(animal.currentValuation || 0)}</p>
-                </div>
-                <div>
-                  <span className="text-sm text-muted-foreground">Unrealized Gain</span>
-                  <p className={`text-lg font-semibold ${(animal.currentValuation || 0) - (animal.acquisitionCost || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatCurrency((animal.currentValuation || 0) - (animal.acquisitionCost || 0))}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+          <TabsContent value="audit">
+            <div className="glass-card rounded-3xl p-8 shadow-soft-lg">
+              <h3 className="text-xl font-serif font-bold text-plum-900 mb-6">Blockchain Audit Trail</h3>
+              <AuditTrailViewer cattleId={cattleId!} />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
 
-        {/* Details Tab */}
-        <TabsContent value="details" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Complete Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="space-y-4">
-                  <h4 className="font-semibold">Identification</h4>
-                  <div className="space-y-2">
-                    <div>
-                      <span className="text-sm text-muted-foreground">Visual ID</span>
-                      <p className="font-medium">{animal.visualId || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <span className="text-sm text-muted-foreground">NLIS ID</span>
-                      <p className="font-medium">{animal.nlisId || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <span className="text-sm text-muted-foreground">Biometric ID</span>
-                      <p className="font-medium">{animal.biometricId || 'N/A'}</p>
-                    </div>
-                  </div>
-                </div>
+function MetricCard({ title, value, subtitle, icon, gradient }: {
+  title: string;
+  value: string;
+  subtitle: string;
+  icon: React.ReactNode;
+  gradient: string;
+}) {
+  return (
+    <div className="glass-card rounded-3xl p-6 shadow-soft-lg hover:shadow-3d-purple transition-all group">
+      <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform text-white`}>
+        {icon}
+      </div>
+      <div className="text-sm text-gray-600 mb-1">{title}</div>
+      <div className="text-2xl font-bold text-plum-900 mb-1">{value}</div>
+      <div className="text-xs text-gray-500">{subtitle}</div>
+    </div>
+  );
+}
 
-                <div className="space-y-4">
-                  <h4 className="font-semibold">Physical Attributes</h4>
-                  <div className="space-y-2">
-                    <div>
-                      <span className="text-sm text-muted-foreground">Breed</span>
-                      <p className="font-medium">{animal.breed}</p>
-                    </div>
-                    <div>
-                      <span className="text-sm text-muted-foreground">Sex</span>
-                      <p className="font-medium capitalize">{animal.sex}</p>
-                    </div>
-                    <div>
-                      <span className="text-sm text-muted-foreground">Color</span>
-                      <p className="font-medium">{animal.color || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <span className="text-sm text-muted-foreground">Type</span>
-                      <p className="font-medium capitalize">{animal.cattleType}</p>
-                    </div>
-                    {animal.grade && (
-                      <div>
-                        <span className="text-sm text-muted-foreground">Grade</span>
-                        <p className="font-medium">{animal.grade}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
+function VerificationBadge({ label, verified, details }: {
+  label: string;
+  verified: boolean;
+  details: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 p-3 bg-lavender-50 rounded-2xl">
+      {verified ? (
+        <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
+      ) : (
+        <AlertCircle className="w-5 h-5 text-gray-400 flex-shrink-0" />
+      )}
+      <div className="flex-1 min-w-0">
+        <div className="font-semibold text-sm text-plum-900">{label}</div>
+        <div className="text-xs text-gray-600 truncate">{details}</div>
+      </div>
+    </div>
+  );
+}
 
-                <div className="space-y-4">
-                  <h4 className="font-semibold">Dates</h4>
-                  <div className="space-y-2">
-                    <div>
-                      <span className="text-sm text-muted-foreground">Date of Birth</span>
-                      <p className="font-medium">{formatDate(animal.dateOfBirth)}</p>
-                    </div>
-                    <div>
-                      <span className="text-sm text-muted-foreground">Acquisition Date</span>
-                      <p className="font-medium">{formatDate(animal.acquisitionDate)}</p>
-                    </div>
-                    <div>
-                      <span className="text-sm text-muted-foreground">Last Health Check</span>
-                      <p className="font-medium">{formatDate(animal.lastHealthCheck)}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h4 className="font-semibold">Additional Info</h4>
-                  <div className="space-y-2">
-                    <div>
-                      <span className="text-sm text-muted-foreground">Status</span>
-                      <p className="font-medium capitalize">{animal.status}</p>
-                    </div>
-                    <div>
-                      <span className="text-sm text-muted-foreground">Owner</span>
-                      <p className="font-medium">{client?.name || 'Unknown'}</p>
-                    </div>
-                    {animal.notes && (
-                      <div>
-                        <span className="text-sm text-muted-foreground">Notes</span>
-                        <p className="font-medium">{animal.notes}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Audit Trail Tab */}
-        <TabsContent value="audit" className="space-y-4">
-          <AuditTrailViewer cattleId={cattleId!} />
-        </TabsContent>
-
-        {/* Event Replay Tab */}
-        <TabsContent value="replay" className="space-y-4">
-          <EventReplayViewer cattleId={cattleId!} />
-        </TabsContent>
-
-        {/* Fraud Detection Tab */}
-        <TabsContent value="fraud" className="space-y-4">
-          <FraudDetectionViewer cattleId={cattleId!} />
-        </TabsContent>
-      </Tabs>
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between items-center py-2 border-b border-lavender-200">
+      <span className="text-gray-600">{label}</span>
+      <span className="font-semibold text-plum-900">{value}</span>
     </div>
   );
 }
