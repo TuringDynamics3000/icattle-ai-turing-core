@@ -641,7 +641,7 @@
 - [x] Rebuild Golden Record Demo to match purple/coral gradient design theme
 - [x] Rebuild HomeDashboard with new design
 - [x] Rebuild BankView with new design
-- [ ] Rebuild Cattle list page with new design
+- [x] Rebuild Cattle list page with new design
 - [ ] Rebuild CattleDetail page with new design
 - [ ] Update all remaining pages to match new design system
 - [ ] Add loading states with skeleton components
